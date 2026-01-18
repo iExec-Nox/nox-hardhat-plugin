@@ -10,8 +10,10 @@
   "devDependencies": {
     "@tsconfig/node22": "^22.0.2",
     "@types/node": "^22.11.0",
+    "@nomicfoundation/hardhat-ethers": "^4.0.0",
+    "ethers": "^6.15.0",
     "hardhat": "^3.0.11",
-    "hardhat-my-plugin": "workspace:*",
+    "hardhat-core-mock": "workspace:*",
     "typescript": "~5.8.0",
     "forge-std": "github:foundry-rs/forge-std#v1.9.4"
   }

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.28;
 
-import {Counter} from "./Counter.sol";
+import {Counter} from "../contracts/Counter.sol";
 import {Test} from "forge-std/Test.sol";
 
 contract CounterTest is Test {
@@ -28,5 +28,18 @@ contract CounterTest is Test {
     function test_IncByZero() public {
         vm.expectRevert();
         counter.incBy(0);
+    }
+
+    function test_CoreHelloValue() public {
+        // Deploy a mock HelloWorld contract at the expected address
+        address coreAddress = counter.CORE_MOCK_ADDRESS();
+        
+        // Deploy mock bytecode that returns 42
+        bytes memory mockCode = hex"602a60005260206000f3";
+        vm.etch(coreAddress, mockCode);
+        
+        // Now coreHelloValue should return 42
+        uint256 value = counter.coreHelloValue();
+        assertEq(value, 42, "coreHelloValue should return 42");
     }
 }

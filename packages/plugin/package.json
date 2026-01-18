@@ -1,7 +1,7 @@
 {
-  "name": "hardhat-my-plugin",
+  "name": "hardhat-core-mock",
   "version": "1.0.0",
-  "description": "Hardhat 3 plugin template",
+  "description": "Hardhat 3 plugin that installs a HelloWorld core contract",
   "license": "MIT",
   "type": "module",
   "types": "dist/src/index.d.ts",
@@ -25,9 +25,9 @@
     "test:coverage": "c8 --reporter html --reporter text --all --exclude test --exclude \"src/**/{types,type-extensions}.ts\" --src src node --import tsx/esm --test --test-reporter=@nomicfoundation/hardhat-node-test-reporter \"test/*.ts\" \"test/!(fixture-projects|helpers)/**/*.ts\"",
     "pretest": "pnpm build",
     "pretest:only": "pnpm build",
-    "build": "tsc --build .",
+    "build": "npx hardhat compile && tsc --build .",
     "prepublishOnly": "pnpm build",
-    "clean": "rimraf dist",
+    "clean": "rimraf dist artifacts cache",
     "watch": "tsc --build . --watch"
   },
   "files": [

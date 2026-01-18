@@ -3,51 +3,43 @@ import { describe, it } from "node:test";
 
 import path from "node:path";
 import { createHardhatRuntimeEnvironment } from "hardhat/hre";
-import MyPlugin from "../src/index.js";
+import CoreMock from "../src/index.js";
+import { CORE_CONTRACT_ADDRESS } from "../src/config.js";
 import { createFixtureProjectHRE } from "./helpers/fixture-projects.js";
 
-describe("MyPlugin tests", () => {
+describe("Core mock plugin tests", () => {
   describe("Test using a fixture project", async () => {
-    it("Should define my-task", async () => {
+    it("Should define core:install", async () => {
       const hre = await createFixtureProjectHRE("base-project");
 
-      const myTask = hre.tasks.getTask("my-task");
+      const installTask = hre.tasks.getTask("core:install");
       assert.notEqual(
-        myTask,
+        installTask,
         undefined,
-        "my-task should be defined because we loaded the plugin",
+        "core:install should be defined because we loaded the plugin",
       );
 
-      // You can use any feature of Hardhat to build your tests, for example,
-      // running the task and connecting to a new edr-simulated network
-      await myTask.run();
+      await installTask.run({ force: true });
 
       const conn = await hre.network.connect();
-      assert.equal(
-        await conn.provider.request({ method: "eth_blockNumber" }),
-        "0x0",
-        "The simulated chain is new, so it should be empty",
-      );
+      const code = await conn.provider.request({
+        method: "eth_getCode",
+        params: [CORE_CONTRACT_ADDRESS, "latest"],
+      });
+      assert.notEqual(code, "0x", "Core mock bytecode should exist");
     });
   });
 
   describe("Test creating a new HRE with an inline config", async () => {
     it("Should be able to load the plugin", async () => {
-      // You can also create a new HRE without a fixture project, including
-      // a custom config.
-      //
-      // In this case we don't provide a fixture project, nor a config path, just
-      // a config object.
-      //
-      // You can customize the config object here, including adding new plugins.
       const hre = await createHardhatRuntimeEnvironment({
-        plugins: [MyPlugin],
-        myConfig: {
-          greeting: "Hola",
+        plugins: [CoreMock],
+        coreMock: {
+          enabled: false,
         },
       });
 
-      assert.equal(hre.config.myConfig.greeting, "Hola");
+      assert.equal(hre.config.coreMock.enabled, false);
 
       // The config path is undefined because we didn't provide it to
       // createHardhatRuntimeEnvironment. See its documentation for more info.

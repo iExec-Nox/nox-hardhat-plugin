@@ -1,57 +1,62 @@
-# `hardhat-my-plugin`
+# `hardhat-core-mock` (WIP)
 
-This is an example plugin that adds a task that prints a greeting.
+Hardhat 3 plugin that installs a simple HelloWorld core contract at a fixed
+address for local testing.
 
 ## Installation
 
 To install this plugin, run the following command:
 
 ```bash
-npm install --save-dev hardhat-my-plugin
+npm install --save-dev hardhat-core-mock
 ```
 
 In your `hardhat.config.ts` file, import the plugin and add it to the `plugins` array:
 
 ```ts
 import { defineConfig } from "hardhat/config";
-import myPlugin from "hardhat-my-plugin";
+import coreMock from "hardhat-core-mock";
 
 export default defineConfig({
-  plugins: [myPlugin],
+  plugins: [coreMock],
 });
 ```
 
 ## Usage
 
-The plugin adds a new task called `my-task`. To run it, use the this command:
+Install the core contract once:
 
 ```bash
-npx hardhat my-task
+npx hardhat core:install
 ```
 
-You should see the following output:
+Check status:
 
+```bash
+npx hardhat core:status
 ```
-Hello, Hardhat!
+
+### Development
+
+The plugin automatically compiles `contracts/HelloWorld.sol` during build and imports the artifact directly.
+
+To rebuild:
+
+```bash
+pnpm build  # Compile contracts + TypeScript
 ```
 
-### Configuration
-
-You can configure the greeting that's printed by using the `myConfig` field in your Hardhat config. For example, you can have this config:
+You can configure the plugin via `coreMock` in your Hardhat config:
 
 ```ts
 import { defineConfig } from "hardhat/config";
-import myPlugin from "hardhat-my-plugin";
+import coreMock from "hardhat-core-mock";
 
 export default defineConfig({
-  plugins: [myPlugin],
-  myConfig: {
-    greeting: "Hola",
+  plugins: [coreMock],
+  coreMock: {
+    autoInstall: true,
+    address: "0x0000000000000000000000000000000000000042",
   },
-  //...
 });
 ```
-
-### Network logs
-
-This plugin also adds some example code to log different network events. To see it in action, all you need to do is run your Hardhat tests, deployment, or a script.

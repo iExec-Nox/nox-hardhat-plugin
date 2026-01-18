@@ -11,10 +11,10 @@ pnpm install
 pnpm build
 ```
 
-Then, you can run hardhat with:
+Then, you can install the core contract with:
 
 ```sh
-pnpm hardhat my-task
+pnpm hardhat core:install
 ```
 
 You can also run an example script with:

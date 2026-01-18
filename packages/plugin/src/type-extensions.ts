@@ -1,13 +1,20 @@
-import { MyPluginConfig, MyPluginUserConfig } from "./types.js";
+import { CoreMockConfig, CoreMockRuntime, CoreMockUserConfig } from "./types.js";
 
 import "hardhat/types/config";
 declare module "hardhat/types/config" {
   interface HardhatUserConfig {
-    myConfig?: MyPluginUserConfig;
+    coreMock?: CoreMockUserConfig;
   }
 
   interface HardhatConfig {
-    myConfig: MyPluginConfig;
+    coreMock: CoreMockConfig;
+  }
+}
+
+import "hardhat/types/hre";
+declare module "hardhat/types/hre" {
+  interface HardhatRuntimeEnvironment {
+    coreMock: CoreMockRuntime;
   }
 }
 

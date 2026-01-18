@@ -1,10 +1,14 @@
 import { defineConfig } from "hardhat/config";
-import myPlugin from "hardhat-my-plugin";
+import hardhatEthers from "@nomicfoundation/hardhat-ethers";
+import coreMock from "../plugin/src/index.js";
 
 export default defineConfig({
-  plugins: [myPlugin],
+  plugins: [hardhatEthers, coreMock],
   solidity: "0.8.29",
-  myConfig: {
-    greeting: "Hola",
-  },
+  networks: {
+    hardhat: {
+        type: "edr-simulated",
+        chainType: "l1",
+    },
+},
 });

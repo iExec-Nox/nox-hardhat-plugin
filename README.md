@@ -25,10 +25,10 @@ And try the plugin out in `packages/example-project` with:
 
 ```sh
 cd packages/example-project
-pnpm hardhat my-task
+pnpm hardhat core:install
 ```
 
-which should print `Hola, Hardhat!`.
+which should install the local HelloWorld core contract.
 
 ## Understanding the repository structure
 
@@ -47,7 +47,7 @@ The `packages/plugin` directory has a complete plugin example. It includes:
 
 - A `README.md` file that documents the plugin.
 - A `src/index.ts` file that defines and exports the plugin.
-- An example task, which is defined in `src/index.ts`, and whose action is in `src/tasks/my-task.ts`.
+- Example tasks defined in `src/index.ts`, with actions in `src/tasks/`.
 - An example of how to extend the Hardhat config, which includes:
   - The logic to extend the validation and resolution of the Hardhat config, in `src/config.ts`.
   - The config Hook Handlers to inject that logic into Hardhat, in `src/hooks/config.ts`.

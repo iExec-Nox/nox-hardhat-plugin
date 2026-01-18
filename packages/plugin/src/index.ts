@@ -5,20 +5,24 @@ import type { HardhatPlugin } from "hardhat/types/plugins";
 import "./type-extensions.js";
 
 const plugin: HardhatPlugin = {
-  id: "hardhat-my-plugin",
+  id: "hardhat-core-mock",
   hookHandlers: {
     config: () => import("./hooks/config.js"),
+    hre: () => import("./hooks/hre.js"),
     network: () => import("./hooks/network.js"),
   },
   tasks: [
-    task("my-task", "Prints a greeting.")
+    task("core:install", "Install the HelloWorld core contract.")
       .addOption({
-        name: "who",
-        description: "Who is receiving the greeting.",
-        type: ArgumentType.STRING,
-        defaultValue: "Hardhat",
+        name: "force",
+        description: "Overwrite existing code at the core address.",
+        type: ArgumentType.BOOLEAN,
+        defaultValue: false,
       })
-      .setAction(() => import("./tasks/my-task.js"))
+      .setAction(() => import("./tasks/core-install.js"))
+      .build(),
+    task("core:status", "Show HelloWorld core contract status.")
+      .setAction(() => import("./tasks/core-status.js"))
       .build(),
   ],
 };

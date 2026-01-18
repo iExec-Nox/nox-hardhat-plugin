@@ -2,6 +2,12 @@ import { HardhatUserConfig } from "hardhat/config";
 import { HardhatConfig } from "hardhat/types/config";
 import { HardhatUserConfigValidationError } from "hardhat/types/hooks";
 
+import { CoreMockConfig } from "./types.js";
+
+// Hardcoded address where the HelloWorld core contract will be deployed
+export const CORE_CONTRACT_ADDRESS =
+  "0x0000000000000000000000000000000000000042";
+
 /**
  * This function validates the parts of the HardhatUserConfig that are relevant
  * to the plugin.
@@ -14,34 +20,33 @@ import { HardhatUserConfigValidationError } from "hardhat/types/hooks";
 export async function validatePluginConfig(
   userConfig: HardhatUserConfig,
 ): Promise<HardhatUserConfigValidationError[]> {
-  if (userConfig.myConfig === undefined) {
+  if (userConfig.coreMock === undefined) {
     return [];
   }
 
-  if (typeof userConfig.myConfig !== "object") {
+  if (typeof userConfig.coreMock !== "object") {
     return [
       {
-        path: ["myConfig"],
-        message: "Expected an object with an optional greeting.",
+        path: ["coreMock"],
+        message: "Expected an object with core mock settings.",
       },
     ];
   }
 
-  const greeting = userConfig.myConfig?.greeting;
-  if (greeting === undefined) {
-    return [];
+  const errors: HardhatUserConfigValidationError[] = [];
+  const settings = userConfig.coreMock;
+
+  if (
+    settings.enabled !== undefined &&
+    typeof settings.enabled !== "boolean"
+  ) {
+    errors.push({
+      path: ["coreMock", "enabled"],
+      message: "Expected a boolean.",
+    });
   }
 
-  if (typeof greeting !== "string" || greeting.length === 0) {
-    return [
-      {
-        path: ["myConfig", "greeting"],
-        message: "Expected a non-empty string.",
-      },
-    ];
-  }
-
-  return [];
+  return errors;
 }
 
 /**
@@ -59,11 +64,13 @@ export async function resolvePluginConfig(
   userConfig: HardhatUserConfig,
   partiallyResolvedConfig: HardhatConfig,
 ): Promise<HardhatConfig> {
-  const greeting = userConfig.myConfig?.greeting ?? "Hello";
-  const myConfig = { greeting };
+  const userSettings = (userConfig.coreMock ?? {});
+  const coreMock: CoreMockConfig = {
+    enabled: userSettings.enabled ?? true,
+  };
 
   return {
     ...partiallyResolvedConfig,
-    myConfig,
+    coreMock,
   };
 }
