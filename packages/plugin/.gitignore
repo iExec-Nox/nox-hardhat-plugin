@@ -4,9 +4,12 @@
 # Compilation output
 /dist
 
-# test coverage output
+# Test coverage output
 /coverage
 
 # Hardhat files
 /artifacts
 /cache
+
+# Nox runtime state files (written by ingestor to process.cwd(), cleaned on restart)
+nox_ingestor_state_*.json

@@ -1,7 +1,7 @@
 {
-  "name": "hardhat-my-plugin",
+  "name": "@iexec-nox/hardhat-nox",
   "version": "1.0.0",
-  "description": "Hardhat 3 plugin template",
+  "description": "Hardhat 3 plugin for local Nox protocol stack",
   "license": "MIT",
   "type": "module",
   "types": "dist/src/index.d.ts",
@@ -37,23 +37,34 @@
     "LICENSE",
     "README.md"
   ],
+  "dependencies": {
+    "minio": "^8.0.0"
+  },
   "devDependencies": {
     "@eslint/js": "^9.35.0",
+    "@iexec-nox/handle": "*",
     "@nomicfoundation/hardhat-node-test-reporter": "^3.0.0",
     "@tsconfig/node22": "^22.0.2",
     "@types/node": "^22.11.0",
+    "@types/sinon": "^17.0.0",
     "c8": "^9.1.0",
+    "chai": "^5.0.0",
     "eslint": "^9.35.0",
     "eslint-import-resolver-typescript": "^4.4.4",
     "eslint-plugin-import": "^2.32.0",
     "hardhat": "^3.0.11",
+    "nock": "^13.0.0",
     "prettier": "3.6.2",
     "rimraf": "^5.0.5",
+    "sinon": "^19.0.0",
     "tsx": "^4.19.3",
     "typescript": "~5.8.0",
-    "typescript-eslint": "^8.43.0"
+    "typescript-eslint": "^8.43.0",
+    "viem": "^2.0.0"
   },
   "peerDependencies": {
-    "hardhat": "^3.0.11"
+    "@iexec-nox/handle": "*",
+    "hardhat": "^3.0.11",
+    "viem": "^2.0.0"
   }
 }

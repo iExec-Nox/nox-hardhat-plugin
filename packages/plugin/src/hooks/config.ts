@@ -1,18 +1,19 @@
 import type { ConfigHooks } from "hardhat/types/hooks";
-import { resolvePluginConfig, validatePluginConfig } from "../config.js";
+import { validateNoxConfig, resolveNoxConfig } from "../config.js";
 
 export default async (): Promise<Partial<ConfigHooks>> => {
   const handlers: Partial<ConfigHooks> = {
     async validateUserConfig(userConfig) {
-      return validatePluginConfig(userConfig);
+      return validateNoxConfig(userConfig.nox ?? {});
     },
+
     async resolveUserConfig(userConfig, resolveConfigurationVariable, next) {
       const partiallyResolvedConfig = await next(
         userConfig,
         resolveConfigurationVariable,
       );
-
-      return resolvePluginConfig(userConfig, partiallyResolvedConfig);
+      const nox = resolveNoxConfig(userConfig.nox ?? {});
+      return { ...partiallyResolvedConfig, nox };
     },
   };
 

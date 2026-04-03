@@ -1,26 +1,15 @@
-import { task } from "hardhat/config";
-import { ArgumentType } from "hardhat/types/arguments";
-import type { HardhatPlugin } from "hardhat/types/plugins";
-
 import "./type-extensions.js";
 
+import type { HardhatPlugin } from "hardhat/types/plugins";
+export { cleanupNoxProcesses } from "./runtime/BinaryResolver.js";
+
 const plugin: HardhatPlugin = {
-  id: "hardhat-my-plugin",
+  id: "@iexec-nox/hardhat-nox",
+  npmPackage: "@iexec-nox/hardhat-nox",
   hookHandlers: {
     config: () => import("./hooks/config.js"),
     network: () => import("./hooks/network.js"),
   },
-  tasks: [
-    task("my-task", "Prints a greeting.")
-      .addOption({
-        name: "who",
-        description: "Who is receiving the greeting.",
-        type: ArgumentType.STRING,
-        defaultValue: "Hardhat",
-      })
-      .setAction(() => import("./tasks/my-task.js"))
-      .build(),
-  ],
 };
 
 export default plugin;

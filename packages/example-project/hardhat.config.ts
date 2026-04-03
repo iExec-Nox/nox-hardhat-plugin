@@ -1,10 +1,33 @@
 import { defineConfig } from "hardhat/config";
-import myPlugin from "hardhat-my-plugin";
+import NoxPlugin from "@iexec-nox/hardhat-nox";
 
 export default defineConfig({
-  plugins: [myPlugin],
-  solidity: "0.8.29",
-  myConfig: {
-    greeting: "Hola",
+  plugins: [NoxPlugin],
+  solidity: {
+    version: "0.8.28",
+  },
+  chainDescriptors: {
+    421614: {
+      name: "Arbitrum Sepolia",
+      hardforkHistory: {
+        cancun: { blockNumber: 0 },
+      },
+    },
+  },
+  networks: {
+    default: {
+      type: "edr-simulated",
+      chainId: 421614,
+      forking: {
+        enabled: true,
+        url:
+          process.env["ARBITRUM_SEPOLIA_RPC_URL"] ??
+          "https://sepolia-rollup.arbitrum.io/rpc",
+      },
+    },
+  },
+  nox: {
+    enabled: true,
+    contractAddress: "0xd464B198f06756a1d00be223634b85E0a731c229",
   },
 });

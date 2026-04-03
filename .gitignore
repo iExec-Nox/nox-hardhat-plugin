@@ -1,2 +1,16 @@
 # Node modules
-/node_modules
+node_modules/
+
+# Compilation output and build artifacts
+dist/
+*.tsbuildinfo
+
+# Test coverage
+coverage/
+
+# Logs
+*.log
+pnpm-debug.log*
+
+# Nox runtime state files (written by ingestor to process.cwd(), cleaned on restart)
+nox_ingestor_state_*.json

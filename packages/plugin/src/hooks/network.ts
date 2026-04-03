@@ -1,28 +1,46 @@
-import type { HookContext, NetworkHooks } from "hardhat/types/hooks";
-import { ChainType, NetworkConnection } from "hardhat/types/network";
+import type { NetworkHooks, HookContext } from "hardhat/types/hooks";
+import type { ChainType, NetworkConnection } from "hardhat/types/network";
+import { NoxRuntime } from "../runtime/NoxRuntime.js";
 
 export default async (): Promise<Partial<NetworkHooks>> => {
-  const handlers: Partial<NetworkHooks> = {
+  const runtimes = new WeakMap<
+    NetworkConnection<ChainType | string>,
+    NoxRuntime
+  >();
+
+  return {
     async newConnection<ChainTypeT extends ChainType | string>(
       context: HookContext,
-      next: (
-        nextContext: HookContext,
-      ) => Promise<NetworkConnection<ChainTypeT>>,
+      next: (ctx: HookContext) => Promise<NetworkConnection<ChainTypeT>>,
     ): Promise<NetworkConnection<ChainTypeT>> {
       const connection = await next(context);
 
-      console.log("Connection created with ID", connection.id);
+      if (context.config.nox?.enabled === false) {
+        return connection;
+      }
+
+      const runtime = new NoxRuntime(context.config.nox, connection.provider);
+      await runtime.start();
+      connection.nox = runtime;
+      runtimes.set(connection, runtime);
 
       return connection;
     },
-    async onRequest(context, networkConnection, jsonRpcRequest, next) {
-      console.log(
-        `Request from connection ${networkConnection.id} is being processed — Method: ${jsonRpcRequest.method}`,
-      );
 
-      return next(context, networkConnection, jsonRpcRequest);
+    async closeConnection<ChainTypeT extends ChainType | string>(
+      context: HookContext,
+      connection: NetworkConnection<ChainTypeT>,
+      next: (
+        ctx: HookContext,
+        conn: NetworkConnection<ChainTypeT>,
+      ) => Promise<void>,
+    ): Promise<void> {
+      await next(context, connection);
+      const runtime = runtimes.get(connection);
+      if (runtime !== undefined) {
+        await runtime.stop();
+        runtimes.delete(connection);
+      }
     },
   };
-
-  return handlers;
 };

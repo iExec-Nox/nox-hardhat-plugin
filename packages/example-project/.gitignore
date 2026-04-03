@@ -10,3 +10,6 @@
 # Hardhat files
 /artifacts
 /cache
+
+# Nox runtime state files (written by ingestor, cleaned up on restart)
+nox_ingestor_state_*.json

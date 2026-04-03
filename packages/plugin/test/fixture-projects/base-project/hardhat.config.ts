@@ -1,6 +1,7 @@
 import { defineConfig } from "hardhat/config";
-import MyPlugin from "../../../src/index.js";
+import NoxPlugin from "../../../src/index.js";
 
 export default defineConfig({
-  plugins: [MyPlugin],
+  plugins: [NoxPlugin],
+  nox: { enabled: false }, // disable stack startup in fixture
 });

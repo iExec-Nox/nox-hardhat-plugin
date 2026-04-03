@@ -5,14 +5,18 @@
   "type": "module",
   "scripts": {
     "build": "tsc --build",
-    "watch": "tsc --build . --watch"
+    "watch": "tsc --build . --watch",
+    "test": "node --import tsx/esm --test --test-reporter=@nomicfoundation/hardhat-node-test-reporter \"test/**/*.ts\""
   },
   "devDependencies": {
+    "@iexec-nox/hardhat-nox": "workspace:*",
+    "@iexec-nox/nox-protocol-contracts": "^0.1.0-beta.9",
+    "@nomicfoundation/hardhat-node-test-reporter": "^3.0.0",
     "@tsconfig/node22": "^22.0.2",
     "@types/node": "^22.11.0",
     "hardhat": "^3.0.11",
-    "hardhat-my-plugin": "workspace:*",
+    "tsx": "^4.19.3",
     "typescript": "~5.8.0",
-    "forge-std": "github:foundry-rs/forge-std#v1.9.4"
+    "viem": "^2.0.0"
   }
 }
