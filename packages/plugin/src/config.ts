@@ -5,6 +5,9 @@ import type {
   NoxResolvedKeys,
 } from "./types.js";
 
+// NoxCompute is deployed once by iExec — users never redeploy it.
+const DEFAULT_CONTRACT_ADDRESS = "0xd464B198f06756a1d00be223634b85E0a731c229";
+
 export const DEFAULT_KEYS: NoxResolvedKeys = {
   kms: {
     walletKey:
@@ -61,7 +64,7 @@ export function validateNoxConfig(
 export function resolveNoxConfig(userConfig: NoxUserConfig): NoxResolvedConfig {
   return {
     enabled: userConfig.enabled ?? true,
-    contractAddress: userConfig.contractAddress,
+    contractAddress: userConfig.contractAddress ?? DEFAULT_CONTRACT_ADDRESS,
     ports: { ...DEFAULT_PORTS, ...userConfig.ports },
     keys: DEFAULT_KEYS,
   };

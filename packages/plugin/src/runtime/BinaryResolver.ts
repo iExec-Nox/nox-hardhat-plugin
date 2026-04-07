@@ -2,36 +2,9 @@ import { exec } from "node:child_process";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
-// -----------------------------------------------------------------------------
-// Binary provisioning — POC vs production
-//
-// POC (current):
-//   Binaries are NOT bundled with this package and are NOT downloaded
-//   automatically. Developers must supply them manually:
-//
-//   - nats-server, minio: external projects with their own release pipelines.
-//     Install them via your system package manager or download from their
-//     official GitHub releases, then point to them via NOX_BIN_NATS /
-//     NOX_BIN_MINIO (see env vars below).
-//
-//   - nox-kms, nox-handle-gateway, nox-ingestor, nox-runner: iExec Nox
-//     off-chain stack binaries. Build them from the local Nox Rust monorepo
-//     (`cargo build --release -p <crate>`) and point to them via the
-//     corresponding NOX_BIN_* env vars, or place the compiled binaries in
-//     CACHE_DIR so the default resolution picks them up.
-//
-// Production (future):
-//   When this plugin is published to npm, a postinstall script will
-//   automatically download the correct platform build of the four Nox binaries
-//   (nox-kms, nox-handle-gateway, nox-ingestor, nox-runner) from the iExec
-//   GitHub release artifacts and place them in CACHE_DIR. nats-server and
-//   minio will also be fetched from their respective official release pages.
-//   No manual setup will be required — `npm install @iexec-nox/hardhat-nox`
-//   will be sufficient.
-//
-// The NOX_BIN_* overrides remain valid in both modes and take precedence over
-// any cached binary, allowing developers to test custom builds at any time.
-// -----------------------------------------------------------------------------
+// TODO: Package binaries as a plugin dependency and download them via a
+//       postinstall script. Until then, place all binaries in NOX_BIN_DIR
+//       (env var override) or the default cache location below.
 
 export type ServiceName =
   | "nats"
@@ -50,35 +23,15 @@ const BINARY_NAMES: Record<ServiceName, string> = {
   runner: "nox-runner",
 };
 
-// Override any binary path by setting the corresponding env var.
-// Useful for testing custom builds without modifying the cache.
-const ENV_VAR_NAMES: Record<ServiceName, string> = {
-  nats: "NOX_BIN_NATS",
-  minio: "NOX_BIN_MINIO",
-  kms: "NOX_BIN_KMS",
-  gateway: "NOX_BIN_GATEWAY",
-  ingestor: "NOX_BIN_INGESTOR",
-  runner: "NOX_BIN_RUNNER",
-};
-
 const _arch = process.arch === "arm64" ? "arm64" : "x64";
 const _os = process.platform === "darwin" ? "darwin" : "linux";
 
-// Default location for cached binaries. In production this directory is
-// populated by the postinstall script; in the POC it must be populated
-// manually (see provisioning notes above).
-const CACHE_DIR = join(
-  homedir(),
-  ".cache",
-  "hardhat-nox",
-  "poc",
-  `${_os}-${_arch}`,
-);
+export const NOX_BIN_DIR =
+  process.env["NOX_BIN_DIR"] ??
+  join(homedir(), ".cache", "hardhat-nox", "poc", `${_os}-${_arch}`);
 
 export function resolveBinary(service: ServiceName): string {
-  const override = process.env[ENV_VAR_NAMES[service]];
-  if (override !== undefined && override !== "") return override;
-  return join(CACHE_DIR, BINARY_NAMES[service]);
+  return join(NOX_BIN_DIR, BINARY_NAMES[service]);
 }
 
 /**

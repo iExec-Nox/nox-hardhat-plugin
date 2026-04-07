@@ -17,9 +17,8 @@ export interface NoxPortsConfig {
 export interface NoxUserConfig {
   enabled?: boolean;
   /**
-   * Address of the deployed NoxCompute proxy contract on the forked chain.
-   *
-   * Arbitrum Sepolia: 0xd464B198f06756a1d00be223634b85E0a731c229
+   * Override the NoxCompute proxy contract address.
+   * Defaults to the canonical Arbitrum Sepolia deployment.
    */
   contractAddress?: string;
   ports?: NoxPortsConfig;
@@ -40,7 +39,7 @@ export interface NoxResolvedPorts {
 
 export interface NoxResolvedConfig {
   enabled: boolean;
-  contractAddress?: string;
+  contractAddress: string;
   ports: NoxResolvedPorts;
   keys: NoxResolvedKeys;
 }

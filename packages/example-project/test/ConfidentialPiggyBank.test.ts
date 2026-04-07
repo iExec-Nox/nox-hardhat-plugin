@@ -1,22 +1,3 @@
-/**
- * Integration test: Confidential Piggy Bank (Nox Hello World).
- *
- * Demonstrates the full Nox flow using the @iexec-nox/hardhat-nox plugin:
- *   1. Connect to the local Hardhat network → plugin starts the Nox off-chain stack.
- *   2. Deploy ConfidentialPiggyBank (a contract that stores an encrypted uint256 balance).
- *   3. Encrypt a deposit amount using the HandleClient SDK.
- *   4. Call deposit() on-chain with the encrypted handle + proof.
- *   5. Wait for the Nox pipeline to process the compute request.
- *   6. Read back the encrypted balance handle and decrypt it.
- *   7. Assert the decrypted value matches.
- *
- * Prerequisites (test skips when missing):
- *   - Nox binaries in ~/bin/nox/  (run `nox-build` to populate)
- *   - `pnpm install` at workspace root (installs this package's deps)
- *
- * Reference: https://github.com/iExec-Nox/nox-handle-sdk/blob/main/README.md
- */
-
 import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
@@ -61,18 +42,19 @@ const PIGGY_BANK_ABI = _artifact.abi as [
 
 // ─── Guard ────────────────────────────────────────────────────────────────────
 
-// Mirror BinaryResolver.ts default: ~/.cache/hardhat-nox/poc/<os>-<arch>/
-// Each binary can be overridden via NOX_BIN_<NAME> env vars (same as the plugin).
+// Mirror BinaryResolver.ts: use NOX_BIN_DIR override or default cache location.
 const _arch = process.arch === "arm64" ? "arm64" : "x64";
 const _os = process.platform === "darwin" ? "darwin" : "linux";
-const NOX_BIN_DIR = path.join(homedir(), ".cache", "hardhat-nox", "poc", `${_os}-${_arch}`);
+const NOX_BIN_DIR =
+  process.env["NOX_BIN_DIR"] ??
+  path.join(homedir(), ".cache", "hardhat-nox", "poc", `${_os}-${_arch}`);
 const NOX_BINS_AVAILABLE =
-  (process.env["NOX_BIN_NATS"] ? true : existsSync(path.join(NOX_BIN_DIR, "nats-server"))) &&
-  (process.env["NOX_BIN_MINIO"] ? true : existsSync(path.join(NOX_BIN_DIR, "minio"))) &&
-  (process.env["NOX_BIN_KMS"] ? true : existsSync(path.join(NOX_BIN_DIR, "nox-kms"))) &&
-  (process.env["NOX_BIN_GATEWAY"] ? true : existsSync(path.join(NOX_BIN_DIR, "nox-handle-gateway"))) &&
-  (process.env["NOX_BIN_INGESTOR"] ? true : existsSync(path.join(NOX_BIN_DIR, "nox-ingestor"))) &&
-  (process.env["NOX_BIN_RUNNER"] ? true : existsSync(path.join(NOX_BIN_DIR, "nox-runner")));
+  existsSync(path.join(NOX_BIN_DIR, "nats-server")) &&
+  existsSync(path.join(NOX_BIN_DIR, "minio")) &&
+  existsSync(path.join(NOX_BIN_DIR, "nox-kms")) &&
+  existsSync(path.join(NOX_BIN_DIR, "nox-handle-gateway")) &&
+  existsSync(path.join(NOX_BIN_DIR, "nox-ingestor")) &&
+  existsSync(path.join(NOX_BIN_DIR, "nox-runner"));
 
 describe(
   "ConfidentialPiggyBank (hello world)",

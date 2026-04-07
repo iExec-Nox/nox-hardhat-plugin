@@ -28,6 +28,5 @@ export default defineConfig({
   },
   nox: {
     enabled: true,
-    contractAddress: "0xd464B198f06756a1d00be223634b85E0a731c229",
   },
 });

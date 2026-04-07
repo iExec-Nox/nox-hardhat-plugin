@@ -21,7 +21,7 @@ import {
   S3_SECRET_KEY,
   S3_BUCKET,
   S3_REGION,
-} from "../services/s3Constants.js";
+} from "../services/configs.js";
 import { waitForHealthy } from "./HealthChecker.js";
 import { resolveBinary } from "./BinaryResolver.js";
 import { ServiceManager } from "./ServiceManager.js";
@@ -93,12 +93,6 @@ export class NoxRuntime implements INoxRuntime {
     log("MinIO bucket ready");
 
     // 3. NoxCompute contract address.
-    if (this.config.contractAddress === undefined) {
-      throw new Error(
-        "nox.contractAddress must be set in hardhat.config — " +
-          "provide the address of the deployed NoxCompute contract for the forked chain.",
-      );
-    }
     this.contractAddress = this.config.contractAddress;
     log(`Using NoxCompute at ${this.contractAddress} (chain ${chainId})`);
 

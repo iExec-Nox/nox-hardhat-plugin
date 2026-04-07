@@ -18,13 +18,8 @@
   "scripts": {
     "lint": "pnpm prettier --check && pnpm eslint",
     "lint:fix": "pnpm prettier --write && pnpm eslint --fix",
-    "eslint": "eslint \"src/**/*.ts\" \"test/**/*.ts\"",
+    "eslint": "eslint \"src/**/*.ts\"",
     "prettier": "prettier \"**/*.{ts,js,md,json}\"",
-    "test": "node --import tsx/esm --test --test-reporter=@nomicfoundation/hardhat-node-test-reporter \"test/*.ts\" \"test/!(fixture-projects|helpers)/**/*.ts\"",
-    "test:only": "node --import tsx/esm --test --test-only --test-reporter=@nomicfoundation/hardhat-node-test-reporter \"test/*.ts\" \"test/!(fixture-projects|helpers)/**/*.ts\"",
-    "test:coverage": "c8 --reporter html --reporter text --all --exclude test --exclude \"src/**/{types,type-extensions}.ts\" --src src node --import tsx/esm --test --test-reporter=@nomicfoundation/hardhat-node-test-reporter \"test/*.ts\" \"test/!(fixture-projects|helpers)/**/*.ts\"",
-    "pretest": "pnpm build",
-    "pretest:only": "pnpm build",
     "build": "tsc --build .",
     "prepublishOnly": "pnpm build",
     "clean": "rimraf dist",
@@ -38,11 +33,11 @@
     "README.md"
   ],
   "dependencies": {
+    "@iexec-nox/handle": "0.1.0-beta.10",
     "minio": "^8.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.35.0",
-    "@iexec-nox/handle": "0.1.0-beta.10",
     "@nomicfoundation/hardhat-node-test-reporter": "^3.0.0",
     "@tsconfig/node22": "^22.0.2",
     "@types/node": "^22.11.0",

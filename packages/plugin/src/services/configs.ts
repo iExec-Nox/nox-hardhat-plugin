@@ -1,11 +1,10 @@
 import { privateKeyToAccount, privateKeyToAddress } from "viem/accounts";
 import type { NoxResolvedConfig, NoxResolvedPorts } from "../types.js";
-import {
-  S3_ACCESS_KEY,
-  S3_SECRET_KEY,
-  S3_BUCKET,
-  S3_REGION,
-} from "./s3Constants.js";
+
+export const S3_ACCESS_KEY = "admin123";
+export const S3_SECRET_KEY = "password123";
+export const S3_BUCKET = "handles";
+export const S3_REGION = "eu-west-3";
 
 // Temporary directories used by NATS and MinIO — cleaned before each run.
 export const NATS_STORAGE_DIR = "/tmp/hardhat-nox-nats";
