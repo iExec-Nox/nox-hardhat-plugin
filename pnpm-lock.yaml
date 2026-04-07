@@ -44,6 +44,9 @@ importers:
 
   packages/plugin:
     dependencies:
+      '@iexec-nox/handle':
+        specifier: 0.1.0-beta.10
+        version: 0.1.0-beta.10(graphql@16.13.2)(viem@2.47.6(typescript@5.8.3)(zod@3.25.76))
       minio:
         specifier: ^8.0.0
         version: 8.0.7
@@ -51,9 +54,6 @@ importers:
       '@eslint/js':
         specifier: ^9.35.0
         version: 9.35.0
-      '@iexec-nox/handle':
-        specifier: 0.1.0-beta.10
-        version: 0.1.0-beta.10(graphql@16.13.2)(viem@2.47.6(typescript@5.8.3)(zod@3.25.76))
       '@nomicfoundation/hardhat-node-test-reporter':
         specifier: ^3.0.0
         version: 3.0.1
