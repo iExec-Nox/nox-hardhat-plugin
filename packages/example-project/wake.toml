@@ -1,4 +1,0 @@
-[compiler.solc]
-remappings = [
-  "@iexec-nox/nox-protocol-contracts/=node_modules/@iexec-nox/nox-protocol-contracts/",
-]
