@@ -6,6 +6,7 @@
   "scripts": {
     "build": "tsc --build",
     "watch": "tsc --build . --watch",
+    "pretest": "hardhat compile",
     "test": "node --import tsx/esm --test --test-reporter=@nomicfoundation/hardhat-node-test-reporter \"test/**/*.ts\""
   },
   "devDependencies": {
