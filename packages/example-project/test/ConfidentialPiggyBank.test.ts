@@ -1,6 +1,5 @@
 import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
-import { homedir } from "node:os";
 import path from "node:path";
 import { describe, it, before, after } from "node:test";
 
@@ -42,12 +41,15 @@ const PIGGY_BANK_ABI = _artifact.abi as [
 
 // ─── Guard ────────────────────────────────────────────────────────────────────
 
-// Mirror BinaryResolver.ts: use NOX_BIN_DIR override or default cache location.
+// Mirror BinaryResolver.ts: NOX_BIN_DIR override or bin/<os>-<arch>/ in the plugin package.
 const _arch = process.arch === "arm64" ? "arm64" : "x64";
 const _os = process.platform === "darwin" ? "darwin" : "linux";
+const _pluginRoot = path.join(
+  import.meta.dirname,
+  "../node_modules/@iexec-nox/hardhat-nox",
+);
 const NOX_BIN_DIR =
-  process.env["NOX_BIN_DIR"] ??
-  path.join(homedir(), ".cache", "hardhat-nox", "poc", `${_os}-${_arch}`);
+  process.env["NOX_BIN_DIR"] ?? path.join(_pluginRoot, "bin", `${_os}-${_arch}`);
 const NOX_BINS_AVAILABLE =
   existsSync(path.join(NOX_BIN_DIR, "nats-server")) &&
   existsSync(path.join(NOX_BIN_DIR, "minio")) &&

@@ -26,6 +26,7 @@
     "watch": "tsc --build . --watch"
   },
   "files": [
+    "bin/",
     "dist/src/",
     "src/",
     "CHANGELOG.md",

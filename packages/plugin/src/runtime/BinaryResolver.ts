@@ -1,10 +1,9 @@
 import { exec } from "node:child_process";
-import { homedir } from "node:os";
-import { join } from "node:path";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 
-// TODO: Package binaries as a plugin dependency and download them via a
-//       postinstall script. Until then, place all binaries in NOX_BIN_DIR
-//       (env var override) or the default cache location below.
+// TODO: Replace shipped binaries with a postinstall download script so the
+//       plugin always fetches the correct version for the target platform.
 
 export type ServiceName =
   | "nats"
@@ -26,9 +25,11 @@ const BINARY_NAMES: Record<ServiceName, string> = {
 const _arch = process.arch === "arm64" ? "arm64" : "x64";
 const _os = process.platform === "darwin" ? "darwin" : "linux";
 
+// Binaries are shipped in bin/<os>-<arch>/ relative to the package root.
+// Override the whole folder via NOX_BIN_DIR for custom builds.
+const _pkgRoot = join(dirname(fileURLToPath(import.meta.url)), "../../..");
 export const NOX_BIN_DIR =
-  process.env["NOX_BIN_DIR"] ??
-  join(homedir(), ".cache", "hardhat-nox", "poc", `${_os}-${_arch}`);
+  process.env["NOX_BIN_DIR"] ?? join(_pkgRoot, "bin", `${_os}-${_arch}`);
 
 export function resolveBinary(service: ServiceName): string {
   return join(NOX_BIN_DIR, BINARY_NAMES[service]);
