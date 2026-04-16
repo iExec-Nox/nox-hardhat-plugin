@@ -17,7 +17,6 @@ export default async function () {
     cwd: COMPOSE_DIR,
     commandOptions: ["--volumes", "--remove-orphans"],
     log: true,
-    executable: { executablePath: "docker", options: ["compose"] },
   });
   console.log("[nox] Docker stack is down.");
 }

@@ -16,7 +16,7 @@ export default async function () {
   await upAll({
     cwd: COMPOSE_DIR,
     log: true,
-    executable: { executablePath: "docker", options: ["compose"] },
+    commandOptions: ["--remove-orphans"],
   });
   console.log("[nox] Docker stack is up.");
 }
