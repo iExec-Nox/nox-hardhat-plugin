@@ -1,32 +1,9 @@
-import path from "node:path";
-import { fileURLToPath } from "node:url";
 import {
   downAll,
-  IDockerComposeOptions,
   logs as composeLogs,
   upAll,
 } from "docker-compose";
-
-const COMPOSE_OPTS: IDockerComposeOptions = {
-  cwd: path.resolve(
-    path.dirname(fileURLToPath(import.meta.url)),
-    "..",
-    "..",
-    "..",
-    "offchain-services",
-  ),
-  log: true,
-  composeOptions: [["--env-file", "dev.env"]],
-};
-
-const ALL_SERVICES = [
-  "nats",
-  "s3",
-  "nox-kms",
-  "nox-handle-gateway",
-  "nox-ingestor",
-  "nox-runner",
-];
+import { COMPOSE_OPTS, ALL_SERVICES } from "../nox-config.js";
 
 /** Bring the offchain stack up and wait for every service to be healthy. */
 export async function startOffchainServices(): Promise<void> {
