@@ -1,0 +1,3 @@
+export const NOX_COMPUTE_ADDRESS =
+  "0xd464B198f06756a1d00be223634b85E0a731c229";
+export const NOX_COMPUTE_CONTRACT_NAME = "NoxCompute";

@@ -1,10 +1,23 @@
 import { defineConfig } from "hardhat/config";
-import myPlugin from "hardhat-my-plugin";
+import noxPlugin from "hardhat-my-plugin";
 
 export default defineConfig({
-  plugins: [myPlugin],
-  solidity: "0.8.29",
-  myConfig: {
-    greeting: "Hola",
+  plugins: [noxPlugin],
+  solidity: {
+    version: "0.8.29",
+    npmFilesToBuild: [
+      "@iexec-nox/nox-protocol-contracts/contracts/NoxCompute.sol",
+    ],
+  },
+  networks: {
+    default: {
+      type: "edr-simulated",
+      chainType: "op",
+      allowUnlimitedContractSize: true,
+    },
+    local: {
+      type: "http",
+      url: "http://127.0.0.1:8545",
+    },
   },
 });
