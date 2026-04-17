@@ -9,7 +9,7 @@ export const NOX_GATEWAY_ADDRESS = "0xE1a6B1De3AbF04e7FA5355373880350Dc3004D0e";
 
 export const COMPOSE_OPTS: IDockerComposeOptions = {
   cwd: path.resolve(import.meta.dirname, "..", "..", "offchain-services"),
-  log: true,
+  log: false,
   composeOptions: [["--env-file", "dev.env"]],
 };
 

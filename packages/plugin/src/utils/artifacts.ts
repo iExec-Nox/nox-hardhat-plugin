@@ -12,14 +12,20 @@ export async function loadCompiledContract(
   hre: HardhatRuntimeEnvironment,
   contractName: string,
 ): Promise<CompiledContract> {
-  const artifact = await hre.artifacts.readArtifact(contractName);
-  if (artifact.deployedBytecode && artifact.deployedBytecode !== "0x") {
-    return {
-      abi: artifact.abi,
-      deployedBytecode: artifact.deployedBytecode as `0x${string}`,
-    };
+  try {
+    const artifact = await hre.artifacts.readArtifact(contractName);
+    if (artifact.deployedBytecode && artifact.deployedBytecode !== "0x") {
+      return {
+        abi: artifact.abi,
+        deployedBytecode: artifact.deployedBytecode as `0x${string}`,
+      };
+    }
+  } catch {
+    // NoxCompute comes from an npm package, so Hardhat 3 does not emit a
+    // standalone JSON artifact for it — fall through to scanning build-info.
   }
-  
+
+
   for (const id of await hre.artifacts.getAllBuildInfoIds()) {
     const outputPath = await hre.artifacts.getBuildInfoOutputPath(id);
     if (outputPath === undefined) continue;

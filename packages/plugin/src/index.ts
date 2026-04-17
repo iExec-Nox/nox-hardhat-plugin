@@ -8,7 +8,6 @@ const plugin: HardhatPlugin = {
   id: "hardhat-my-plugin",
   hookHandlers: {
     config: () => import("./hooks/config.js"),
-    network: () => import("./hooks/network.js"),
   },
   tasks: [
     task("my-task", "Prints a greeting.")
