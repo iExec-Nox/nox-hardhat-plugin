@@ -1,8 +1,4 @@
-import {
-  downAll,
-  logs as composeLogs,
-  upAll,
-} from "docker-compose";
+import { downAll, logs as composeLogs, upAll } from "docker-compose";
 import { COMPOSE_OPTS, ALL_SERVICES } from "../nox-config.js";
 
 /** Bring the offchain stack up and wait for every service to be healthy. */

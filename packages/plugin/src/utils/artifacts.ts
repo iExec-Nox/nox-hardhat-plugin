@@ -25,7 +25,6 @@ export async function loadCompiledContract(
     // standalone JSON artifact for it — fall through to scanning build-info.
   }
 
-
   for (const id of await hre.artifacts.getAllBuildInfoIds()) {
     const outputPath = await hre.artifacts.getBuildInfoOutputPath(id);
     if (outputPath === undefined) continue;
