@@ -38,10 +38,10 @@ jobs:
       - name: Build
         run: pnpm build
 
-      # `pnpm test` recursively runs plugin unit tests + example-project
-      # `pnpm hardhat test` which brings up the full docker stack.
-      - name: Test
-        run: pnpm test
-
       - name: Lint
         run: pnpm lint
+
+      # `pnpm test` recursively runs plugin unit tests + example-project's
+      # `pnpm hardhat test`, which brings up the full docker stack end-to-end.
+      - name: Test
+        run: pnpm test
