@@ -1,5 +1,4 @@
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 import { IDockerComposeOptions } from "docker-compose";
 
 export const NOX_COMPUTE_ADDRESS = "0xd464B198f06756a1d00be223634b85E0a731c229";
@@ -9,13 +8,7 @@ export const NOX_KMS_PUBLIC_KEY =
 export const NOX_GATEWAY_ADDRESS = "0xE1a6B1De3AbF04e7FA5355373880350Dc3004D0e";
 
 export const COMPOSE_OPTS: IDockerComposeOptions = {
-  cwd: path.resolve(
-    path.dirname(fileURLToPath(import.meta.url)),
-    "..",
-    "..",
-    "..",
-    "offchain-services",
-  ),
+  cwd: path.resolve(import.meta.dirname, "..", "..", "offchain-services"),
   log: true,
   composeOptions: [["--env-file", "dev.env"]],
 };

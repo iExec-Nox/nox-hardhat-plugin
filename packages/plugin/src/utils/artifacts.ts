@@ -12,18 +12,14 @@ export async function loadCompiledContract(
   hre: HardhatRuntimeEnvironment,
   contractName: string,
 ): Promise<CompiledContract> {
-  try {
-    const artifact = await hre.artifacts.readArtifact(contractName);
-    if (artifact.deployedBytecode && artifact.deployedBytecode !== "0x") {
-      return {
-        abi: artifact.abi,
-        deployedBytecode: artifact.deployedBytecode as `0x${string}`,
-      };
-    }
-  } catch {
-    // fall through to build-info scan
+  const artifact = await hre.artifacts.readArtifact(contractName);
+  if (artifact.deployedBytecode && artifact.deployedBytecode !== "0x") {
+    return {
+      abi: artifact.abi,
+      deployedBytecode: artifact.deployedBytecode as `0x${string}`,
+    };
   }
-
+  
   for (const id of await hre.artifacts.getAllBuildInfoIds()) {
     const outputPath = await hre.artifacts.getBuildInfoOutputPath(id);
     if (outputPath === undefined) continue;
