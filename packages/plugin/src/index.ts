@@ -20,6 +20,12 @@ const plugin: HardhatPlugin = {
       })
       .setAction(() => import("./tasks/my-task.js"))
       .build(),
+    task("nox:start-stack", "Start the local Nox docker stack.")
+      .setAction(() => import("./tasks/start-stack.js"))
+      .build(),
+    task("nox:stop-stack", "Stop the local Nox docker stack.")
+      .setAction(() => import("./tasks/stop-stack.js"))
+      .build(),
   ],
 };
 

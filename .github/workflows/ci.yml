@@ -19,20 +19,33 @@ jobs:
         node-version: [22, 24]
     steps:
       - uses: actions/checkout@v5
+
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 10
+
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: "pnpm"
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --prefer-offline
+
       - name: Build
         run: pnpm build
+
       - name: Test
         run: pnpm test
+
       - name: Lint
         run: pnpm lint
+
+      # TODO(PR 2): replace with an end-to-end test once the task combines
+      # `hardhat node` + `setCode` + `docker compose up`. We'll be able to run
+      # `pnpm hardhat nox:start-stack` from example-project, wait for all
+      # services to become healthy, then `nox:stop-stack`.
+      - name: Validate offchain-services docker-compose
+        run: docker compose -f packages/plugin/offchain-services/docker-compose.yml --env-file packages/plugin/offchain-services/dev.env config --quiet
