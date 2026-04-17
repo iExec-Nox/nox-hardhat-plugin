@@ -8,13 +8,14 @@ const COMPOSE_DIR = path.resolve(
   "..",
   "..",
   "..",
-  "local-stack",
+  "offchain-services",
 );
 
 export default async function () {
   console.log(`[nox] Stopping docker stack from ${COMPOSE_DIR}...`);
   await downAll({
     cwd: COMPOSE_DIR,
+    composeOptions: [["--env-file", "dev.env"]],
     commandOptions: ["--volumes", "--remove-orphans"],
     log: true,
   });

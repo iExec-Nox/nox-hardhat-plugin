@@ -33,7 +33,7 @@
   "files": [
     "dist/src/",
     "src/",
-    "local-stack/",
+    "offchain-services/",
     "CHANGELOG.md",
     "LICENSE",
     "README.md"

@@ -8,7 +8,7 @@ const COMPOSE_DIR = path.resolve(
   "..",
   "..",
   "..",
-  "local-stack",
+  "offchain-services",
 );
 
 export default async function () {
@@ -16,6 +16,7 @@ export default async function () {
   await upAll({
     cwd: COMPOSE_DIR,
     log: true,
+    composeOptions: [["--env-file", "dev.env"]],
     commandOptions: ["--remove-orphans"],
   });
   console.log("[nox] Docker stack is up.");

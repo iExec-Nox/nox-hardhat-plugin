@@ -5,7 +5,7 @@
 # to inject NoxCompute bytecode directly into the EDR-simulated network.
 #
 # env vars (NOX_COMPUTE_CONTRACT, NOX_CHAIN_ID, HOST_RPC_URL, ...) are
-# loaded from .env file.
+# loaded from dev.env file.
 
 networks:
   frontend:
@@ -14,6 +14,7 @@ networks:
     name: backend
 
 services:
+  # TODO use docker.io registry
   nox-kms:
     image: docker-regis.iex.ec/nox-kms:${NOX_KMS_VERSION}
     environment:
@@ -37,7 +38,7 @@ services:
           memory: 128M
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://0.0.0.0:9000/health || exit 1"]
-      interval: 3s
+      interval: 1s
       timeout: 5s
       retries: 20
 
@@ -47,15 +48,12 @@ services:
     environment:
       - MINIO_ROOT_USER=${NOX_S3_ACCESS_KEY}
       - MINIO_ROOT_PASSWORD=${NOX_S3_SECRET_KEY}
-    ports:
-      - "9000:9000"
-      - "9001:9001"
     networks:
       - backend
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "mc", "ready", "local"]
-      interval: 2s
+      interval: 1s
       timeout: 5s
       retries: 15
 
@@ -112,7 +110,7 @@ services:
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://0.0.0.0:3000 || exit 1"]
-      interval: 5s
+      interval: 1s
       timeout: 5s
       retries: 5
 
@@ -128,14 +126,12 @@ services:
         "-m",
         "8222",
       ]
-    ports:
-      - "4222:4222"
     networks:
       - backend
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost:8222/healthz"]
-      interval: 5s
+      interval: 1s
       timeout: 5s
       retries: 5
 

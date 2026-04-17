@@ -47,5 +47,5 @@ jobs:
       # `hardhat node` + `setCode` + `docker compose up`. We'll be able to run
       # `pnpm hardhat nox:start-stack` from example-project, wait for all
       # services to become healthy, then `nox:stop-stack`.
-      - name: Validate local-stack docker-compose
-        run: docker compose -f packages/plugin/local-stack/docker-compose.yml --env-file packages/plugin/local-stack/.env config --quiet
+      - name: Validate offchain-services docker-compose
+        run: docker compose -f packages/plugin/offchain-services/docker-compose.yml --env-file packages/plugin/offchain-services/dev.env config --quiet
