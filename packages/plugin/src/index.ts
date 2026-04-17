@@ -1,4 +1,4 @@
-import { task } from "hardhat/config";
+import { overrideTask, task } from "hardhat/config";
 import { ArgumentType } from "hardhat/types/arguments";
 import type { HardhatPlugin } from "hardhat/types/plugins";
 
@@ -20,11 +20,8 @@ const plugin: HardhatPlugin = {
       })
       .setAction(() => import("./tasks/my-task.js"))
       .build(),
-    task("nox:start-stack", "Start the local Nox docker stack.")
-      .setAction(() => import("./tasks/start-stack.js"))
-      .build(),
-    task("nox:stop-stack", "Stop the local Nox docker stack.")
-      .setAction(() => import("./tasks/stop-stack.js"))
+    overrideTask("test")
+      .setAction(() => import("./tasks/test-override.js"))
       .build(),
   ],
 };

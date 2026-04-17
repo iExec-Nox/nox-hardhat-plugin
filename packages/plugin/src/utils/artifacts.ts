@@ -1,28 +1,27 @@
 import { readFile } from "node:fs/promises";
-
 import { HardhatRuntimeEnvironment } from "hardhat/types/hre";
-
-interface BuildInfoOutput {
-  output?: {
-    contracts?: Record<
-      string,
-      Record<string, { evm?: { deployedBytecode?: { object?: string } } }>
-    >;
-  };
-}
+import type { BuildInfoOutput, CompiledContract } from "./types.js";
 
 /**
- * Hardhat 3 does not emit a standalone JSON artifact for contracts imported
- * from npm packages, so `readArtifact` may fail. Fall back to scanning the
- * build-info output to extract `deployedBytecode`.
+ * Loads the compiled ABI + deployedBytecode for a contract name. Hardhat 3
+ * does not emit a standalone JSON artifact for contracts imported from npm
+ * packages (e.g. NoxCompute from `@iexec-nox/nox-protocol-contracts`), so we
+ * fall back to scanning the build-info output.
  */
-export async function loadDeployedBytecode(
+export async function loadCompiledContract(
   hre: HardhatRuntimeEnvironment,
   contractName: string,
-): Promise<string> {
-  const artifact = await hre.artifacts.readArtifact(contractName);
-  if (artifact.deployedBytecode && artifact.deployedBytecode !== "0x") {
-    return artifact.deployedBytecode;
+): Promise<CompiledContract> {
+  try {
+    const artifact = await hre.artifacts.readArtifact(contractName);
+    if (artifact.deployedBytecode && artifact.deployedBytecode !== "0x") {
+      return {
+        abi: artifact.abi,
+        deployedBytecode: artifact.deployedBytecode as `0x${string}`,
+      };
+    }
+  } catch {
+    // fall through to build-info scan
   }
 
   for (const id of await hre.artifacts.getAllBuildInfoIds()) {
@@ -33,13 +32,20 @@ export async function loadDeployedBytecode(
       await readFile(outputPath, "utf-8"),
     ) as BuildInfoOutput;
     for (const contracts of Object.values(parsed.output?.contracts ?? {})) {
-      const bytecode = contracts[contractName]?.evm?.deployedBytecode?.object;
-      if (bytecode)
-        return bytecode.startsWith("0x") ? bytecode : `0x${bytecode}`;
+      const contract = contracts[contractName];
+      const bytecode = contract?.evm?.deployedBytecode?.object;
+      if (contract?.abi && bytecode) {
+        return {
+          abi: contract.abi,
+          deployedBytecode: (bytecode.startsWith("0x")
+            ? bytecode
+            : `0x${bytecode}`) as `0x${string}`,
+        };
+      }
     }
   }
 
   throw new Error(
-    `[nox] Could not find deployedBytecode for ${contractName}. Compile the project first.`,
+    `[nox] Could not find compiled artifact for ${contractName}. Compile the project first.`,
   );
 }
