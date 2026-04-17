@@ -41,6 +41,10 @@ jobs:
       - name: Lint
         run: pnpm lint
 
+      # TODO: remove when Nox images are available on docker.io
+      - name: Login to Docker registry
+        run: echo "${{ secrets.DOCKER_REGISTRY_PASSWORD }}" | docker login docker-regis.iex.ec -u "${{ secrets.DOCKER_REGISTRY_USERNAME }}" --password-stdin
+
       # `pnpm test` recursively runs plugin unit tests + example-project's
       # `pnpm hardhat test`, which brings up the full docker stack end-to-end.
       - name: Test
