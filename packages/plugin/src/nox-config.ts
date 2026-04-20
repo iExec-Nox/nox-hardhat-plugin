@@ -11,11 +11,10 @@ export const NOX_COMPUTE_PROXY_ADDRESS =
 export const NOX_COMPUTE_IMPL_ADDRESS =
   "0x8D88B61356Fa291505d3E3D3a77e19fad0958fe3";
 
-// bytes32(uint256(keccak256("eip1967.proxy.implementation")) - 1) — the ERC-1967
-// slot the ERC1967Proxy reads to find its implementation. Since `hardhat_setCode`
-// skips the proxy's constructor, the plugin writes this slot explicitly.
+// ERC-1967 implementation slot — hardcoded in the shipped proxy bytecode. We
+// write it ourselves because `hardhat_setCode` bypasses the proxy constructor.
 export const ERC1967_IMPLEMENTATION_SLOT =
-  "0x360894a13ba1a3210667c828492db98dcbd37bd8e4436b2b6fdf6d65a9a6b46e";
+  "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc";
 
 export const NOX_KMS_PUBLIC_KEY =
   "0x03902284a6bd5198b4a32ef2319fc3ae37ea166aff0320eaa8addb0182ee80381e";
