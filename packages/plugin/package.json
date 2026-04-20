@@ -18,8 +18,9 @@
   "scripts": {
     "lint": "pnpm prettier --check && pnpm eslint",
     "lint:fix": "pnpm prettier --write && pnpm eslint --fix",
-    "eslint": "eslint \"src/**/*.ts\"",
+    "eslint": "eslint \"src/**/*.ts\" \"test/**/*.ts\"",
     "prettier": "prettier \"**/*.{ts,js,md,json}\"",
+    "test": "node --import tsx/esm --test \"test/**/*.ts\"",
     "build": "tsc --build .",
     "clean": "rimraf dist",
     "watch": "tsc --build . --watch"
@@ -33,6 +34,7 @@
     "README.md"
   ],
   "dependencies": {
+    "@iexec-nox/nox-protocol-contracts": "^0.2.2",
     "docker-compose": "^1.2.0",
     "viem": "^2.46.3"
   },
@@ -46,6 +48,7 @@
     "hardhat": "^3.4.0",
     "prettier": "3.6.2",
     "rimraf": "^5.0.5",
+    "tsx": "^4.19.3",
     "typescript": "~5.8.0",
     "typescript-eslint": "^8.43.0"
   },

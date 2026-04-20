@@ -8,8 +8,6 @@ export default defineConfig({
   networks: {
     default: {
       type: "edr-simulated",
-      chainType: "op",
-      allowUnlimitedContractSize: true,
     },
   },
 });
