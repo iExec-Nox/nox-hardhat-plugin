@@ -1,8 +1,5 @@
-import { overrideTask, task } from "hardhat/config";
-import { ArgumentType } from "hardhat/types/arguments";
+import { overrideTask } from "hardhat/config";
 import type { HardhatPlugin } from "hardhat/types/plugins";
-
-import "./type-extensions.js";
 
 const plugin: HardhatPlugin = {
   id: "hardhat-my-plugin",
@@ -10,15 +7,6 @@ const plugin: HardhatPlugin = {
     config: () => import("./hooks/config.js"),
   },
   tasks: [
-    task("my-task", "Prints a greeting.")
-      .addOption({
-        name: "who",
-        description: "Who is receiving the greeting.",
-        type: ArgumentType.STRING,
-        defaultValue: "Hardhat",
-      })
-      .setAction(() => import("./tasks/my-task.js"))
-      .build(),
     overrideTask("test")
       .setAction(() => import("./tasks/test-override.js"))
       .build(),
