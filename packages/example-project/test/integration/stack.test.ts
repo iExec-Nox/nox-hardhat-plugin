@@ -5,7 +5,7 @@ import {
   HANDLE_GATEWAY_URL,
   NOX_COMPUTE_CONTRACT,
   RPC_URL,
-} from "./config.js";
+} from "../config.js";
 
 const client = createPublicClient({ transport: http(RPC_URL) });
 

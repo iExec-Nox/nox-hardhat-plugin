@@ -1,5 +1,5 @@
 import { downAll, logs as composeLogs, upAll } from "docker-compose";
-import { COMPOSE_OPTS, ALL_SERVICES } from "../nox-config.js";
+import { COMPOSE_OPTS, ALL_SERVICES } from "../config.js";
 
 /** Bring the offchain stack up and wait for every service to be healthy. */
 export async function startOffchainServices(): Promise<void> {
