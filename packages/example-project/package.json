@@ -9,7 +9,6 @@
     "test": "pnpm hardhat test"
   },
   "dependencies": {
-    "@iexec-nox/nox-protocol-contracts": "0.2.1",
     "viem": "^2.46.3"
   },
   "devDependencies": {

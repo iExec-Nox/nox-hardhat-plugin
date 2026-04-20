@@ -39,6 +39,7 @@
     "README.md"
   ],
   "dependencies": {
+    "@iexec-nox/nox-protocol-contracts": "^0.2.2",
     "docker-compose": "^1.2.0",
     "viem": "^2.46.3"
   },
