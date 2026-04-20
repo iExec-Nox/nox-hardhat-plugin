@@ -1,7 +1,7 @@
 {
-  "name": "hardhat-my-plugin",
-  "version": "1.0.0",
-  "description": "Hardhat 3 plugin template",
+  "name": "@iexec-nox/nox-hardhat-plugin",
+  "version": "0.1.0",
+  "description": "Hardhat 3 plugin that spins up the Nox offchain stack and deploys NoxCompute for local end-to-end tests.",
   "license": "MIT",
   "type": "module",
   "types": "dist/src/index.d.ts",
@@ -13,20 +13,16 @@
     "smart-contracts",
     "hardhat",
     "hardhat3",
-    "hardhat-plugin"
+    "hardhat-plugin",
+    "nox",
+    "confidential"
   ],
   "scripts": {
     "lint": "pnpm prettier --check && pnpm eslint",
     "lint:fix": "pnpm prettier --write && pnpm eslint --fix",
-    "eslint": "eslint \"src/**/*.ts\" \"test/**/*.ts\"",
+    "eslint": "eslint \"src/**/*.ts\"",
     "prettier": "prettier \"**/*.{ts,js,md,json}\"",
-    "test": "node --import tsx/esm --test --test-reporter=@nomicfoundation/hardhat-node-test-reporter \"test/*.ts\" \"test/!(fixture-projects|helpers)/**/*.ts\"",
-    "test:only": "node --import tsx/esm --test --test-only --test-reporter=@nomicfoundation/hardhat-node-test-reporter \"test/*.ts\" \"test/!(fixture-projects|helpers)/**/*.ts\"",
-    "test:coverage": "c8 --reporter html --reporter text --all --exclude test --exclude \"src/**/{types,type-extensions}.ts\" --src src node --import tsx/esm --test --test-reporter=@nomicfoundation/hardhat-node-test-reporter \"test/*.ts\" \"test/!(fixture-projects|helpers)/**/*.ts\"",
-    "pretest": "pnpm build",
-    "pretest:only": "pnpm build",
     "build": "tsc --build .",
-    "prepublishOnly": "pnpm build",
     "clean": "rimraf dist",
     "watch": "tsc --build . --watch"
   },
@@ -44,21 +40,26 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.35.0",
-    "@nomicfoundation/hardhat-node-test-reporter": "^3.0.0",
     "@tsconfig/node22": "^22.0.2",
     "@types/node": "^22.11.0",
-    "c8": "^9.1.0",
     "eslint": "^9.35.0",
     "eslint-import-resolver-typescript": "^4.4.4",
     "eslint-plugin-import": "^2.32.0",
     "hardhat": "^3.4.0",
     "prettier": "3.6.2",
     "rimraf": "^5.0.5",
-    "tsx": "^4.19.3",
     "typescript": "~5.8.0",
     "typescript-eslint": "^8.43.0"
   },
   "peerDependencies": {
     "hardhat": "^3.4.0"
+  },
+  "homepage": "https://github.com/iExec-Nox/nox-hardhat-plugin#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iExec-Nox/nox-hardhat-plugin.git"
+  },
+  "bugs": {
+    "url": "https://github.com/iExec-Nox/nox-hardhat-plugin/issues"
   }
 }

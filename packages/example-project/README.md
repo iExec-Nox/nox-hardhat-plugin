@@ -1,38 +1,34 @@
-# A Hardhat 3 project that uses your plugin
+# Nox Hardhat plugin – example project
 
-This is an example project that uses your plugin.
+This package consumes [`@iexec-nox/nox-hardhat-plugin`](../plugin) via a pnpm
+workspace link to demonstrate how to build and test an [ERC-7984] confidential
+fungible token backed by the Nox TEE.
+
+`contracts/MyConfidentialToken.sol` extends `ERC7984` from
+`@iexec-nox/nox-confidential-contracts`.
 
 ## Getting started
-
-To run this project, you need to install the dependencies and build the plugin:
 
 ```sh
 pnpm install
 pnpm build
 ```
 
-Then, you can run hardhat with:
-
-```sh
-pnpm hardhat my-task
-```
-
-You can also run an example script with:
-
-```sh
-pnpm hardhat run scripts/example-script.ts
-```
-
-And the project's solidity tests with:
+Run the full test suite (Foundry unit tests + Node.js integration tests):
 
 ```sh
 pnpm hardhat test
 ```
 
-## What's inside the project?
+The plugin transparently:
 
-This is a minimal Hardhat 3 project that only has the built-in functionality of Hardhat and your plugin.
+1. compiles the project (including `NoxCompute` pulled from
+   `@iexec-nox/nox-protocol-contracts`),
+2. starts a Hardhat node on `0.0.0.0:8545`,
+3. injects `NoxCompute` at its well-known address and initializes it,
+4. brings up the offchain stack (KMS, ingestor, runner, handle gateway, NATS,
+   S3) via Docker Compose,
+5. runs your tests,
+6. tears everything down.
 
-This means that you don't have `ethers,` `viem`, `mocha`, nor the Node.js test runner plugins.
-
-Please install whichever dependency or plugin you need in here. This package won't be published, so you have complete freedom to do whatever you want.
+[ERC-7984]: https://eips.ethereum.org/EIPS/eip-7984

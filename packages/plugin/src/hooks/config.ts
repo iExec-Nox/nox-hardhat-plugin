@@ -1,6 +1,5 @@
 import type { HardhatUserConfig } from "hardhat/types/config";
 import type { ConfigHooks } from "hardhat/types/hooks";
-import { resolvePluginConfig, validatePluginConfig } from "../config.js";
 
 const NOX_COMPUTE_SOL =
   "@iexec-nox/nox-protocol-contracts/contracts/NoxCompute.sol";
@@ -11,17 +10,6 @@ export default async (): Promise<Partial<ConfigHooks>> => {
     // plugin can read its deployedBytecode at `hardhat_setCode` time.
     async extendUserConfig(userConfig, next) {
       return addNoxComputeToNpmFilesToBuild(await next(userConfig));
-    },
-    async validateUserConfig(userConfig) {
-      return validatePluginConfig(userConfig);
-    },
-    async resolveUserConfig(userConfig, resolveConfigurationVariable, next) {
-      const partiallyResolvedConfig = await next(
-        userConfig,
-        resolveConfigurationVariable,
-      );
-
-      return resolvePluginConfig(userConfig, partiallyResolvedConfig);
     },
   };
 

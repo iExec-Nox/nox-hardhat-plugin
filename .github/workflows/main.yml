@@ -1,4 +1,4 @@
-name: CI
+name: Nox Hardhat plugin CI
 
 on:
   push:
@@ -8,12 +8,12 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: ${{github.workflow}}-${{github.ref}}
+  group: ${{github.ref}}-ci
   cancel-in-progress: true
 
 jobs:
   ci:
-    name: ci (node ${{ matrix.node-version }})
+    name: Nox Hardhat plugin Default (node ${{ matrix.node-version }})
     runs-on: ubuntu-latest
     strategy:
       matrix:
