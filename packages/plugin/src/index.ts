@@ -1,14 +1,21 @@
-import { task } from "hardhat/config";
+import { overrideTask, task } from "hardhat/config";
 import { ArgumentType } from "hardhat/types/arguments";
 import type { HardhatPlugin } from "hardhat/types/plugins";
-
 import "./type-extensions.js";
+export {
+  NOX_COMPUTE_PROXY_ADDRESS,
+  NOX_COMPUTE_IMPL_ADDRESS,
+  NOX_GATEWAY_ADDRESS,
+  NOX_KMS_PUBLIC_KEY,
+  HANDLE_GATEWAY_URL,
+  RPC_URL,
+} from "./nox-config.js";
 
 const plugin: HardhatPlugin = {
+  // TODO: rename id to `nox-hardhat-plugin` once the package is renamed
   id: "hardhat-my-plugin",
   hookHandlers: {
     config: () => import("./hooks/config.js"),
-    network: () => import("./hooks/network.js"),
   },
   tasks: [
     task("my-task", "Prints a greeting.")
@@ -20,11 +27,8 @@ const plugin: HardhatPlugin = {
       })
       .setAction(() => import("./tasks/my-task.js"))
       .build(),
-    task("nox:start-stack", "Start the local Nox docker stack.")
-      .setAction(() => import("./tasks/start-stack.js"))
-      .build(),
-    task("nox:stop-stack", "Stop the local Nox docker stack.")
-      .setAction(() => import("./tasks/stop-stack.js"))
+    overrideTask("test")
+      .setAction(() => import("./tasks/test-override.js"))
       .build(),
   ],
 };
