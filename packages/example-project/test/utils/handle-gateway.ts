@@ -1,6 +1,6 @@
 import { setTimeout as sleep } from "node:timers/promises";
 import { type Hex } from "viem";
-import { HANDLE_GATEWAY_URL } from "../config.js";
+import { HANDLE_GATEWAY_URL } from "@iexec-nox/nox-hardhat-plugin";
 
 /**
  * Polls the Nox handle gateway until `handle` is reported as resolved (i.e.
