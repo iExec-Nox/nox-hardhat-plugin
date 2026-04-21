@@ -26,9 +26,7 @@ const testWrapperAction: TaskOverrideActionFunction = async (
 
     await runSuper(args);
   } catch (err) {
-    await dumpOffchainServicesLogs().catch(() => {
-      /* best-effort diagnostic */
-    });
+    await dumpOffchainServicesLogs().catch(() => {});
     throw err;
   } finally {
     await stopOffchainServices().catch(() => {
