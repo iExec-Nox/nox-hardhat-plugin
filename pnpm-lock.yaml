@@ -18,8 +18,8 @@ importers:
         specifier: 0.1.0
         version: 0.1.0
       '@iexec-nox/nox-protocol-contracts':
-        specifier: 0.2.1
-        version: 0.2.1
+        specifier: 0.2.2
+        version: 0.2.2
       viem:
         specifier: ^2.46.3
         version: 2.48.1(typescript@5.8.3)(zod@3.25.76)
@@ -400,9 +400,6 @@ packages:
 
   '@iexec-nox/nox-protocol-contracts@0.1.0':
     resolution: {integrity: sha512-sQ/yCpOXjUE2X5YmCmPKNLYfU00xTZSTI+yewVHOVZTdGA35QOPzOBg2Q8Qm++KLdPwc8FC0efc2jHqxMR83bg==}
-
-  '@iexec-nox/nox-protocol-contracts@0.2.1':
-    resolution: {integrity: sha512-aHcNStJ4YLEDUIJ6ixh0suZ6Ub4HEwuUhUk1rgJcDQTJnSJv7YxW+eS0a1HdP/akbfFyAn24er9JrgasEnOaew==}
 
   '@iexec-nox/nox-protocol-contracts@0.2.2':
     resolution: {integrity: sha512-O9K/N+Abpc+xDAUfFUuNzuKIt6hcbDTamo2t/Q7Cqrx4B/ipj4EGybY/ExWuD6Gc4/ZfRWOh6FbXWv/JFmcpVw==}
@@ -2418,12 +2415,6 @@ snapshots:
       '@openzeppelin/contracts': 5.6.1
 
   '@iexec-nox/nox-protocol-contracts@0.1.0':
-    dependencies:
-      '@openzeppelin/contracts': 5.6.1
-      '@openzeppelin/contracts-upgradeable': 5.6.1(@openzeppelin/contracts@5.6.1)
-      encrypted-types: 0.0.4
-
-  '@iexec-nox/nox-protocol-contracts@0.2.1':
     dependencies:
       '@openzeppelin/contracts': 5.6.1
       '@openzeppelin/contracts-upgradeable': 5.6.1(@openzeppelin/contracts@5.6.1)

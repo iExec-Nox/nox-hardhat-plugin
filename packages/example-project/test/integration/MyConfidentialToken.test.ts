@@ -1,6 +1,5 @@
 import { describe, it } from "node:test";
 import { network } from "hardhat";
-import type { Hex } from "viem";
 import { waitForHandleResolved } from "../utils/handle-gateway.js";
 
 const INITIAL_SUPPLY = 1000n;
@@ -22,8 +21,7 @@ describe("MyConfidentialToken end-to-end", () => {
         INITIAL_SUPPLY,
       ]);
 
-      const totalSupplyHandle =
-        (await token.read.confidentialTotalSupply()) as Hex;
+      const totalSupplyHandle = await token.read.confidentialTotalSupply();
       await waitForHandleResolved(totalSupplyHandle);
 
       // TODO: use the Nox SDK here to decrypt the totalSupply handle and
