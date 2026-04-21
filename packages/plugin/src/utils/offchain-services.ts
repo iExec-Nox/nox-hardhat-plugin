@@ -1,5 +1,7 @@
+import { writeFile } from "node:fs/promises";
+import path from "node:path";
 import { downAll, logs as composeLogs, upAll } from "docker-compose";
-import { COMPOSE_OPTS, ALL_SERVICES } from "../config.js";
+import { COMPOSE_OPTS, ALL_SERVICES } from "../nox-config.js";
 
 /** Bring the offchain stack up and wait for every service to be healthy. */
 export async function startOffchainServices(): Promise<void> {
@@ -18,7 +20,19 @@ export async function stopOffchainServices(): Promise<void> {
   });
 }
 
-/** Dump logs of every offchain service — intended for failure diagnostics. */
+/**
+ * Dump logs of every offchain service to `offchain-services.log` (cwd of the
+ * Hardhat process), intended for failure diagnostics. Stdout stays mostly
+ * clean so the Hardhat test report remains readable, while the full trace is
+ * available on disk.
+ */
 export async function dumpOffchainServicesLogs(): Promise<void> {
-  await composeLogs(ALL_SERVICES, COMPOSE_OPTS);
+  const result = await composeLogs(ALL_SERVICES, {
+    ...COMPOSE_OPTS,
+    log: false,
+    commandOptions: ["--no-color", "--timestamps"],
+  });
+  const logPath = path.resolve(process.cwd(), "offchain-services.log");
+  await writeFile(logPath, result.out + result.err, "utf-8");
+  console.log(`[nox] Offchain services logs written to ${logPath}`);
 }

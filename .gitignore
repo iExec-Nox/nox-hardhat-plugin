@@ -1,2 +1,3 @@
 # Node modules
 /node_modules
+**/example-project/offchain-services.log

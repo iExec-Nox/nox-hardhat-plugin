@@ -1,6 +1,16 @@
 import { overrideTask } from "hardhat/config";
 import type { HardhatPlugin } from "hardhat/types/plugins";
 
+import "./type-extensions.js";
+export {
+  HANDLE_GATEWAY_URL,
+  NOX_COMPUTE_IMPL_ADDRESS,
+  NOX_COMPUTE_PROXY_ADDRESS,
+  NOX_GATEWAY_ADDRESS,
+  NOX_KMS_PUBLIC_KEY,
+  RPC_URL,
+} from "./nox-config.js";
+
 const plugin: HardhatPlugin = {
   id: "nox-hardhat-plugin",
   hookHandlers: {
