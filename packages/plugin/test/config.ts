@@ -1,6 +1,5 @@
-import { describe, it } from "node:test";
-
 import assert from "node:assert/strict";
+import { describe, it } from "node:test";
 import { HardhatConfig, HardhatUserConfig } from "hardhat/types/config";
 import { resolvePluginConfig, validatePluginConfig } from "../src/config.js";
 
@@ -8,86 +7,65 @@ describe("MyPlugin config", () => {
   describe("Config validation", () => {
     describe("Valid cases", () => {
       it("Should consider an empty config as valid", async () => {
-        const validationErrors = await validatePluginConfig({});
-
-        assert.equal(validationErrors.length, 0);
+        assert.equal((await validatePluginConfig({})).length, 0);
       });
 
       it("Should ignore errors in other parts of the config", async () => {
-        const validationErrors = await validatePluginConfig({
-          networks: {
-            foo: {
-              type: "http",
-              url: "INVALID URL",
-            },
-          },
+        const errors = await validatePluginConfig({
+          networks: { foo: { type: "http", url: "INVALID URL" } },
         });
-
-        assert.equal(validationErrors.length, 0);
+        assert.equal(errors.length, 0);
       });
 
       it("Should accept an empty myConfig object", async () => {
-        const validationErrors = await validatePluginConfig({
-          myConfig: {},
-        });
-
-        assert.equal(validationErrors.length, 0);
+        assert.equal((await validatePluginConfig({ myConfig: {} })).length, 0);
       });
 
-      it("Should accept an non-empty greeting", async () => {
-        const validationErrors = await validatePluginConfig({
-          myConfig: {
-            greeting: "Hola",
-          },
-        });
+      it("Should accept skipTestOverride=true", async () => {
+        assert.equal(
+          (
+            await validatePluginConfig({
+              myConfig: { skipTestOverride: true },
+            })
+          ).length,
+          0,
+        );
+      });
 
-        assert.equal(validationErrors.length, 0);
+      it("Should accept skipTestOverride=false", async () => {
+        assert.equal(
+          (
+            await validatePluginConfig({
+              myConfig: { skipTestOverride: false },
+            })
+          ).length,
+          0,
+        );
       });
     });
 
     describe("Invalid cases", () => {
-      // Many invalid cases are type-unsafe, as we have to trick TypeScript into
-      // allowing something that is invalid
-      it("Should reject a myConfig field with an invalid type", async () => {
-        const validationErrors = await validatePluginConfig({
-          // @ts-expect-error We're intentionally passing a string here
+      it("Should reject a myConfig field that isn't an object", async () => {
+        const errors = await validatePluginConfig({
+          // @ts-expect-error intentionally invalid
           myConfig: "INVALID",
         });
-
-        assert.deepEqual(validationErrors, [
-          {
-            path: ["myConfig"],
-            message: "Expected an object with an optional greeting.",
-          },
+        assert.deepEqual(errors, [
+          { path: ["myConfig"], message: "Expected an object." },
         ]);
       });
 
-      it("Should reject a myConfig field with an invalid greeting", async () => {
-        const validationErrors = await validatePluginConfig({
+      it("Should reject a non-boolean skipTestOverride", async () => {
+        const errors = await validatePluginConfig({
           myConfig: {
-            greeting: 123 as unknown as string,
+            // @ts-expect-error intentionally invalid
+            skipTestOverride: "yes",
           },
         });
-
-        assert.deepEqual(validationErrors, [
+        assert.deepEqual(errors, [
           {
-            path: ["myConfig", "greeting"],
-            message: "Expected a non-empty string.",
-          },
-        ]);
-      });
-
-      it("Should reject a myConfig field with an empty greeting", async () => {
-        const validationErrors = await validatePluginConfig({
-          myConfig: {
-            greeting: "",
-          },
-        });
-
-        assert.deepEqual(validationErrors, [
-          {
-            path: ["myConfig", "greeting"],
-            message: "Expected a non-empty string.",
+            path: ["myConfig", "skipTestOverride"],
+            message: "Expected a boolean.",
           },
         ]);
       });
@@ -95,49 +73,25 @@ describe("MyPlugin config", () => {
   });
 
   describe("Config resolution", () => {
-    // The config resolution is always type-unsafe, as your plugin is extending
-    // the HardhatConfig type, but the partially resolved config isn't aware of
-    // your plugin's extensions. You are responsible for ensuring that they are
-    // defined correctly during the resolution process.
-    //
-    // We recommend testing using an artificial partially resolved config, as
-    // we do here, but taking care that the fields that your resolution logic
-    // depends on are defined and valid.
-
-    it("Should resolve a config without a myConfig field", async () => {
-      const userConfig: HardhatUserConfig = {};
-      const partiallyResolvedConfig = {} as HardhatConfig;
-
-      const resolvedConfig = await resolvePluginConfig(
-        userConfig,
-        partiallyResolvedConfig,
-      );
-
-      assert.deepEqual(resolvedConfig.myConfig, { greeting: "Hello" });
+    it("Should default skipTestOverride to false when myConfig is missing", async () => {
+      const resolved = await resolvePluginConfig({}, {} as HardhatConfig);
+      assert.deepEqual(resolved.myConfig, { skipTestOverride: false });
     });
 
-    it("Should resolve a config with an empty myConfig field", async () => {
-      const userConfig: HardhatUserConfig = { myConfig: {} };
-      const partiallyResolvedConfig = {} as HardhatConfig;
-
-      const resolvedConfig = await resolvePluginConfig(
-        userConfig,
-        partiallyResolvedConfig,
+    it("Should default skipTestOverride to false on empty myConfig", async () => {
+      const resolved = await resolvePluginConfig(
+        { myConfig: {} } satisfies HardhatUserConfig,
+        {} as HardhatConfig,
       );
-
-      assert.deepEqual(resolvedConfig.myConfig, { greeting: "Hello" });
+      assert.deepEqual(resolved.myConfig, { skipTestOverride: false });
     });
 
-    it("Should resolve a config using the provided greeting", async () => {
-      const userConfig: HardhatUserConfig = { myConfig: { greeting: "Hola" } };
-      const partiallyResolvedConfig = {} as HardhatConfig;
-
-      const resolvedConfig = await resolvePluginConfig(
-        userConfig,
-        partiallyResolvedConfig,
+    it("Should pass skipTestOverride=true through", async () => {
+      const resolved = await resolvePluginConfig(
+        { myConfig: { skipTestOverride: true } } satisfies HardhatUserConfig,
+        {} as HardhatConfig,
       );
-
-      assert.deepEqual(resolvedConfig.myConfig, { greeting: "Hola" });
+      assert.deepEqual(resolved.myConfig, { skipTestOverride: true });
     });
   });
 });

@@ -7,14 +7,19 @@ import {
   stopOffchainServices,
 } from "../utils/offchain-services.js";
 
-// TODO: expose a user-config option (e.g. `myConfig.skipTestOverride?: boolean`)
-// that makes this wrapper a no-op — i.e. just call `runSuper(args)` without
-// booting the Nox stack or etching NoxCompute.
 const testWrapperAction: TaskOverrideActionFunction = async (
   args,
   hre,
   runSuper,
 ) => {
+  if (hre.config.myConfig.skipTestOverride) {
+    console.log(
+      "[nox] myConfig.skipTestOverride=true — running `hardhat test` without the Nox stack.",
+    );
+    await runSuper(args);
+    return;
+  }
+
   let server: JsonRpcServer | undefined;
   try {
     // TODO: check how to make the server replace the one started by original test task to be able to use hre.connection
