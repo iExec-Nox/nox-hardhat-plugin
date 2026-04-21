@@ -5,20 +5,20 @@ import type { HardhatUserConfigValidationError } from "hardhat/types/hooks";
 export async function validatePluginConfig(
   userConfig: HardhatUserConfig,
 ): Promise<HardhatUserConfigValidationError[]> {
-  const myConfig = userConfig.myConfig;
-  if (myConfig === undefined) return [];
+  const nox = userConfig.nox;
+  if (nox === undefined) return [];
 
-  if (typeof myConfig !== "object") {
-    return [{ path: ["myConfig"], message: "Expected an object." }];
+  if (typeof nox !== "object") {
+    return [{ path: ["nox"], message: "Expected an object." }];
   }
 
   if (
-    myConfig.skipTestOverride !== undefined &&
-    typeof myConfig.skipTestOverride !== "boolean"
+    nox.skipTestOverride !== undefined &&
+    typeof nox.skipTestOverride !== "boolean"
   ) {
     return [
       {
-        path: ["myConfig", "skipTestOverride"],
+        path: ["nox", "skipTestOverride"],
         message: "Expected a boolean.",
       },
     ];
@@ -33,8 +33,8 @@ export async function resolvePluginConfig(
 ): Promise<HardhatConfig> {
   return {
     ...partiallyResolvedConfig,
-    myConfig: {
-      skipTestOverride: userConfig.myConfig?.skipTestOverride ?? false,
+    nox: {
+      skipTestOverride: userConfig.nox?.skipTestOverride ?? false,
     },
   };
 }

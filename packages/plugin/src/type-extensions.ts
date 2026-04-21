@@ -1,12 +1,12 @@
-import { MyPluginConfig, MyPluginUserConfig } from "./types.js";
+import { NoxPluginConfig, NoxPluginUserConfig } from "./types.js";
 
 import "hardhat/types/config";
 declare module "hardhat/types/config" {
   interface HardhatUserConfig {
-    myConfig?: MyPluginUserConfig;
+    nox?: NoxPluginUserConfig;
   }
 
   interface HardhatConfig {
-    myConfig: MyPluginConfig;
+    nox: NoxPluginConfig;
   }
 }

@@ -9,13 +9,12 @@ export default defineConfig({
     default: {
       type: "edr-simulated",
       chainType: "op",
-      // TODO: make this configurable — the offchain stack in the plugin's
-      // `offchain-services/dev.env` (NOX_CHAIN_ID + NOX_COMPUTE_CONTRACT) also
-      // needs to follow whatever chain id is picked here.
-      chainId: 421614,
-      allowUnlimitedContractSize: true,
     },
-    // HTTP connection to the plugin-hosted node — used by e2e tests.
+    // TODO: drop this network once the plugin adapts to the user-selected
+    // network (EDR simulated, mainnet fork, external http, …) and exposes
+    // it directly via `hre.network.connect()`. Today the plugin hardcodes
+    // an HTTP server on port 8545 so the e2e tests need a matching named
+    // network to reach it.
     localhost: {
       type: "http",
       chainType: "op",

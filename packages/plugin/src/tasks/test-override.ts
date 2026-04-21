@@ -12,9 +12,9 @@ const testWrapperAction: TaskOverrideActionFunction = async (
   hre,
   runSuper,
 ) => {
-  if (hre.config.myConfig.skipTestOverride) {
+  if (hre.config.nox.skipTestOverride) {
     console.log(
-      "[nox] myConfig.skipTestOverride=true — running `hardhat test` without the Nox stack.",
+      "[nox] nox.skipTestOverride=true — running `hardhat test` without the Nox stack.",
     );
     await runSuper(args);
     return;
@@ -22,7 +22,16 @@ const testWrapperAction: TaskOverrideActionFunction = async (
 
   let server: JsonRpcServer | undefined;
   try {
-    // TODO: check how to make the server replace the one started by original test task to be able to use hre.connection
+    // TODO: expose the user-selected network (EDR simulated, mainnet fork,
+    // external http, …) over HTTP instead of hardcoding `createServer` on
+    // the default network / port 8545. The plugin should follow whatever
+    // `--network` the consumer project chose (e.g. a fork of Arbitrum
+    // Sepolia where NoxCompute is already deployed) so that:
+    //   - Docker services read on-chain state matching the user's setup
+    //   - `setCode` can be skipped when the target chain already has
+    //     NoxCompute (fork case)
+    //   - test files reach it via plain `hre.network.connect()` with no
+    //     hardcoded URL / port.
     server = await hre.network.createServer(undefined, "0.0.0.0", 8545);
     const { address, port } = await server.listen();
     console.log(`[nox] Hardhat node listening on ${address}:${port}`);
