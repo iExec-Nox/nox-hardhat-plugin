@@ -22,6 +22,7 @@ const testWrapperAction: TaskOverrideActionFunction = async (
 
   let server: JsonRpcServer | undefined;
   try {
+    // TODO: check how to make the server replace the one started by original test task to be able to use hre.connection
     server = await hre.network.createServer(undefined, "0.0.0.0", 8545);
     const { address, port } = await server.listen();
     console.log(`[nox] Hardhat node listening on ${address}:${port}`);
