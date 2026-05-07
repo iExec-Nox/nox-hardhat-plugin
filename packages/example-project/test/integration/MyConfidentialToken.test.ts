@@ -21,7 +21,8 @@ describe("MyConfidentialToken end-to-end", () => {
         INITIAL_SUPPLY,
       ]);
 
-      const totalSupplyHandle = await token.read.confidentialTotalSupply();
+      const totalSupplyHandle =
+        (await token.read.confidentialTotalSupply()) as `0x${string}`;
       await waitForHandleResolved(totalSupplyHandle);
 
       // TODO: use the Nox SDK here to decrypt the totalSupply handle and
