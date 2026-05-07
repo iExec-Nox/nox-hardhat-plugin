@@ -44,7 +44,14 @@ const testWrapperAction: TaskOverrideActionFunction = async (
     await deployNoxCompute(`http://127.0.0.1:${port}`);
     await startOffchainServices();
 
+    // node:test resolves without throwing when tests fail, it sets
+    // process.exitCode instead. Capture it before/after to detect
+    // failures and dump logs for diagnostics.
+    const exitCodeBefore = process.exitCode;
     await runSuper(args);
+    if (process.exitCode !== 0 && process.exitCode !== exitCodeBefore) {
+      await dumpOffchainServicesLogs().catch(() => {});
+    }
   } catch (err) {
     await dumpOffchainServicesLogs().catch(() => {});
     throw err;
