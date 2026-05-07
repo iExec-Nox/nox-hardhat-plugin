@@ -1,6 +1,6 @@
 import hardhatToolboxViemPlugin from "@nomicfoundation/hardhat-toolbox-viem";
 import { defineConfig } from "hardhat/config";
-import noxPlugin from "@iexec-nox/nox-hardhat-plugin";
+import noxPlugin, { NOX_CHAIN_ID } from "@iexec-nox/nox-hardhat-plugin";
 
 export default defineConfig({
   plugins: [hardhatToolboxViemPlugin, noxPlugin],
@@ -18,7 +18,7 @@ export default defineConfig({
     localhost: {
       type: "http",
       chainType: "op",
-      chainId: 421614,
+      chainId: NOX_CHAIN_ID,
       url: "http://127.0.0.1:8545",
     },
   },

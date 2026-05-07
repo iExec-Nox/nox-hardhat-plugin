@@ -1,5 +1,6 @@
 import type { JsonRpcServer } from "hardhat/types/network";
 import type { TaskOverrideActionFunction } from "hardhat/types/tasks";
+import { NOX_CHAIN_ID } from "../nox-config.js";
 import { deployNoxCompute } from "../utils/nox-compute.js";
 import {
   dumpOffchainServicesLogs,
@@ -32,7 +33,11 @@ const testWrapperAction: TaskOverrideActionFunction = async (
     //     NoxCompute (fork case)
     //   - test files reach it via plain `hre.network.connect()` with no
     //     hardcoded URL / port.
-    server = await hre.network.createServer(undefined, "0.0.0.0", 8545);
+    server = await hre.network.createServer(
+      { override: { chainId: NOX_CHAIN_ID } },
+      "0.0.0.0",
+      8545,
+    );
     const { address, port } = await server.listen();
     console.log(`[nox] Hardhat node listening on ${address}:${port}`);
 
