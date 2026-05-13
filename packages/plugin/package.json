@@ -1,7 +1,7 @@
 {
-  "name": "hardhat-my-plugin",
-  "version": "1.0.0",
-  "description": "Hardhat 3 plugin template",
+  "name": "@iexec-nox/nox-hardhat-plugin",
+  "version": "0.1.0",
+  "description": "Hardhat 3 plugin that spins up the Nox offchain stack and deploys NoxCompute for local end-to-end tests.",
   "license": "MIT",
   "type": "module",
   "types": "dist/src/index.d.ts",
@@ -13,12 +13,14 @@
     "smart-contracts",
     "hardhat",
     "hardhat3",
-    "hardhat-plugin"
+    "hardhat-plugin",
+    "nox",
+    "confidential"
   ],
   "scripts": {
     "lint": "pnpm prettier --check && pnpm eslint",
     "lint:fix": "pnpm prettier --write && pnpm eslint --fix",
-    "eslint": "eslint \"src/**/*.ts\" \"test/**/*.ts\"",
+    "eslint": "eslint \"src/**/*.ts\"",
     "prettier": "prettier \"**/*.{ts,js,md,json}\"",
     "test": "node --import tsx/esm --test \"test/**/*.ts\"",
     "build": "tsc --build .",
@@ -54,5 +56,13 @@
   },
   "peerDependencies": {
     "hardhat": "^3.4.0"
+  },
+  "homepage": "https://github.com/iExec-Nox/nox-hardhat-plugin#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iExec-Nox/nox-hardhat-plugin.git"
+  },
+  "bugs": {
+    "url": "https://github.com/iExec-Nox/nox-hardhat-plugin/issues"
   }
 }

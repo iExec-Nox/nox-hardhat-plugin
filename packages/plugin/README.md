@@ -1,57 +1,50 @@
-# `hardhat-my-plugin`
+# `@iexec-nox/nox-hardhat-plugin`
 
-This is an example plugin that adds a task that prints a greeting.
+Hardhat 3 plugin that spins up the Nox offchain stack (KMS, ingestor, runner,
+handle gateway, NATS, S3) with Docker Compose and injects the `NoxCompute`
+contract bytecode on the local node, so tests and scripts can exercise the full
+Nox protocol end-to-end.
 
 ## Installation
 
-To install this plugin, run the following command:
-
 ```bash
-npm install --save-dev hardhat-my-plugin
+pnpm add -D @iexec-nox/nox-hardhat-plugin
 ```
 
-In your `hardhat.config.ts` file, import the plugin and add it to the `plugins` array:
+In your `hardhat.config.ts`:
 
 ```ts
 import { defineConfig } from "hardhat/config";
-import myPlugin from "hardhat-my-plugin";
+import hardhatToolboxViemPlugin from "@nomicfoundation/hardhat-toolbox-viem";
+import noxPlugin from "@iexec-nox/nox-hardhat-plugin";
 
 export default defineConfig({
-  plugins: [myPlugin],
+  plugins: [hardhatToolboxViemPlugin, noxPlugin],
+  solidity: "0.8.29",
+  networks: {
+    default: {
+      type: "edr-simulated",
+      chainType: "op",
+      allowUnlimitedContractSize: true,
+    },
+  },
 });
 ```
 
 ## Usage
 
-The plugin adds a new task called `my-task`. To run it, use the this command:
+The plugin overrides the `test` task so that, before running your tests, it:
+
+1. Compiles the project (including the `NoxCompute` contract pulled from
+   `@iexec-nox/nox-protocol-contracts`).
+2. Starts a Hardhat node bound to `0.0.0.0:8545`.
+3. Injects the compiled `NoxCompute` bytecode at its well-known address via
+   `hardhat_setCode` and initializes it (owner + KMS public key + gateway).
+4. Brings up the Nox offchain stack via Docker Compose and waits for every
+   service to be healthy.
 
 ```bash
-npx hardhat my-task
+pnpm hardhat test
 ```
 
-You should see the following output:
-
-```
-Hello, Hardhat!
-```
-
-### Configuration
-
-You can configure the greeting that's printed by using the `myConfig` field in your Hardhat config. For example, you can have this config:
-
-```ts
-import { defineConfig } from "hardhat/config";
-import myPlugin from "hardhat-my-plugin";
-
-export default defineConfig({
-  plugins: [myPlugin],
-  myConfig: {
-    greeting: "Hola",
-  },
-  //...
-});
-```
-
-### Network logs
-
-This plugin also adds some example code to log different network events. To see it in action, all you need to do is run your Hardhat tests, deployment, or a script.
+The stack is torn down when the test run finishes (or on failure).

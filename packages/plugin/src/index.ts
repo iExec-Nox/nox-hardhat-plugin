@@ -2,6 +2,7 @@ import { overrideTask } from "hardhat/config";
 import type { HardhatPlugin } from "hardhat/types/plugins";
 import "./type-extensions.js";
 export {
+  NOX_CHAIN_ID,
   NOX_COMPUTE_PROXY_ADDRESS,
   NOX_COMPUTE_IMPL_ADDRESS,
   NOX_GATEWAY_ADDRESS,
@@ -11,8 +12,7 @@ export {
 } from "./nox-config.js";
 
 const plugin: HardhatPlugin = {
-  // TODO: rename id to `nox-hardhat-plugin` once the package is renamed
-  id: "hardhat-my-plugin",
+  id: "nox-hardhat-plugin",
   hookHandlers: {
     config: () => import("./hooks/config.js"),
   },

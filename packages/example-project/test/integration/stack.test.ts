@@ -4,7 +4,7 @@ import {
   HANDLE_GATEWAY_URL,
   NOX_COMPUTE_PROXY_ADDRESS,
   RPC_URL,
-} from "hardhat-my-plugin";
+} from "@iexec-nox/nox-hardhat-plugin";
 import { createPublicClient, http } from "viem";
 
 const client = createPublicClient({ transport: http(RPC_URL) });

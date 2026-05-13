@@ -14,10 +14,19 @@ importers:
 
   packages/example-project:
     dependencies:
+      '@iexec-nox/nox-confidential-contracts':
+        specifier: 0.1.0
+        version: 0.1.0
+      '@iexec-nox/nox-protocol-contracts':
+        specifier: 0.2.2
+        version: 0.2.2
       viem:
         specifier: ^2.46.3
         version: 2.48.1(typescript@5.8.3)(zod@3.25.76)
     devDependencies:
+      '@iexec-nox/nox-hardhat-plugin':
+        specifier: workspace:*
+        version: link:../plugin
       '@nomicfoundation/hardhat-toolbox-viem':
         specifier: ^5.0.3
         version: 5.0.4(df07e4bff46791463bd8ad7a262e05fa)
@@ -33,9 +42,6 @@ importers:
       hardhat:
         specifier: ^3.4.0
         version: 3.4.0
-      hardhat-my-plugin:
-        specifier: workspace:*
-        version: link:../plugin
       typescript:
         specifier: ~5.8.0
         version: 5.8.3
@@ -388,6 +394,12 @@ packages:
   '@humanwhocodes/retry@0.4.3':
     resolution: {integrity: sha512-bV0Tgo9K4hfPCek+aMAn81RppFKv2ySDQeMoSZuvTASywNTnVJCArCZE2FWqpvIatKu7VMRLWlR1EazvVhDyhQ==}
     engines: {node: '>=18.18'}
+
+  '@iexec-nox/nox-confidential-contracts@0.1.0':
+    resolution: {integrity: sha512-Wv8ZOIk7xIysXTexpLACbfp1X5bqy91ooqq8MJkFkobvsgUd4eqbI3vE23Jo8zxTaQzATNzOg0oNV63H/A6thQ==}
+
+  '@iexec-nox/nox-protocol-contracts@0.1.0':
+    resolution: {integrity: sha512-sQ/yCpOXjUE2X5YmCmPKNLYfU00xTZSTI+yewVHOVZTdGA35QOPzOBg2Q8Qm++KLdPwc8FC0efc2jHqxMR83bg==}
 
   '@iexec-nox/nox-protocol-contracts@0.2.2':
     resolution: {integrity: sha512-O9K/N+Abpc+xDAUfFUuNzuKIt6hcbDTamo2t/Q7Cqrx4B/ipj4EGybY/ExWuD6Gc4/ZfRWOh6FbXWv/JFmcpVw==}
@@ -2396,6 +2408,17 @@ snapshots:
   '@humanwhocodes/module-importer@1.0.1': {}
 
   '@humanwhocodes/retry@0.4.3': {}
+
+  '@iexec-nox/nox-confidential-contracts@0.1.0':
+    dependencies:
+      '@iexec-nox/nox-protocol-contracts': 0.1.0
+      '@openzeppelin/contracts': 5.6.1
+
+  '@iexec-nox/nox-protocol-contracts@0.1.0':
+    dependencies:
+      '@openzeppelin/contracts': 5.6.1
+      '@openzeppelin/contracts-upgradeable': 5.6.1(@openzeppelin/contracts@5.6.1)
+      encrypted-types: 0.0.4
 
   '@iexec-nox/nox-protocol-contracts@0.2.2':
     dependencies:

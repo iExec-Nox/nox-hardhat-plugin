@@ -2,6 +2,10 @@ import { createRequire } from "node:module";
 import path from "node:path";
 import { IDockerComposeOptions } from "docker-compose";
 
+// Arbitrum Sepolia chain ID — used both by the EDR server and the offchain
+// services (NOX_CHAIN_ID in dev.env).
+export const NOX_CHAIN_ID = 421614;
+
 // Canonical NoxCompute addresses on Arbitrum Sepolia — the plugin etches the
 // production runtime bytecode at these exact addresses so that contracts that
 // rely on `Nox.noxComputeContract()` (from `@iexec-nox/nox-protocol-contracts`)

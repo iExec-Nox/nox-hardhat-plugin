@@ -11,7 +11,6 @@ export default async (): Promise<Partial<ConfigHooks>> => {
         userConfig,
         resolveConfigurationVariable,
       );
-
       return resolvePluginConfig(userConfig, partiallyResolvedConfig);
     },
   };
