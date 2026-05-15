@@ -1,3 +1,9 @@
 # Node modules
 /node_modules
 **/example-project/offchain-services.log
+
+# IA generated files
+CLAUDE.md
+.agents
+.claude
+skills-lock.json

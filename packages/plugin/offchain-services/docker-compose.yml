@@ -14,9 +14,8 @@ networks:
     name: backend
 
 services:
-  # TODO use docker.io registry
   nox-kms:
-    image: docker-regis.iex.ec/nox-kms:${NOX_KMS_VERSION}
+    image: iexechub/nox-kms:${NOX_KMS_VERSION}
     environment:
       - NOX_KMS_CHAIN__CHAIN_ID=${NOX_CHAIN_ID}
       - NOX_KMS_CHAIN__RPC_URL=${HOST_RPC_URL}
@@ -58,7 +57,7 @@ services:
       retries: 15
 
   s3-init:
-    image: minio/mc:latest
+    image: minio/mc:RELEASE.2025-08-13T08-35-41Z
     networks:
       - backend
     entrypoint: >
@@ -75,7 +74,7 @@ services:
         condition: service_healthy
 
   nox-handle-gateway:
-    image: docker-regis.iex.ec/nox-handle-gateway:${NOX_HANDLE_GATEWAY_VERSION}
+    image: iexechub/nox-handle-gateway:${NOX_HANDLE_GATEWAY_VERSION}
     environment:
       - NOX_HANDLE_GATEWAY_CHAIN__ID=${NOX_CHAIN_ID}
       - NOX_HANDLE_GATEWAY_CHAIN__RPC_URL=${HOST_RPC_URL}
@@ -136,7 +135,7 @@ services:
       retries: 5
 
   nox-ingestor:
-    image: docker-regis.iex.ec/nox-ingestor:${NOX_INGESTOR_VERSION}
+    image: iexechub/nox-ingestor:${NOX_INGESTOR_VERSION}
     environment:
       - NOX_INGESTOR_CHAIN__CHAIN_ID=${NOX_CHAIN_ID}
       - NOX_INGESTOR_CHAIN__RPC_ENDPOINT=${HOST_RPC_URL}
@@ -155,7 +154,7 @@ services:
     restart: unless-stopped
 
   nox-runner:
-    image: docker-regis.iex.ec/nox-runner:${NOX_RUNNER_VERSION}
+    image: iexechub/nox-runner:${NOX_RUNNER_VERSION}
     environment:
       - NOX_RUNNER_CHAIN_ID=${NOX_CHAIN_ID}
       - NOX_RUNNER_RPC_URL=${HOST_RPC_URL}
