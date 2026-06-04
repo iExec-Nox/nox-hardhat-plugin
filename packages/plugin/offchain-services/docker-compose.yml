@@ -17,11 +17,10 @@ services:
   nox-kms:
     image: iexechub/nox-kms:${NOX_KMS_VERSION}
     environment:
-      - NOX_KMS_CHAIN__CHAIN_ID=${NOX_CHAIN_ID}
-      - NOX_KMS_CHAIN__RPC_URL=${HOST_RPC_URL}
-      - NOX_KMS_CHAIN__NOX_COMPUTE_CONTRACT=${NOX_COMPUTE_CONTRACT}
       - NOX_KMS_WALLET_KEY=${NOX_KMS_WALLET_KEY}
-      - NOX_KMS_ECC_KEY=${NOX_KMS_ECC_KEY}
+      - NOX_KMS_CHAINS__${NOX_CHAIN_ID}__RPC_URL=${HOST_RPC_URL}
+      - NOX_KMS_CHAINS__${NOX_CHAIN_ID}__NOX_COMPUTE_CONTRACT_ADDRESS=${NOX_COMPUTE_CONTRACT}
+      - NOX_KMS_CHAINS__${NOX_CHAIN_ID}__ECC_KEY=${NOX_KMS_ECC_KEY}
       - NOX_KMS_SERVER__HOST=0.0.0.0
       - RUST_LOG=${NOX_KMS_RUST_LOG:-info}
     networks:
@@ -76,19 +75,18 @@ services:
   nox-handle-gateway:
     image: iexechub/nox-handle-gateway:${NOX_HANDLE_GATEWAY_VERSION}
     environment:
-      - NOX_HANDLE_GATEWAY_CHAIN__ID=${NOX_CHAIN_ID}
-      - NOX_HANDLE_GATEWAY_CHAIN__RPC_URL=${HOST_RPC_URL}
-      - NOX_HANDLE_GATEWAY_CHAIN__NOX_COMPUTE_CONTRACT=${NOX_COMPUTE_CONTRACT}
       - NOX_HANDLE_GATEWAY_KMS__URL=http://nox-kms:9000
       - NOX_HANDLE_GATEWAY_KMS__SIGNER_ADDRESS=${NOX_KMS_SIGNER_ADDRESS}
       - NOX_HANDLE_GATEWAY_RUNNER_ADDRESS=${NOX_RUNNER_SIGNER_ADDRESS}
-      - NOX_HANDLE_GATEWAY_S3__ENDPOINT_URL=http://s3:9000
-      - NOX_HANDLE_GATEWAY_S3__ACCESS_KEY=${NOX_S3_ACCESS_KEY}
-      - NOX_HANDLE_GATEWAY_S3__SECRET_KEY=${NOX_S3_SECRET_KEY}
-      - NOX_HANDLE_GATEWAY_S3__BUCKET=${NOX_S3_BUCKET}
-      - NOX_HANDLE_GATEWAY_S3__OBJECT_LOCK_ENABLED=false
-      - NOX_HANDLE_GATEWAY_S3__REGION=eu-west-3
-      - NOX_HANDLE_GATEWAY_SIGNER__WALLET_KEY=${NOX_GATEWAY_WALLET_KEY}
+      - NOX_HANDLE_GATEWAY_CHAINS__${NOX_CHAIN_ID}__RPC_URL=${HOST_RPC_URL}
+      - NOX_HANDLE_GATEWAY_CHAINS__${NOX_CHAIN_ID}__NOX_COMPUTE_CONTRACT_ADDRESS=${NOX_COMPUTE_CONTRACT}
+      - NOX_HANDLE_GATEWAY_CHAINS__${NOX_CHAIN_ID}__WALLET_KEY=${NOX_GATEWAY_WALLET_KEY}
+      - NOX_HANDLE_GATEWAY_CHAINS__${NOX_CHAIN_ID}__S3__ENDPOINT_URL=http://s3:9000
+      - NOX_HANDLE_GATEWAY_CHAINS__${NOX_CHAIN_ID}__S3__ACCESS_KEY=${NOX_S3_ACCESS_KEY}
+      - NOX_HANDLE_GATEWAY_CHAINS__${NOX_CHAIN_ID}__S3__SECRET_KEY=${NOX_S3_SECRET_KEY}
+      - NOX_HANDLE_GATEWAY_CHAINS__${NOX_CHAIN_ID}__S3__BUCKET=${NOX_S3_BUCKET}
+      - NOX_HANDLE_GATEWAY_CHAINS__${NOX_CHAIN_ID}__S3__OBJECT_LOCK_ENABLED=false
+      - NOX_HANDLE_GATEWAY_CHAINS__${NOX_CHAIN_ID}__S3__REGION=eu-west-3
       - NOX_HANDLE_GATEWAY_SERVER__HOST=0.0.0.0
       - NOX_HANDLE_GATEWAY_SERVER__PORT=3000
       - RUST_LOG=${NOX_HANDLE_GATEWAY_RUST_LOG:-info}
@@ -113,54 +111,80 @@ services:
       timeout: 5s
       retries: 5
 
-  nats:
+  nats-1:
     image: nats:2.12-alpine
-    command:
-      [
-        "--jetstream",
-        "--store_dir",
-        "/data",
-        "--http_port",
-        "8222",
-        "-m",
-        "8222",
-      ]
+    command: ["-c", "/etc/nats/nats.conf"]
+    volumes:
+      - ./docker/nats/nats-1.conf:/etc/nats/nats.conf
     networks:
       - backend
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost:8222/healthz"]
-      interval: 1s
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  nats-2:
+    image: nats:2.12-alpine
+    command: ["-c", "/etc/nats/nats.conf"]
+    volumes:
+      - ./docker/nats/nats-2.conf:/etc/nats/nats.conf
+    networks:
+      - backend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8222/healthz"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  nats-3:
+    image: nats:2.12-alpine
+    command: ["-c", "/etc/nats/nats.conf"]
+    volumes:
+      - ./docker/nats/nats-3.conf:/etc/nats/nats.conf
+    networks:
+      - backend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8222/healthz"]
+      interval: 5s
       timeout: 5s
       retries: 5
 
   nox-ingestor:
     image: iexechub/nox-ingestor:${NOX_INGESTOR_VERSION}
     environment:
+      - NOX_INGESTOR_NATS__TLS__ENABLED=false
       - NOX_INGESTOR_CHAIN__CHAIN_ID=${NOX_CHAIN_ID}
       - NOX_INGESTOR_CHAIN__RPC_ENDPOINT=${HOST_RPC_URL}
       - NOX_INGESTOR_CHAIN__CONTRACT_ADDRESS=${NOX_COMPUTE_CONTRACT}
       - NOX_INGESTOR_CHAIN__INITIAL_BLOCK=${NOX_COMPUTE_CONTRACT_BLOCK}
       - NOX_INGESTOR_APP__STATE_PATH=/data/nox_ingestor_state_${NOX_CHAIN_ID}.json
-      - NOX_INGESTOR_NATS__URL=nats://nats:4222
+      - NOX_INGESTOR_NATS__URLS=nats://nats-1:4222,nats://nats-2:4222,nats://nats-3:4222
       - RUST_LOG=${NOX_INGESTOR_RUST_LOG:-info}
     networks:
       - backend
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
-      nats:
+      nats-1:
+        condition: service_healthy
+      nats-2:
+        condition: service_healthy
+      nats-3:
         condition: service_healthy
     restart: unless-stopped
 
   nox-runner:
     image: iexechub/nox-runner:${NOX_RUNNER_VERSION}
     environment:
-      - NOX_RUNNER_CHAIN_ID=${NOX_CHAIN_ID}
-      - NOX_RUNNER_RPC_URL=${HOST_RPC_URL}
-      - NOX_RUNNER_NOX_COMPUTE_CONTRACT_ADDRESS=${NOX_COMPUTE_CONTRACT}
+      - NOX_RUNNER_NATS__TLS__ENABLED=false
+      - NOX_RUNNER_CHAINS__${NOX_CHAIN_ID}__RPC_URL=${HOST_RPC_URL}
+      - NOX_RUNNER_CHAINS__${NOX_CHAIN_ID}__NOX_COMPUTE_CONTRACT_ADDRESS=${NOX_COMPUTE_CONTRACT}
       - NOX_RUNNER_HANDLE_GATEWAY_URL=http://nox-handle-gateway:3000
-      - NOX_RUNNER_NATS_URL=nats://nats:4222
+      - NOX_RUNNER_NATS__URLS=nats://nats-1:4222,nats://nats-2:4222,nats://nats-3:4222
       - RUST_LOG=${NOX_RUNNER_RUST_LOG:-info}
       - NOX_RUNNER_WALLET_KEY=${NOX_RUNNER_WALLET_KEY}
     networks:
@@ -168,7 +192,11 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
-      nats:
+      nats-1:
+        condition: service_healthy
+      nats-2:
+        condition: service_healthy
+      nats-3:
         condition: service_healthy
       nox-handle-gateway:
         condition: service_healthy
