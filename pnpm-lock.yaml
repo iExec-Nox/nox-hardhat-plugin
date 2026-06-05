@@ -49,8 +49,11 @@ importers:
   packages/plugin:
     dependencies:
       '@iexec-nox/nox-protocol-contracts':
-        specifier: ^0.2.2
-        version: 0.2.2
+        specifier: ^0.2.4
+        version: 0.2.4
+      '@openzeppelin/contracts':
+        specifier: ^5.6.0
+        version: 5.6.1
       docker-compose:
         specifier: ^1.2.0
         version: 1.4.2
@@ -403,6 +406,9 @@ packages:
 
   '@iexec-nox/nox-protocol-contracts@0.2.2':
     resolution: {integrity: sha512-O9K/N+Abpc+xDAUfFUuNzuKIt6hcbDTamo2t/Q7Cqrx4B/ipj4EGybY/ExWuD6Gc4/ZfRWOh6FbXWv/JFmcpVw==}
+
+  '@iexec-nox/nox-protocol-contracts@0.2.4':
+    resolution: {integrity: sha512-jXunAVPc0W6Zcv5QiHx699BYd8U+Tw9U5O+3Xcbcq4y5gry2Z6FyWwGvYL0VjV9MJQL0zcVIcdkBL3ZyM5FfSg==}
 
   '@isaacs/cliui@8.0.2':
     resolution: {integrity: sha512-O8jcjabXaleOG9DQ0+ARXWZBTfnP4WNAqzuiJK7ll44AmxGKv/J2M4TPjxjY3znBCfvBXFzucm1twdyFybFqEA==}
@@ -2421,6 +2427,12 @@ snapshots:
       encrypted-types: 0.0.4
 
   '@iexec-nox/nox-protocol-contracts@0.2.2':
+    dependencies:
+      '@openzeppelin/contracts': 5.6.1
+      '@openzeppelin/contracts-upgradeable': 5.6.1(@openzeppelin/contracts@5.6.1)
+      encrypted-types: 0.0.4
+
+  '@iexec-nox/nox-protocol-contracts@0.2.4':
     dependencies:
       '@openzeppelin/contracts': 5.6.1
       '@openzeppelin/contracts-upgradeable': 5.6.1(@openzeppelin/contracts@5.6.1)
