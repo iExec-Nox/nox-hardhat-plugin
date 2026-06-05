@@ -3,16 +3,16 @@ import path from "node:path";
 import type { IDockerComposeOptions } from "docker-compose";
 import type { Address, Hex } from "viem";
 
-// Arbitrum Sepolia chain ID — used both by the EDR server and the offchain
-// services (NOX_CHAIN_ID in dev.env).
-export const NOX_CHAIN_ID = 421614;
+export const ARBITRUM_SEPOLIA_CHAIN_ID = 421614;
+export const SEPOLIA_CHAIN_ID = 11155111;
 
-// Canonical NoxCompute addresses on Arbitrum Sepolia — the plugin etches the
-// production runtime bytecode at these exact addresses so that contracts that
-// rely on `Nox.noxComputeContract()` (from `@iexec-nox/nox-protocol-contracts`)
-// hit the proxy transparently.
-export const NOX_COMPUTE_PROXY_ADDRESS: Address =
-  "0xd464B198f06756a1d00be223634b85E0a731c229";
+export const NOX_COMPUTE_CONTRACT: Record<number, Address> = {
+  [ARBITRUM_SEPOLIA_CHAIN_ID]: "0xd464B198f06756a1d00be223634b85E0a731c229",
+  [SEPOLIA_CHAIN_ID]: "0x24Ef36Ec5b626D7DCD09a98F3083c2758F0F77bF",
+};
+
+// Arbitrary address at which the plugin etches the NoxCompute implementation
+// runtime.
 export const NOX_COMPUTE_IMPL_ADDRESS: Address =
   "0x8D88B61356Fa291505d3E3D3a77e19fad0958fe3";
 
