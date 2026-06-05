@@ -111,39 +111,9 @@ services:
       timeout: 5s
       retries: 5
 
-  nats-1:
+  nats:
     image: nats:2.12-alpine
-    command: ["-c", "/etc/nats/nats.conf"]
-    volumes:
-      - ./docker/nats/nats-1.conf:/etc/nats/nats.conf
-    networks:
-      - backend
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8222/healthz"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
-  nats-2:
-    image: nats:2.12-alpine
-    command: ["-c", "/etc/nats/nats.conf"]
-    volumes:
-      - ./docker/nats/nats-2.conf:/etc/nats/nats.conf
-    networks:
-      - backend
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8222/healthz"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
-  nats-3:
-    image: nats:2.12-alpine
-    command: ["-c", "/etc/nats/nats.conf"]
-    volumes:
-      - ./docker/nats/nats-3.conf:/etc/nats/nats.conf
+    command: ["--jetstream", "--store_dir", "/data", "--http_port", "8222"]
     networks:
       - backend
     restart: unless-stopped
@@ -162,18 +132,14 @@ services:
       - NOX_INGESTOR_CHAIN__CONTRACT_ADDRESS=${NOX_COMPUTE_CONTRACT}
       - NOX_INGESTOR_CHAIN__INITIAL_BLOCK=${NOX_COMPUTE_CONTRACT_BLOCK}
       - NOX_INGESTOR_APP__STATE_PATH=/data/nox_ingestor_state_${NOX_CHAIN_ID}.json
-      - NOX_INGESTOR_NATS__URLS=nats://nats-1:4222,nats://nats-2:4222,nats://nats-3:4222
+      - NOX_INGESTOR_NATS__URLS=nats://nats:4222
       - RUST_LOG=${NOX_INGESTOR_RUST_LOG:-info}
     networks:
       - backend
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
-      nats-1:
-        condition: service_healthy
-      nats-2:
-        condition: service_healthy
-      nats-3:
+      nats:
         condition: service_healthy
     restart: unless-stopped
 
@@ -184,7 +150,7 @@ services:
       - NOX_RUNNER_CHAINS__${NOX_CHAIN_ID}__RPC_URL=${HOST_RPC_URL}
       - NOX_RUNNER_CHAINS__${NOX_CHAIN_ID}__NOX_COMPUTE_CONTRACT_ADDRESS=${NOX_COMPUTE_CONTRACT}
       - NOX_RUNNER_HANDLE_GATEWAY_URL=http://nox-handle-gateway:3000
-      - NOX_RUNNER_NATS__URLS=nats://nats-1:4222,nats://nats-2:4222,nats://nats-3:4222
+      - NOX_RUNNER_NATS__URLS=nats://nats:4222
       - RUST_LOG=${NOX_RUNNER_RUST_LOG:-info}
       - NOX_RUNNER_WALLET_KEY=${NOX_RUNNER_WALLET_KEY}
     networks:
@@ -192,11 +158,7 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
-      nats-1:
-        condition: service_healthy
-      nats-2:
-        condition: service_healthy
-      nats-3:
+      nats:
         condition: service_healthy
       nox-handle-gateway:
         condition: service_healthy
