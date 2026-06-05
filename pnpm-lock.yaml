@@ -14,12 +14,15 @@ importers:
 
   packages/example-project:
     dependencies:
+      '@iexec-nox/handle':
+        specifier: 0.1.0-beta.11
+        version: 0.1.0-beta.11(ethers@6.16.0)(graphql@16.14.1)(viem@2.48.1(typescript@5.8.3)(zod@3.25.76))
       '@iexec-nox/nox-confidential-contracts':
         specifier: 0.1.0
         version: 0.1.0
       '@iexec-nox/nox-protocol-contracts':
-        specifier: 0.2.2
-        version: 0.2.2
+        specifier: ^0.2.4
+        version: 0.2.4
       viem:
         specifier: ^2.46.3
         version: 2.48.1(typescript@5.8.3)(zod@3.25.76)
@@ -382,6 +385,11 @@ packages:
     resolution: {integrity: sha512-vBZP4NlzfOlerQTnba4aqZoMhE/a9HY7HRqoOPaETQcSQuWEIyZMHGfVu6w9wGtGK5fED5qRs2DteVCjOH60sA==}
     engines: {node: '>=14'}
 
+  '@graphql-typed-document-node/core@3.2.0':
+    resolution: {integrity: sha512-mB9oAsNCm9aM3/SOv4YtBMqZbYj10R7dkq8byBqxGY/ncFwhf2oQzMV+LCRlWoDSEBJ3COiR1yeDvMtsoOsuFQ==}
+    peerDependencies:
+      graphql: ^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
+
   '@humanfs/core@0.19.1':
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
     engines: {node: '>=18.18.0'}
@@ -398,14 +406,22 @@ packages:
     resolution: {integrity: sha512-bV0Tgo9K4hfPCek+aMAn81RppFKv2ySDQeMoSZuvTASywNTnVJCArCZE2FWqpvIatKu7VMRLWlR1EazvVhDyhQ==}
     engines: {node: '>=18.18'}
 
+  '@iexec-nox/handle@0.1.0-beta.11':
+    resolution: {integrity: sha512-aEdKuJvO3G6fnBOtyHR/xry2Gqjlv7a4nZrAU3ESref2dR5TJM3B6/TYhPPXlC57a+SVKtT2MbfzauAajNfIXA==}
+    peerDependencies:
+      ethers: ^6.0.0
+      viem: ^2.0.0
+    peerDependenciesMeta:
+      ethers:
+        optional: true
+      viem:
+        optional: true
+
   '@iexec-nox/nox-confidential-contracts@0.1.0':
     resolution: {integrity: sha512-Wv8ZOIk7xIysXTexpLACbfp1X5bqy91ooqq8MJkFkobvsgUd4eqbI3vE23Jo8zxTaQzATNzOg0oNV63H/A6thQ==}
 
   '@iexec-nox/nox-protocol-contracts@0.1.0':
     resolution: {integrity: sha512-sQ/yCpOXjUE2X5YmCmPKNLYfU00xTZSTI+yewVHOVZTdGA35QOPzOBg2Q8Qm++KLdPwc8FC0efc2jHqxMR83bg==}
-
-  '@iexec-nox/nox-protocol-contracts@0.2.2':
-    resolution: {integrity: sha512-O9K/N+Abpc+xDAUfFUuNzuKIt6hcbDTamo2t/Q7Cqrx4B/ipj4EGybY/ExWuD6Gc4/ZfRWOh6FbXWv/JFmcpVw==}
 
   '@iexec-nox/nox-protocol-contracts@0.2.4':
     resolution: {integrity: sha512-jXunAVPc0W6Zcv5QiHx699BYd8U+Tw9U5O+3Xcbcq4y5gry2Z6FyWwGvYL0VjV9MJQL0zcVIcdkBL3ZyM5FfSg==}
@@ -1353,6 +1369,15 @@ packages:
 
   graphemer@1.4.0:
     resolution: {integrity: sha512-EtKwoO6kxCL9WO5xipiHTZlSzBm7WLT627TqC/uVRd0HKmq8NXyebnNYxDoBi7wt8eTWrUrKXCOVaFq9x1kgag==}
+
+  graphql-request@7.4.0:
+    resolution: {integrity: sha512-xfr+zFb/QYbs4l4ty0dltqiXIp07U6sl+tOKAb0t50/EnQek6CVVBLjETXi+FghElytvgaAWtIOt3EV7zLzIAQ==}
+    peerDependencies:
+      graphql: 14 - 16
+
+  graphql@16.14.1:
+    resolution: {integrity: sha512-cQOsSMS/IrDz82PVyRDvf/Q1F/bRbBVjJlh+xYOkI1qw2bWRvWGiWc+m2O0d6l4Bt1fyY+8kzJ8JFWGJqNeDBg==}
+    engines: {node: ^12.22.0 || ^14.16.0 || ^16.0.0 || >=17.0.0}
 
   hardhat@3.4.0:
     resolution: {integrity: sha512-3QDQY4jOK4DXavkUm7itL5O9fY1AKo9CzDly9E6cQV4X1TpknMzbenpluzKjiSjpRsIBXhyV6EuGl0vaXug7Og==}
@@ -2404,6 +2429,10 @@ snapshots:
 
   '@fastify/busboy@2.1.1': {}
 
+  '@graphql-typed-document-node/core@3.2.0(graphql@16.14.1)':
+    dependencies:
+      graphql: 16.14.1
+
   '@humanfs/core@0.19.1': {}
 
   '@humanfs/node@0.16.7':
@@ -2415,18 +2444,21 @@ snapshots:
 
   '@humanwhocodes/retry@0.4.3': {}
 
+  '@iexec-nox/handle@0.1.0-beta.11(ethers@6.16.0)(graphql@16.14.1)(viem@2.48.1(typescript@5.8.3)(zod@3.25.76))':
+    dependencies:
+      graphql-request: 7.4.0(graphql@16.14.1)
+    optionalDependencies:
+      ethers: 6.16.0
+      viem: 2.48.1(typescript@5.8.3)(zod@3.25.76)
+    transitivePeerDependencies:
+      - graphql
+
   '@iexec-nox/nox-confidential-contracts@0.1.0':
     dependencies:
       '@iexec-nox/nox-protocol-contracts': 0.1.0
       '@openzeppelin/contracts': 5.6.1
 
   '@iexec-nox/nox-protocol-contracts@0.1.0':
-    dependencies:
-      '@openzeppelin/contracts': 5.6.1
-      '@openzeppelin/contracts-upgradeable': 5.6.1(@openzeppelin/contracts@5.6.1)
-      encrypted-types: 0.0.4
-
-  '@iexec-nox/nox-protocol-contracts@0.2.2':
     dependencies:
       '@openzeppelin/contracts': 5.6.1
       '@openzeppelin/contracts-upgradeable': 5.6.1(@openzeppelin/contracts@5.6.1)
@@ -3580,6 +3612,13 @@ snapshots:
   gopd@1.2.0: {}
 
   graphemer@1.4.0: {}
+
+  graphql-request@7.4.0(graphql@16.14.1):
+    dependencies:
+      '@graphql-typed-document-node/core': 3.2.0(graphql@16.14.1)
+      graphql: 16.14.1
+
+  graphql@16.14.1: {}
 
   hardhat@3.4.0:
     dependencies:

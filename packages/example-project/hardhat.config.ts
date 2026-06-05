@@ -4,7 +4,7 @@ import noxPlugin, { NOX_CHAIN_ID } from "@iexec-nox/nox-hardhat-plugin";
 
 export default defineConfig({
   plugins: [hardhatToolboxViemPlugin, noxPlugin],
-  solidity: "0.8.29",
+  solidity: "0.8.35",
   networks: {
     default: {
       type: "edr-simulated",

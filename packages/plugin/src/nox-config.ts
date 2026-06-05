@@ -1,6 +1,7 @@
 import { createRequire } from "node:module";
 import path from "node:path";
-import { IDockerComposeOptions } from "docker-compose";
+import type { IDockerComposeOptions } from "docker-compose";
+import type { Address, Hex } from "viem";
 
 // Arbitrum Sepolia chain ID — used both by the EDR server and the offchain
 // services (NOX_CHAIN_ID in dev.env).
@@ -10,19 +11,20 @@ export const NOX_CHAIN_ID = 421614;
 // production runtime bytecode at these exact addresses so that contracts that
 // rely on `Nox.noxComputeContract()` (from `@iexec-nox/nox-protocol-contracts`)
 // hit the proxy transparently.
-export const NOX_COMPUTE_PROXY_ADDRESS =
+export const NOX_COMPUTE_PROXY_ADDRESS: Address =
   "0xd464B198f06756a1d00be223634b85E0a731c229";
-export const NOX_COMPUTE_IMPL_ADDRESS =
+export const NOX_COMPUTE_IMPL_ADDRESS: Address =
   "0x8D88B61356Fa291505d3E3D3a77e19fad0958fe3";
 
 // ERC-1967 implementation slot — hardcoded in the shipped proxy bytecode. We
 // write it ourselves because `hardhat_setCode` bypasses the proxy constructor.
-export const ERC1967_IMPLEMENTATION_SLOT =
+export const ERC1967_IMPLEMENTATION_SLOT: Hex =
   "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc";
 
-export const NOX_KMS_PUBLIC_KEY =
+export const NOX_KMS_PUBLIC_KEY: Hex =
   "0x03902284a6bd5198b4a32ef2319fc3ae37ea166aff0320eaa8addb0182ee80381e";
-export const NOX_GATEWAY_ADDRESS = "0xE1a6B1De3AbF04e7FA5355373880350Dc3004D0e";
+export const NOX_GATEWAY_ADDRESS: Address =
+  "0xE1a6B1De3AbF04e7FA5355373880350Dc3004D0e";
 
 export const HANDLE_GATEWAY_URL = "http://localhost:3000";
 export const RPC_URL = "http://127.0.0.1:8545";
