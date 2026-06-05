@@ -6,9 +6,7 @@ import type { NoxChain } from "../types.js";
 
 /** Bring the offchain stack up and wait for every service to be healthy. */
 export async function startOffchainServices(chain: NoxChain): Promise<void> {
-  console.log(
-    `[nox] Starting offchain services (chainId=${chain.chainId})...`,
-  );
+  console.log(`[nox] Starting offchain services (chainId=${chain.chainId})...`);
   await upAll({
     ...COMPOSE_OPTS,
     env: {
@@ -39,9 +37,7 @@ export async function stopOffchainServices(chain: NoxChain): Promise<void> {
  * clean so the Hardhat test report remains readable, while the full trace is
  * available on disk.
  */
-export async function dumpOffchainServicesLogs(
-  chain: NoxChain,
-): Promise<void> {
+export async function dumpOffchainServicesLogs(chain: NoxChain): Promise<void> {
   const result = await composeLogs(ALL_SERVICES, {
     ...COMPOSE_OPTS,
     env: {
