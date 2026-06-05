@@ -1,10 +1,10 @@
 import { strict as assert } from "node:assert";
 import { describe, it } from "node:test";
-import { network } from "hardhat";
 import { createViemHandleClient } from "@iexec-nox/handle";
 import {
   HANDLE_GATEWAY_URL,
   NOX_COMPUTE_CONTRACT,
+  nox,
 } from "@iexec-nox/nox-hardhat-plugin";
 import { waitForHandleResolved } from "../utils/handle-gateway.js";
 
@@ -18,7 +18,7 @@ describe("MyConfidentialToken end-to-end", () => {
       // Connect to the HTTP node the plugin spins up — that's where NoxCompute
       // is injected and where the offchain Nox stack is listening. A fresh
       // in-memory EDR (the default) would have neither.
-      const { viem } = await network.create();
+      const { viem } = await nox.connect();
 
       const token = await viem.deployContract("MyConfidentialToken", [
         "My Confidential Token",

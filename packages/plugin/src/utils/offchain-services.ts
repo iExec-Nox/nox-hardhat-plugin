@@ -2,6 +2,7 @@ import { writeFile } from "node:fs/promises";
 import path from "node:path";
 import { downAll, logs as composeLogs, upAll } from "docker-compose";
 import { ALL_SERVICES, COMPOSE_OPTS } from "../nox-config.js";
+import type { NoxChain } from "../types.js";
 
 /** Bring the offchain stack up and wait for every service to be healthy. */
 export async function startOffchainServices(chain: NoxChain): Promise<void> {

@@ -5,9 +5,6 @@ import noxPlugin, {
   SEPOLIA_CHAIN_ID,
 } from "@iexec-nox/nox-hardhat-plugin";
 
-const HOST = "127.0.0.1";
-const PORT = 8545;
-
 export default defineConfig({
   plugins: [hardhatToolboxViemPlugin, noxPlugin],
   solidity: "0.8.35",
@@ -16,13 +13,13 @@ export default defineConfig({
       type: "http",
       chainType: "op",
       chainId: ARBITRUM_SEPOLIA_CHAIN_ID,
-      url: `http://${HOST}:${PORT}`,
+      url: "https://sepolia-rollup.arbitrum.io/rpc",
     },
     sepolia: {
       type: "http",
       chainType: "op",
       chainId: SEPOLIA_CHAIN_ID,
-      url: `http://${HOST}:${PORT}`,
+      url: "https://rpc.sepolia.org",
     },
   },
 });

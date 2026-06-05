@@ -2,13 +2,13 @@ import type { ConfigHooks } from "hardhat/types/hooks";
 import {
   resolvePluginConfig,
   validatePluginConfig,
-  withNoxHostNetwork,
+  withInjectedNetworks,
 } from "../config.js";
 
 export default async (): Promise<Partial<ConfigHooks>> => {
   const handlers: Partial<ConfigHooks> = {
     async extendUserConfig(userConfig, next) {
-      return next(withNoxHostNetwork(userConfig));
+      return next(withInjectedNetworks(userConfig));
     },
     async validateUserConfig(userConfig) {
       return validatePluginConfig(userConfig);

@@ -1,6 +1,10 @@
 import type { JsonRpcServer } from "hardhat/types/network";
 import type { TaskOverrideActionFunction } from "hardhat/types/tasks";
-import { NOX_HOST_NETWORK } from "../config.js";
+import {
+  NOX_HOST_NETWORK,
+  NOX_LOCAL_NETWORK,
+  NOX_LOCAL_PORT,
+} from "../config.js";
 import { NOX_COMPUTE_CONTRACT } from "../nox-config.js";
 import type { NoxChain } from "../types.js";
 import { deployNoxCompute } from "../utils/nox-compute.js";
@@ -9,7 +13,6 @@ import {
   startOffchainServices,
   stopOffchainServices,
 } from "../utils/offchain-services.js";
-import { portFromUrl } from "../utils/url.js";
 
 const testWrapperAction: TaskOverrideActionFunction = async (
   args,
@@ -27,30 +30,24 @@ const testWrapperAction: TaskOverrideActionFunction = async (
   let server: JsonRpcServer | undefined;
   let chain: NoxChain | undefined;
   try {
-    // Resolve which chain the user picked via `--network <name>` (or fall back
-    // to the conventional `default` network when omitted, matching Hardhat 3's
-    // own resolution). That network must be `http`-typed and point at the
-    // address/port we'll bind the JSON-RPC server to below.
-    const activeNetworkName =
+    // The user picks which chain to emulate locally via `--network <name>`,
+    // falling back to the conventional `default` network. We only read its
+    // `chainId`, the network's `url` is irrelevant here (tests reach the
+    // local stack via the injected `noxLocal` network).
+    const targetNetworkName =
       hre.globalOptions.network !== undefined &&
       hre.globalOptions.network !== ""
         ? hre.globalOptions.network
         : "default";
-    const activeNetwork = hre.config.networks[activeNetworkName];
-    if (activeNetwork === undefined)
+    const targetNetwork = hre.config.networks[targetNetworkName];
+    if (targetNetwork === undefined)
       throw new Error(
-        `[nox] Network '${activeNetworkName}' is not defined in hardhat.config.`,
+        `[nox] Network '${targetNetworkName}' is not defined in hardhat.config.`,
       );
-    if (activeNetwork.type !== "http")
-      throw new Error(
-        `[nox] Active network '${activeNetworkName}' must be of type 'http'. ` +
-          `The plugin spins up its own EDR and exposes it over HTTP; your tests ` +
-          `then connect to that HTTP endpoint via this named network.`,
-      );
-    const chainId = activeNetwork.chainId;
+    const chainId = targetNetwork.chainId;
     if (chainId === undefined)
       throw new Error(
-        `[nox] Network '${activeNetworkName}' must declare a chainId.`,
+        `[nox] Network '${targetNetworkName}' must declare a chainId.`,
       );
     const noxComputeProxyAddress = NOX_COMPUTE_CONTRACT[chainId];
     if (noxComputeProxyAddress === undefined)
@@ -60,16 +57,25 @@ const testWrapperAction: TaskOverrideActionFunction = async (
       );
     chain = { chainId, noxComputeProxyAddress };
 
-    const port = portFromUrl(await activeNetwork.url.get());
+    // Mutate the injected `noxLocal` network's chainId so test code that
+    // calls `nox.connect()` (which internally creates a connection to
+    // `noxLocal`) gets a viem walletClient whose `chain.id` matches the
+    // chain the local stack is emulating. The network manager holds a live
+    // reference to `hre.config.networks`, so this is visible to subsequent
+    // `network.create` calls.
+    const noxLocal = hre.config.networks[NOX_LOCAL_NETWORK];
+    if (noxLocal !== undefined && noxLocal.type === "http") {
+      (noxLocal as { chainId?: number }).chainId = chainId;
+    }
 
     server = await hre.network.createServer(
       { network: NOX_HOST_NETWORK, override: { chainId } },
       "0.0.0.0",
-      port,
+      NOX_LOCAL_PORT,
     );
     const { address, port: listeningPort } = await server.listen();
     console.log(
-      `[nox] Hardhat node listening on ${address}:${listeningPort} (chainId=${chainId}, network='${activeNetworkName}')`,
+      `[nox] Hardhat node listening on ${address}:${listeningPort} (chainId=${chainId}, network='${targetNetworkName}')`,
     );
 
     const rpcUrl = `http://127.0.0.1:${listeningPort}`;

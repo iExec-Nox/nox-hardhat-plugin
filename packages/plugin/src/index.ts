@@ -8,6 +8,7 @@ export {
   HANDLE_GATEWAY_URL,
   RPC_URL,
 } from "./nox-config.js";
+export { nox } from "./nox.js";
 
 const plugin: HardhatPlugin = {
   id: "nox-hardhat-plugin",
