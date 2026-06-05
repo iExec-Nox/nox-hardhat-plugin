@@ -2,6 +2,8 @@ import type { HardhatUserConfig } from "hardhat/config";
 import type { HardhatConfig } from "hardhat/types/config";
 import type { HardhatUserConfigValidationError } from "hardhat/types/hooks";
 
+export const NOX_HOST_NETWORK = "noxHost";
+
 export async function validatePluginConfig(
   userConfig: HardhatUserConfig,
 ): Promise<HardhatUserConfigValidationError[]> {
@@ -25,6 +27,23 @@ export async function validatePluginConfig(
   }
 
   return [];
+}
+
+/**
+ * Returns a copy of `userConfig` with the plugin's internal `noxHost`
+ * EDR-simulated network injected into `networks`. A user-defined entry of the
+ * same name wins (last spread).
+ */
+export function withNoxHostNetwork(
+  userConfig: HardhatUserConfig,
+): HardhatUserConfig {
+  return {
+    ...userConfig,
+    networks: {
+      [NOX_HOST_NETWORK]: { type: "edr-simulated", chainType: "op" },
+      ...userConfig.networks,
+    },
+  };
 }
 
 export async function resolvePluginConfig(

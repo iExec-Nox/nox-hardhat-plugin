@@ -13,8 +13,8 @@ import {
   NOX_COMPUTE_IMPL_ADDRESS,
   NOX_GATEWAY_ADDRESS,
   NOX_KMS_PUBLIC_KEY,
-  type NoxChain,
 } from "../nox-config.js";
+import type { NoxChain } from "../types.js";
 import { loadDeploymentArtifact } from "./artifacts.js";
 
 /**
