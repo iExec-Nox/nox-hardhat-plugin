@@ -4,7 +4,7 @@ import { network } from "hardhat";
 import { createViemHandleClient } from "@iexec-nox/handle";
 import {
   HANDLE_GATEWAY_URL,
-  NOX_COMPUTE_PROXY_ADDRESS,
+  NOX_COMPUTE_CONTRACT,
 } from "@iexec-nox/nox-hardhat-plugin";
 import { waitForHandleResolved } from "../utils/handle-gateway.js";
 
@@ -18,7 +18,7 @@ describe("MyConfidentialToken end-to-end", () => {
       // Connect to the HTTP node the plugin spins up — that's where NoxCompute
       // is injected and where the offchain Nox stack is listening. A fresh
       // in-memory EDR (the default) would have neither.
-      const { viem } = await network.create("localhost");
+      const { viem } = await network.create();
 
       const token = await viem.deployContract("MyConfidentialToken", [
         "My Confidential Token",
@@ -33,8 +33,11 @@ describe("MyConfidentialToken end-to-end", () => {
 
       const [walletClient] = await viem.getWalletClients();
       const handleClient = await createViemHandleClient(walletClient, {
-        smartContractAddress: NOX_COMPUTE_PROXY_ADDRESS,
+        smartContractAddress: NOX_COMPUTE_CONTRACT[walletClient.chain.id],
         gatewayUrl: HANDLE_GATEWAY_URL,
+        // For local dev we don't use the subgraph (publicDecrypt only hits the
+        // gateway and the chain) but the config validator still requires a URL.
+        subgraphUrl: "https://example.com/subgraphs/id/none",
       });
       const { value } = await handleClient.publicDecrypt(totalSupplyHandle);
       assert.equal(value, INITIAL_SUPPLY);

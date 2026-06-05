@@ -75,6 +75,7 @@ services:
   nox-handle-gateway:
     image: iexechub/nox-handle-gateway:${NOX_HANDLE_GATEWAY_VERSION}
     environment:
+      - NOX_HANDLE_GATEWAY_DEFAULT_CHAIN_ID=${NOX_CHAIN_ID}
       - NOX_HANDLE_GATEWAY_KMS__URL=http://nox-kms:9000
       - NOX_HANDLE_GATEWAY_KMS__SIGNER_ADDRESS=${NOX_KMS_SIGNER_ADDRESS}
       - NOX_HANDLE_GATEWAY_RUNNER_ADDRESS=${NOX_RUNNER_SIGNER_ADDRESS}

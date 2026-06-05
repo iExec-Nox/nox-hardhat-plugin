@@ -18,8 +18,8 @@ importers:
         specifier: 0.1.0-beta.11
         version: 0.1.0-beta.11(ethers@6.16.0)(graphql@16.14.1)(viem@2.48.1(typescript@5.8.3)(zod@3.25.76))
       '@iexec-nox/nox-confidential-contracts':
-        specifier: 0.1.0
-        version: 0.1.0
+        specifier: ^0.2.0
+        version: 0.2.0
       '@iexec-nox/nox-protocol-contracts':
         specifier: ^0.2.4
         version: 0.2.4
@@ -417,11 +417,8 @@ packages:
       viem:
         optional: true
 
-  '@iexec-nox/nox-confidential-contracts@0.1.0':
-    resolution: {integrity: sha512-Wv8ZOIk7xIysXTexpLACbfp1X5bqy91ooqq8MJkFkobvsgUd4eqbI3vE23Jo8zxTaQzATNzOg0oNV63H/A6thQ==}
-
-  '@iexec-nox/nox-protocol-contracts@0.1.0':
-    resolution: {integrity: sha512-sQ/yCpOXjUE2X5YmCmPKNLYfU00xTZSTI+yewVHOVZTdGA35QOPzOBg2Q8Qm++KLdPwc8FC0efc2jHqxMR83bg==}
+  '@iexec-nox/nox-confidential-contracts@0.2.0':
+    resolution: {integrity: sha512-ymLX5gyxZH6Nr2HBiyXtZZwhm/5dYgshPJhlrbdkCZfHcOXa4CyzinJqba7kGJbNemo6MynoBJvDgU/G0sqCBQ==}
 
   '@iexec-nox/nox-protocol-contracts@0.2.4':
     resolution: {integrity: sha512-jXunAVPc0W6Zcv5QiHx699BYd8U+Tw9U5O+3Xcbcq4y5gry2Z6FyWwGvYL0VjV9MJQL0zcVIcdkBL3ZyM5FfSg==}
@@ -2453,16 +2450,10 @@ snapshots:
     transitivePeerDependencies:
       - graphql
 
-  '@iexec-nox/nox-confidential-contracts@0.1.0':
+  '@iexec-nox/nox-confidential-contracts@0.2.0':
     dependencies:
-      '@iexec-nox/nox-protocol-contracts': 0.1.0
+      '@iexec-nox/nox-protocol-contracts': 0.2.4
       '@openzeppelin/contracts': 5.6.1
-
-  '@iexec-nox/nox-protocol-contracts@0.1.0':
-    dependencies:
-      '@openzeppelin/contracts': 5.6.1
-      '@openzeppelin/contracts-upgradeable': 5.6.1(@openzeppelin/contracts@5.6.1)
-      encrypted-types: 0.0.4
 
   '@iexec-nox/nox-protocol-contracts@0.2.4':
     dependencies:
