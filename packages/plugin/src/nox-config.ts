@@ -45,9 +45,7 @@ export const COMPOSE_OPTS: IDockerComposeOptions = {
 };
 
 export const ALL_SERVICES = [
-  "nats-1",
-  "nats-2",
-  "nats-3",
+  "nats",
   "s3",
   "nox-kms",
   "nox-handle-gateway",
