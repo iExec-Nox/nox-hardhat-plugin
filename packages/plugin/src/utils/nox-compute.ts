@@ -81,9 +81,6 @@ export async function deployNoxCompute(
   if (deployer === undefined)
     throw new Error("[nox] Could not find a signer on the target node.");
 
-  // initialize(admin, upgrader, kmsPublicKey, gateway) — unified initializer
-  // since nox-protocol-contracts v0.2.3. Sets config AND emits the zero-handle
-  // seeds in a single call.
   await walletClient.sendTransaction({
     account: deployer,
     to: chain.noxComputeProxyAddress,
