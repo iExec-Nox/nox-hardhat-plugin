@@ -45,11 +45,3 @@ jobs:
       # `pnpm hardhat test`, which brings up the full docker stack end-to-end.
       - name: Test
         run: pnpm test
-
-      - name: Upload offchain services logs on failure
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: offchain-services-logs-node${{ matrix.node-version }}
-          path: packages/example-project/offchain-services.log
-          if-no-files-found: ignore
