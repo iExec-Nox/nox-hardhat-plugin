@@ -81,34 +81,17 @@ export async function deployNoxCompute(
   if (deployer === undefined)
     throw new Error("[nox] Could not find a signer on the target node.");
 
-  // initialize(admin, upgrader, kmsPublicKey, gateway)
-  await callAsOwner(client, impl.abi, deployer, "initialize", [
-    deployer,
-    deployer,
-    NOX_KMS_PUBLIC_KEY,
-    NOX_GATEWAY_ADDRESS,
-  ]);
-  console.log(
-    `[nox] NoxCompute initialized (admin=${deployer}, gateway=${NOX_GATEWAY_ADDRESS}).`,
-  );
-}
-
-async function callAsOwner(
-  client: WalletClient,
-  abi: Abi,
-  from: Address,
-  functionName: string,
-  args: readonly unknown[],
-): Promise<void> {
-  await client.request({
-    method: "eth_sendTransaction" as never,
-    params: [
-      {
-        from,
-        to: NOX_COMPUTE_PROXY_ADDRESS,
-        data: encodeFunctionData({ abi, functionName, args }),
-      },
-    ] as never,
+  // initialize(admin, upgrader, kmsPublicKey, gateway) — unified initializer
+  // since nox-protocol-contracts v0.2.3. Sets config AND emits the zero-handle
+  // seeds in a single call.
+  await walletClient.sendTransaction({
+    account: deployer,
+    to: chain.noxComputeProxyAddress,
+    data: encodeFunctionData({
+      abi: impl.abi,
+      functionName: "initialize",
+      args: [deployer, deployer, NOX_KMS_PUBLIC_KEY, NOX_GATEWAY_ADDRESS],
+    }),
   });
   console.log(
     `[nox] NoxCompute initialized (chainId=${chain.chainId}, admin=${deployer}, gateway=${NOX_GATEWAY_ADDRESS}).`,

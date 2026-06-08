@@ -3,12 +3,9 @@ import path from "node:path";
 import type { IDockerComposeOptions } from "docker-compose";
 import type { Address, Hex } from "viem";
 
-export const ARBITRUM_SEPOLIA_CHAIN_ID = 421614;
-export const SEPOLIA_CHAIN_ID = 11155111;
-
 export const NOX_COMPUTE_CONTRACT: Record<number, Address> = {
-  [ARBITRUM_SEPOLIA_CHAIN_ID]: "0xd464B198f06756a1d00be223634b85E0a731c229",
-  [SEPOLIA_CHAIN_ID]: "0x24Ef36Ec5b626D7DCD09a98F3083c2758F0F77bF",
+  421614: "0xd464B198f06756a1d00be223634b85E0a731c229",
+  11155111: "0x24Ef36Ec5b626D7DCD09a98F3083c2758F0F77bF",
 };
 
 // Arbitrary address at which the plugin etches the NoxCompute implementation

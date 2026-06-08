@@ -2,8 +2,6 @@ import { overrideTask } from "hardhat/config";
 import type { HardhatPlugin } from "hardhat/types/plugins";
 import "./type-extensions.js";
 export {
-  ARBITRUM_SEPOLIA_CHAIN_ID,
-  SEPOLIA_CHAIN_ID,
   NOX_COMPUTE_CONTRACT,
   HANDLE_GATEWAY_URL,
   RPC_URL,

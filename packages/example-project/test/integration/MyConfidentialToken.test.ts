@@ -13,7 +13,7 @@ const INITIAL_SUPPLY = 1000n;
 describe("MyConfidentialToken end-to-end", () => {
   it(
     "mints a confidential totalSupply that the Nox stack resolves and matches the cleartext value",
-    { timeout: 360_000 },
+    { timeout: 120_000 },
     async () => {
       // Connect to the HTTP node the plugin spins up — that's where NoxCompute
       // is injected and where the offchain Nox stack is listening. A fresh

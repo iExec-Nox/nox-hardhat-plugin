@@ -1,9 +1,7 @@
 import hardhatToolboxViemPlugin from "@nomicfoundation/hardhat-toolbox-viem";
 import { defineConfig } from "hardhat/config";
-import noxPlugin, {
-  ARBITRUM_SEPOLIA_CHAIN_ID,
-  SEPOLIA_CHAIN_ID,
-} from "@iexec-nox/nox-hardhat-plugin";
+import noxPlugin from "@iexec-nox/nox-hardhat-plugin";
+import { arbitrumSepolia, sepolia } from "viem/chains";
 
 export default defineConfig({
   plugins: [hardhatToolboxViemPlugin, noxPlugin],
@@ -12,13 +10,13 @@ export default defineConfig({
     default: {
       type: "http",
       chainType: "op",
-      chainId: ARBITRUM_SEPOLIA_CHAIN_ID,
+      chainId: arbitrumSepolia.id,
       url: "https://sepolia-rollup.arbitrum.io/rpc",
     },
     sepolia: {
       type: "http",
       chainType: "op",
-      chainId: SEPOLIA_CHAIN_ID,
+      chainId: sepolia.id,
       url: "https://rpc.sepolia.org",
     },
   },
