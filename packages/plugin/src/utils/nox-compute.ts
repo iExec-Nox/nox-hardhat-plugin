@@ -9,6 +9,8 @@ import {
 } from "viem";
 import {
   ERC1967_IMPLEMENTATION_SLOT,
+  ERC1967_PROXY_ARTIFACT_PATH,
+  NOX_COMPUTE_ARTIFACT_PATH,
   NOX_COMPUTE_IMPL_ADDRESS,
   NOX_COMPUTE_PROXY_ADDRESS,
   NOX_GATEWAY_ADDRESS,
@@ -25,17 +27,18 @@ import { loadDeploymentArtifact } from "./artifacts.js";
  *   2. `hardhat_setStorageAt` writes the implementation address into the
  *      proxy's ERC-1967 slot (normally done by the proxy's constructor,
  *      which we bypass when etching bytecode directly).
- *   3. `initialize` and `setGateway` are called on the proxy — they delegate
- *      to the implementation and set owner / kmsPublicKey / gateway in the
- *      proxy's storage, just like in production.
+ *   3. `initialize(admin, upgrader, kmsPublicKey, gateway)` is called on the
+ *      proxy — it delegates to the implementation, sets all config in the
+ *      proxy's storage AND emits the zero-handle seed events that the
+ *      offchain stack needs to recognize implicit zero handles.
  *
  * Unlike recompiling NoxCompute.sol from source, this uses the exact runtime
  * that's deployed on chain and that the KMS/ingestor were validated against.
  */
 export async function deployNoxCompute(rpcUrl: string): Promise<void> {
   const [impl, proxy] = await Promise.all([
-    loadDeploymentArtifact("NoxCompute#implementation.json"),
-    loadDeploymentArtifact("NoxCompute#proxy.json"),
+    loadDeploymentArtifact(NOX_COMPUTE_ARTIFACT_PATH),
+    loadDeploymentArtifact(ERC1967_PROXY_ARTIFACT_PATH),
   ]);
 
   const client = createWalletClient({ transport: http(rpcUrl) });
@@ -69,18 +72,16 @@ export async function deployNoxCompute(rpcUrl: string): Promise<void> {
   if (deployer === undefined)
     throw new Error("[nox] Could not find a signer on the target node.");
 
-  // Calls below hit the proxy address; the proxy delegatecalls to the impl,
-  // so storage writes land in the proxy's storage — matching production.
+  // initialize(admin, upgrader, kmsPublicKey, gateway)
   await callAsOwner(client, impl.abi, deployer, "initialize", [
     deployer,
+    deployer,
     NOX_KMS_PUBLIC_KEY,
-  ]);
-  console.log(`[nox] NoxCompute initialized (owner=${deployer}).`);
-
-  await callAsOwner(client, impl.abi, deployer, "setGateway", [
     NOX_GATEWAY_ADDRESS,
   ]);
-  console.log(`[nox] NoxCompute gateway set to ${NOX_GATEWAY_ADDRESS}.`);
+  console.log(
+    `[nox] NoxCompute initialized (admin=${deployer}, gateway=${NOX_GATEWAY_ADDRESS}).`,
+  );
 }
 
 async function callAsOwner(

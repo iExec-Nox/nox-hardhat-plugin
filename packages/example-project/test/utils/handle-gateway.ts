@@ -5,15 +5,26 @@ import { HANDLE_GATEWAY_URL } from "@iexec-nox/nox-hardhat-plugin";
 /**
  * Polls the Nox handle gateway until `handle` is reported as resolved (i.e.
  * its ciphertext has been produced by the runner and stored in S3), or throws
- * once `timeoutMs` elapses.
+ * once `timeoutMs` elapses. Uses exponential backoff to keep the gateway quiet
+ * on slow runs while staying responsive on fast ones.
  */
 export async function waitForHandleResolved(
   handle: Hex,
-  timeoutMs = 60_000,
-  pollMs = 1_000,
+  {
+    timeoutMs = 60_000,
+    initialPollMs = 500,
+    maxPollMs = 5_000,
+    backoffFactor = 1.5,
+  }: {
+    timeoutMs?: number;
+    initialPollMs?: number;
+    maxPollMs?: number;
+    backoffFactor?: number;
+  } = {},
 ): Promise<void> {
   const url = `${HANDLE_GATEWAY_URL}/v0/public/handles/status`;
   const deadline = Date.now() + timeoutMs;
+  let pollMs = initialPollMs;
 
   while (Date.now() < deadline) {
     const res = await fetch(url, {
@@ -35,6 +46,7 @@ export async function waitForHandleResolved(
       if (resolved) return;
     }
     await sleep(pollMs);
+    pollMs = Math.min(pollMs * backoffFactor, maxPollMs);
   }
 
   throw new Error(

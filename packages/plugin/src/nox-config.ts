@@ -27,19 +27,13 @@ export const NOX_GATEWAY_ADDRESS = "0xE1a6B1De3AbF04e7FA5355373880350Dc3004D0e";
 export const HANDLE_GATEWAY_URL = "http://localhost:3000";
 export const RPC_URL = "http://127.0.0.1:8545";
 
-// Ignition deployment artifacts shipped by `@iexec-nox/nox-protocol-contracts`
-// on npm (since v0.2.2). We reuse the production-compiled bytecode instead of
-// recompiling NoxCompute.sol from source — that guarantees a byte-exact match
-// with what's deployed on chain and what the KMS/ingestor were tested against.
 const pluginRequire = createRequire(import.meta.url);
-export const NOX_PROTOCOL_DEPLOYMENTS_DIR = path.resolve(
-  path.dirname(
-    pluginRequire.resolve("@iexec-nox/nox-protocol-contracts/package.json"),
-  ),
-  "ignition",
-  "deployments",
-  "arbitrumSepolia",
-  "artifacts",
+export const NOX_COMPUTE_ARTIFACT_PATH = pluginRequire.resolve(
+  "@iexec-nox/nox-protocol-contracts/artifacts/contracts/NoxCompute.sol/NoxCompute.json",
+);
+
+export const ERC1967_PROXY_ARTIFACT_PATH = pluginRequire.resolve(
+  "@openzeppelin/contracts/build/contracts/ERC1967Proxy.json",
 );
 
 export const COMPOSE_OPTS: IDockerComposeOptions = {
