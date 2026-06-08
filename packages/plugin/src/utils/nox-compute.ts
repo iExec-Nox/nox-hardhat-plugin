@@ -18,14 +18,14 @@ import type { NoxChain } from "../types.js";
 import { loadDeploymentArtifact } from "./artifacts.js";
 
 /**
- * Install NoxCompute on the target node by mirroring the production deployment
- * of the given `chain`:
- *   1. `setCode` injects the ERC1967Proxy runtime at the chain's canonical
- *      `noxComputeProxyAddress` and the NoxCompute implementation runtime at
- *      a side address.
- *   2. `setStorageAt` writes the implementation address into the proxy's
- *      ERC-1967 slot (normally done by the proxy's constructor, which we
- *      bypass when etching bytecode directly).
+ * Install NoxCompute on the target node by mirroring the production Arbitrum
+ * Sepolia deployment:
+ *   1. `hardhat_setCode` injects the ERC1967Proxy runtime at the well-known
+ *      proxy address and the NoxCompute implementation runtime at the impl
+ *      address.
+ *   2. `hardhat_setStorageAt` writes the implementation address into the
+ *      proxy's ERC-1967 slot (normally done by the proxy's constructor,
+ *      which we bypass when etching bytecode directly).
  *   3. `initialize(admin, upgrader, kmsPublicKey, gateway)` is called on the
  *      proxy — it delegates to the implementation, sets all config in the
  *      proxy's storage AND emits the zero-handle seed events that the
@@ -82,14 +82,33 @@ export async function deployNoxCompute(
     throw new Error("[nox] Could not find a signer on the target node.");
 
   // initialize(admin, upgrader, kmsPublicKey, gateway)
-  await walletClient.sendTransaction({
-    account: deployer,
-    to: chain.noxComputeProxyAddress,
-    data: encodeFunctionData({
-      abi: impl.abi,
-      functionName: "initialize",
-      args: [deployer, deployer, NOX_KMS_PUBLIC_KEY, NOX_GATEWAY_ADDRESS],
-    }),
+  await callAsOwner(client, impl.abi, deployer, "initialize", [
+    deployer,
+    deployer,
+    NOX_KMS_PUBLIC_KEY,
+    NOX_GATEWAY_ADDRESS,
+  ]);
+  console.log(
+    `[nox] NoxCompute initialized (admin=${deployer}, gateway=${NOX_GATEWAY_ADDRESS}).`,
+  );
+}
+
+async function callAsOwner(
+  client: WalletClient,
+  abi: Abi,
+  from: Address,
+  functionName: string,
+  args: readonly unknown[],
+): Promise<void> {
+  await client.request({
+    method: "eth_sendTransaction" as never,
+    params: [
+      {
+        from,
+        to: NOX_COMPUTE_PROXY_ADDRESS,
+        data: encodeFunctionData({ abi, functionName, args }),
+      },
+    ] as never,
   });
   console.log(
     `[nox] NoxCompute initialized (chainId=${chain.chainId}, admin=${deployer}, gateway=${NOX_GATEWAY_ADDRESS}).`,

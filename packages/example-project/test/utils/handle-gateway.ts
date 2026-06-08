@@ -11,7 +11,7 @@ import { HANDLE_GATEWAY_URL } from "@iexec-nox/nox-hardhat-plugin";
 export async function waitForHandleResolved(
   handle: Hex,
   {
-    timeoutMs = 300_000,
+    timeoutMs = 60_000,
     initialPollMs = 500,
     maxPollMs = 5_000,
     backoffFactor = 1.5,
