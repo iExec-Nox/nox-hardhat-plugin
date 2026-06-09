@@ -3,10 +3,13 @@ import path from "node:path";
 import type { IDockerComposeOptions } from "docker-compose";
 import type { Address, Hex } from "viem";
 
-export const NOX_COMPUTE_CONTRACT: Record<number, Address> = {
-  421614: "0xd464B198f06756a1d00be223634b85E0a731c229",
-  11155111: "0x24Ef36Ec5b626D7DCD09a98F3083c2758F0F77bF",
-};
+// The only chain id the plugin's local stack supports (Hardhat default).
+// Other chain ids log a warning and skip stack setup — the user's tests then
+// run against the network's real endpoint and may fail if it lacks a Nox
+// deployment.
+export const NOX_SUPPORTED_CHAIN_ID = 31337;
+export const NOX_COMPUTE_ADDRESS: Address =
+  "0x75C6AF4430cc474b1bb9b8540b7E46D6f8e1C685";
 
 // Arbitrary address at which the plugin etches the NoxCompute implementation
 // runtime.

@@ -5,7 +5,10 @@ import {
   NOX_LOCAL_NETWORK,
   NOX_LOCAL_PORT,
 } from "../config.js";
-import { NOX_COMPUTE_CONTRACT } from "../nox-config.js";
+import {
+  NOX_COMPUTE_ADDRESS,
+  NOX_SUPPORTED_CHAIN_ID,
+} from "../nox-config.js";
 import type { NoxChain } from "../types.js";
 import { deployNoxCompute } from "../utils/nox-compute.js";
 import {
@@ -49,13 +52,17 @@ const testWrapperAction: TaskOverrideActionFunction = async (
       throw new Error(
         `[nox] Network '${targetNetworkName}' must declare a chainId.`,
       );
-    const noxComputeProxyAddress = NOX_COMPUTE_CONTRACT[chainId];
-    if (noxComputeProxyAddress === undefined)
-      throw new Error(
-        `[nox] Chain id ${chainId} is not supported by this plugin. ` +
-          `Supported chain ids: ${Object.keys(NOX_COMPUTE_CONTRACT).join(", ")}.`,
+    if (chainId !== NOX_SUPPORTED_CHAIN_ID) {
+      console.warn(
+        `[nox] Chain id ${chainId} (network='${targetNetworkName}') is not ` +
+          `supported by the plugin's local stack (only ${NOX_SUPPORTED_CHAIN_ID} is). ` +
+          `Skipping stack setup, your tests will run against the network's real endpoint ` +
+          `and may fail if it lacks a Nox deployment.`,
       );
-    chain = { chainId, noxComputeProxyAddress };
+      await runSuper(args);
+      return;
+    }
+    chain = { chainId, noxComputeProxyAddress: NOX_COMPUTE_ADDRESS };
 
     // Mutate the injected `noxLocal` network's chainId so test code that
     // calls `nox.connect()` (which internally creates a connection to

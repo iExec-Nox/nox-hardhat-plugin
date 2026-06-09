@@ -3,7 +3,7 @@ import { describe, it } from "node:test";
 import { createViemHandleClient } from "@iexec-nox/handle";
 import {
   HANDLE_GATEWAY_URL,
-  NOX_COMPUTE_CONTRACT,
+  NOX_COMPUTE_ADDRESS,
   nox,
 } from "@iexec-nox/nox-hardhat-plugin";
 import { waitForHandleResolved } from "../utils/handle-gateway.js";
@@ -33,7 +33,7 @@ describe("MyConfidentialToken end-to-end", () => {
 
       const [walletClient] = await viem.getWalletClients();
       const handleClient = await createViemHandleClient(walletClient, {
-        smartContractAddress: NOX_COMPUTE_CONTRACT[walletClient.chain.id],
+        smartContractAddress: NOX_COMPUTE_ADDRESS,
         gatewayUrl: HANDLE_GATEWAY_URL,
         // For local dev we don't use the subgraph (publicDecrypt only hits the
         // gateway and the chain) but the config validator still requires a URL.
