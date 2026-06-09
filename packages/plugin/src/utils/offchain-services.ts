@@ -2,31 +2,20 @@ import { writeFile } from "node:fs/promises";
 import path from "node:path";
 import { downAll, logs as composeLogs, upAll } from "docker-compose";
 import { ALL_SERVICES, COMPOSE_OPTS } from "../nox-config.js";
-import type { NoxChain } from "../types.js";
 
 /** Bring the offchain stack up and wait for every service to be healthy. */
-export async function startOffchainServices(chain: NoxChain): Promise<void> {
-  console.log(`[nox] Starting offchain services (chainId=${chain.chainId})...`);
+export async function startOffchainServices(): Promise<void> {
+  console.log("[nox] Starting offchain services...");
   await upAll({
     ...COMPOSE_OPTS,
-    env: {
-      ...process.env,
-      NOX_CHAIN_ID: String(chain.chainId),
-      NOX_COMPUTE_CONTRACT: chain.noxComputeProxyAddress,
-    },
     commandOptions: ["--wait", "--remove-orphans"],
   });
 }
 
 /** Tear the offchain stack down. */
-export async function stopOffchainServices(chain: NoxChain): Promise<void> {
+export async function stopOffchainServices(): Promise<void> {
   await downAll({
     ...COMPOSE_OPTS,
-    env: {
-      ...process.env,
-      NOX_CHAIN_ID: String(chain.chainId),
-      NOX_COMPUTE_CONTRACT: chain.noxComputeProxyAddress,
-    },
     commandOptions: ["--volumes", "--remove-orphans"],
   });
 }
@@ -37,14 +26,9 @@ export async function stopOffchainServices(chain: NoxChain): Promise<void> {
  * clean so the Hardhat test report remains readable, while the full trace is
  * available on disk.
  */
-export async function dumpOffchainServicesLogs(chain: NoxChain): Promise<void> {
+export async function dumpOffchainServicesLogs(): Promise<void> {
   const result = await composeLogs(ALL_SERVICES, {
     ...COMPOSE_OPTS,
-    env: {
-      ...process.env,
-      NOX_CHAIN_ID: String(chain.chainId),
-      NOX_COMPUTE_CONTRACT: chain.noxComputeProxyAddress,
-    },
     log: false,
     commandOptions: ["--no-color", "--timestamps"],
   });

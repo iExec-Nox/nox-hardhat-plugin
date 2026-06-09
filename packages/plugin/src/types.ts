@@ -1,4 +1,4 @@
-import type { Abi, Address, Hex } from "viem";
+import type { Abi, Hex } from "viem";
 
 export interface NoxPluginUserConfig {
   /**
@@ -18,10 +18,4 @@ export interface NoxPluginConfig {
 export interface DeploymentArtifact {
   abi: Abi;
   deployedBytecode: Hex;
-}
-
-/** A chain Nox is deployed on, paired with its canonical NoxCompute proxy. */
-export interface NoxChain {
-  chainId: number;
-  noxComputeProxyAddress: Address;
 }

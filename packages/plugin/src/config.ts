@@ -1,6 +1,7 @@
 import type { HardhatUserConfig } from "hardhat/config";
 import type { HardhatConfig } from "hardhat/types/config";
 import type { HardhatUserConfigValidationError } from "hardhat/types/hooks";
+import { NOX_SUPPORTED_CHAIN_ID } from "./nox-config.js";
 
 export const NOX_HOST_NETWORK = "noxHost";
 export const NOX_LOCAL_NETWORK = "noxLocal";
@@ -34,9 +35,7 @@ export async function validatePluginConfig(
 /**
  * Returns a copy of `userConfig` with the plugin's internal networks injected:
  *   - `noxHost`: EDR-simulated, backs the JSON-RPC server we spawn.
- *   - `noxLocal`: HTTP, points at the local server. `chainId` is filled in at
- *     task time once we know which user network is active (so the same
- *     injection works for every chain the plugin supports).
+ *   - `noxLocal`: HTTP, points at the local server (chainId 31337).
  * User-defined entries with the same names win (last spread).
  */
 export function withInjectedNetworks(
@@ -49,6 +48,7 @@ export function withInjectedNetworks(
       [NOX_LOCAL_NETWORK]: {
         type: "http",
         chainType: "op",
+        chainId: NOX_SUPPORTED_CHAIN_ID,
         url: `http://127.0.0.1:${NOX_LOCAL_PORT}`,
       },
       ...userConfig.networks,

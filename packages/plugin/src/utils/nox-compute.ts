@@ -1,78 +1,62 @@
 import {
   createTestClient,
   createWalletClient,
-  defineChain,
   encodeFunctionData,
   http,
   pad,
 } from "viem";
+import { hardhat } from "viem/chains";
 import {
   ERC1967_IMPLEMENTATION_SLOT,
   ERC1967_PROXY_ARTIFACT_PATH,
+  NOX_COMPUTE_ADDRESS,
   NOX_COMPUTE_ARTIFACT_PATH,
   NOX_COMPUTE_IMPL_ADDRESS,
   NOX_GATEWAY_ADDRESS,
   NOX_KMS_PUBLIC_KEY,
 } from "../nox-config.js";
-import type { NoxChain } from "../types.js";
 import { loadDeploymentArtifact } from "./artifacts.js";
 
 /**
- * Install NoxCompute on the target node by mirroring the production Arbitrum
- * Sepolia deployment:
- *   1. `hardhat_setCode` injects the ERC1967Proxy runtime at the well-known
- *      proxy address and the NoxCompute implementation runtime at the impl
- *      address.
- *   2. `hardhat_setStorageAt` writes the implementation address into the
- *      proxy's ERC-1967 slot (normally done by the proxy's constructor,
- *      which we bypass when etching bytecode directly).
+ * Install NoxCompute on the target Hardhat node (chainId 31337):
+ *   1. `setCode` injects the ERC1967Proxy runtime at the canonical address
+ *      and the NoxCompute implementation runtime at a side address.
+ *   2. `setStorageAt` writes the implementation address into the proxy's
+ *      ERC-1967 slot (normally done by the proxy's constructor, which we
+ *      bypass when etching bytecode directly).
  *   3. `initialize(admin, upgrader, kmsPublicKey, gateway)` is called on the
- *      proxy — it delegates to the implementation, sets all config in the
- *      proxy's storage AND emits the zero-handle seed events that the
- *      offchain stack needs to recognize implicit zero handles.
- *
- * Unlike recompiling NoxCompute.sol from source, this uses the exact runtime
- * that's deployed on chain and that the KMS/ingestor were validated against.
+ *      proxy — it sets all config in the proxy's storage AND emits the
+ *      zero-handle seed events that the offchain stack needs.
  */
-export async function deployNoxCompute(
-  rpcUrl: string,
-  chain: NoxChain,
-): Promise<void> {
+export async function deployNoxCompute(rpcUrl: string): Promise<void> {
   const [impl, proxy] = await Promise.all([
     loadDeploymentArtifact(NOX_COMPUTE_ARTIFACT_PATH),
     loadDeploymentArtifact(ERC1967_PROXY_ARTIFACT_PATH),
   ]);
 
-  const viemChain = defineChain({
-    id: chain.chainId,
-    name: `nox-local-${chain.chainId}`,
-    nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
-    rpcUrls: { default: { http: [] } },
-  });
-
   const transport = http(rpcUrl);
   const testClient = createTestClient({
     mode: "hardhat",
-    chain: viemChain,
+    chain: hardhat,
     transport,
   });
-  const walletClient = createWalletClient({ chain: viemChain, transport });
+  const walletClient = createWalletClient({ chain: hardhat, transport });
 
   await testClient.setCode({
     address: NOX_COMPUTE_IMPL_ADDRESS,
     bytecode: impl.deployedBytecode,
   });
   await testClient.setCode({
-    address: chain.noxComputeProxyAddress,
+    address: NOX_COMPUTE_ADDRESS,
     bytecode: proxy.deployedBytecode,
   });
   console.log(
-    `[nox] Etched NoxCompute impl at ${NOX_COMPUTE_IMPL_ADDRESS} and proxy at ${chain.noxComputeProxyAddress}.`,
+    `[nox] Etched NoxCompute impl at ${NOX_COMPUTE_IMPL_ADDRESS} and proxy at ${NOX_COMPUTE_ADDRESS}.`,
   );
 
   // Wire the proxy to its implementation (ERC-1967 slot).
   await testClient.setStorageAt({
-    address: chain.noxComputeProxyAddress,
+    address: NOX_COMPUTE_ADDRESS,
     index: ERC1967_IMPLEMENTATION_SLOT,
     value: pad(NOX_COMPUTE_IMPL_ADDRESS, { size: 32 }),
   });
@@ -83,7 +67,7 @@ export async function deployNoxCompute(
 
   await walletClient.sendTransaction({
     account: deployer,
-    to: chain.noxComputeProxyAddress,
+    to: NOX_COMPUTE_ADDRESS,
     data: encodeFunctionData({
       abi: impl.abi,
       functionName: "initialize",
@@ -91,6 +75,6 @@ export async function deployNoxCompute(
     }),
   });
   console.log(
-    `[nox] NoxCompute initialized (chainId=${chain.chainId}, admin=${deployer}, gateway=${NOX_GATEWAY_ADDRESS}).`,
+    `[nox] NoxCompute initialized (admin=${deployer}, gateway=${NOX_GATEWAY_ADDRESS}).`,
   );
 }
