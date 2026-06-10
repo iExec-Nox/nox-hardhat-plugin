@@ -41,7 +41,8 @@ describe("nox API", () => {
       "ipfs://example",
       7n,
     ]);
-    const handle = (await token.read.confidentialTotalSupply()) as `0x${string}`;
+    const handle =
+      (await token.read.confidentialTotalSupply()) as `0x${string}`;
     await waitForHandleResolved(handle);
     const { value } = await nox.publicDecrypt(handle);
     assert.equal(value, 7n);
@@ -55,7 +56,8 @@ describe("nox API", () => {
       "ipfs://example",
       1n,
     ]);
-    const handle = (await token.read.confidentialTotalSupply()) as `0x${string}`;
+    const handle =
+      (await token.read.confidentialTotalSupply()) as `0x${string}`;
     await assert.rejects(nox.decrypt(handle));
   });
 });
