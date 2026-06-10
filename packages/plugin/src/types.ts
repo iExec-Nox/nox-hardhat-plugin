@@ -1,7 +1,3 @@
-// Side-effect import: pulls in the `viem` field augmentation that
-// `hardhat-toolbox-viem` adds to `NetworkConnection`, which `NoxConnection`
-// below extends.
-import "@nomicfoundation/hardhat-toolbox-viem";
 import type { HandleClient } from "@iexec-nox/handle";
 import type { NetworkConnection } from "hardhat/types/network";
 import type { Abi, Hex } from "viem";

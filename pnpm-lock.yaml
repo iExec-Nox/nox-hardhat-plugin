@@ -54,6 +54,9 @@ importers:
       '@iexec-nox/nox-protocol-contracts':
         specifier: ^0.2.4
         version: 0.2.4
+      '@nomicfoundation/hardhat-toolbox-viem':
+        specifier: ^5.0.3
+        version: 5.0.4(df07e4bff46791463bd8ad7a262e05fa)
       '@openzeppelin/contracts':
         specifier: ^5.6.0
         version: 5.6.1
@@ -67,9 +70,6 @@ importers:
       '@eslint/js':
         specifier: ^9.35.0
         version: 9.35.0
-      '@nomicfoundation/hardhat-toolbox-viem':
-        specifier: ^5.0.3
-        version: 5.0.4(df07e4bff46791463bd8ad7a262e05fa)
       '@tsconfig/node22':
         specifier: ^22.0.2
         version: 22.0.2

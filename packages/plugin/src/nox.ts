@@ -1,3 +1,6 @@
+// Side-effect import: registers the `viem` field augmentation on
+// `NetworkConnection` so `connection.viem.getWalletClients()` below is typed.
+import "@nomicfoundation/hardhat-toolbox-viem";
 import { createViemHandleClient } from "@iexec-nox/handle";
 import { NOX_LOCAL_NETWORK } from "./config.js";
 import { HANDLE_GATEWAY_URL, NOX_COMPUTE_ADDRESS } from "./nox-config.js";
