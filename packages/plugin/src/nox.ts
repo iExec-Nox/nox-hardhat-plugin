@@ -33,13 +33,6 @@ async function connect(): Promise<NoxConnection> {
   return Object.assign(connection, { handleClient });
 }
 
-/**
- * Public entry point for the plugin's local Nox stack. Exposes:
- *   - `connect()` — returns the network connection (`viem`, `provider`, …)
- *     plus a pre-configured `@iexec-nox/handle` client.
- *   - `encryptInput` / `decrypt` / `publicDecrypt` — convenience proxies onto
- *     the handle client so tests don't have to thread it around.
- */
 export const nox = {
   connect,
 
