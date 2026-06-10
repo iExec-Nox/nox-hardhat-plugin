@@ -12,5 +12,6 @@ contract MyConfidentialToken is ERC7984 {
         ERC7984(name_, symbol_, contractURI_)
     {
         _mint(msg.sender, Nox.toEuint256(supply));
+        Nox.allowPublicDecryption(confidentialTotalSupply());
     }
 }

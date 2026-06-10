@@ -2,12 +2,9 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
   HANDLE_GATEWAY_URL,
-  NOX_COMPUTE_PROXY_ADDRESS,
-  RPC_URL,
+  NOX_COMPUTE_ADDRESS,
+  nox,
 } from "@iexec-nox/nox-hardhat-plugin";
-import { createPublicClient, http } from "viem";
-
-const client = createPublicClient({ transport: http(RPC_URL) });
 
 describe("Nox stack", () => {
   it("handle gateway is up", async () => {
@@ -19,10 +16,14 @@ describe("Nox stack", () => {
   });
 
   it("NoxCompute contract is deployed", async () => {
-    const code = await client.getCode({ address: NOX_COMPUTE_PROXY_ADDRESS });
+    const { viem } = await nox.connect();
+    const publicClient = await viem.getPublicClient();
+    const code = await publicClient.getCode({
+      address: NOX_COMPUTE_ADDRESS,
+    });
     assert.ok(
       code !== undefined && code !== "0x",
-      `No contract deployed at ${NOX_COMPUTE_PROXY_ADDRESS}`,
+      `No contract deployed at ${NOX_COMPUTE_ADDRESS}`,
     );
   });
 });

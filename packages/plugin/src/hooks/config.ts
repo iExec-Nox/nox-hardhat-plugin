@@ -1,8 +1,15 @@
 import type { ConfigHooks } from "hardhat/types/hooks";
-import { resolvePluginConfig, validatePluginConfig } from "../config.js";
+import {
+  resolvePluginConfig,
+  validatePluginConfig,
+  withInjectedNetworks,
+} from "../config.js";
 
 export default async (): Promise<Partial<ConfigHooks>> => {
   const handlers: Partial<ConfigHooks> = {
+    async extendUserConfig(userConfig, next) {
+      return next(withInjectedNetworks(userConfig));
+    },
     async validateUserConfig(userConfig) {
       return validatePluginConfig(userConfig);
     },

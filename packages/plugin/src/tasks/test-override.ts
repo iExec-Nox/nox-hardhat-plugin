@@ -1,6 +1,7 @@
 import type { JsonRpcServer } from "hardhat/types/network";
 import type { TaskOverrideActionFunction } from "hardhat/types/tasks";
-import { NOX_CHAIN_ID } from "../nox-config.js";
+import { NOX_HOST_NETWORK, NOX_LOCAL_PORT } from "../config.js";
+import { NOX_SUPPORTED_CHAIN_ID } from "../nox-config.js";
 import { deployNoxCompute } from "../utils/nox-compute.js";
 import {
   dumpOffchainServicesLogs,
@@ -21,22 +22,30 @@ const testWrapperAction: TaskOverrideActionFunction = async (
     return;
   }
 
+  // The plugin's local stack only supports chainId 31337. For any other
+  // network, log a warning and skip the setup — the user's tests then run
+  // against the real endpoint and may fail if it lacks a Nox deployment.
+  const targetNetworkName =
+    hre.globalOptions.network !== undefined && hre.globalOptions.network !== ""
+      ? hre.globalOptions.network
+      : "default";
+  const targetChainId = hre.config.networks[targetNetworkName]?.chainId;
+  if (targetChainId !== NOX_SUPPORTED_CHAIN_ID) {
+    console.warn(
+      `[nox] Chain id ${targetChainId} (network='${targetNetworkName}') is not ` +
+        `supported by the plugin's local stack (only ${NOX_SUPPORTED_CHAIN_ID} is). ` +
+        `Skipping local stack setup.`,
+    );
+    await runSuper(args);
+    return;
+  }
+
   let server: JsonRpcServer | undefined;
   try {
-    // TODO: expose the user-selected network (EDR simulated, mainnet fork,
-    // external http, …) over HTTP instead of hardcoding `createServer` on
-    // the default network / port 8545. The plugin should follow whatever
-    // `--network` the consumer project chose (e.g. a fork of Arbitrum
-    // Sepolia where NoxCompute is already deployed) so that:
-    //   - Docker services read on-chain state matching the user's setup
-    //   - `setCode` can be skipped when the target chain already has
-    //     NoxCompute (fork case)
-    //   - test files reach it via plain `hre.network.connect()` with no
-    //     hardcoded URL / port.
     server = await hre.network.createServer(
-      { override: { chainId: NOX_CHAIN_ID } },
+      { network: NOX_HOST_NETWORK },
       "0.0.0.0",
-      8545,
+      NOX_LOCAL_PORT,
     );
     const { address, port } = await server.listen();
     console.log(`[nox] Hardhat node listening on ${address}:${port}`);

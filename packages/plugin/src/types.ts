@@ -1,3 +1,5 @@
+import type { HandleClient } from "@iexec-nox/handle";
+import type { NetworkConnection } from "hardhat/types/network";
 import type { Abi, Hex } from "viem";
 
 export interface NoxPluginUserConfig {
@@ -19,3 +21,11 @@ export interface DeploymentArtifact {
   abi: Abi;
   deployedBytecode: Hex;
 }
+
+/**
+ * A network connection to the plugin's local Nox stack, augmented with a
+ * pre-configured `@iexec-nox/handle` client.
+ */
+export type NoxConnection = NetworkConnection<"op"> & {
+  handleClient: HandleClient;
+};

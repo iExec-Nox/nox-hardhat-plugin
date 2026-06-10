@@ -36,6 +36,7 @@
     "README.md"
   ],
   "dependencies": {
+    "@iexec-nox/handle": "^0.1.0-beta.11",
     "@iexec-nox/nox-protocol-contracts": "^0.2.4",
     "@openzeppelin/contracts": "^5.6.0",
     "docker-compose": "^1.2.0",
@@ -56,6 +57,7 @@
     "typescript-eslint": "^8.43.0"
   },
   "peerDependencies": {
+    "@nomicfoundation/hardhat-toolbox-viem": "^5.0.3",
     "hardhat": "^3.4.0"
   },
   "homepage": "https://github.com/iExec-Nox/nox-hardhat-plugin#readme",
