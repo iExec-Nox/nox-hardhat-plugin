@@ -14,11 +14,7 @@ import { HANDLE_GATEWAY_URL, NOX_COMPUTE_ADDRESS } from "./nox-config.js";
 import type { NoxConnection } from "./types.js";
 
 async function connect(): Promise<NoxConnection> {
-  if (cachedConnection !== null) return cachedConnection;
-
-  // Dynamic import: a top-level `import { network } from "hardhat"` causes an
-  // unsettled top-level await in Hardhat's CLI bootstrap. Deferring the import
-  // to call time avoids the deadlock.
+  // `hardhat` is imported lazily — a top-level import deadlocks Hardhat's CLI.
   const { network } = await import("hardhat");
   const connection = await network.create<"op">(NOX_LOCAL_NETWORK);
   const [walletClient] = await connection.viem.getWalletClients();
