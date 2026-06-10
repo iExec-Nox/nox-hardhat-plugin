@@ -34,8 +34,7 @@ const testWrapperAction: TaskOverrideActionFunction = async (
     console.warn(
       `[nox] Chain id ${targetChainId} (network='${targetNetworkName}') is not ` +
         `supported by the plugin's local stack (only ${NOX_SUPPORTED_CHAIN_ID} is). ` +
-        `Skipping stack setup, your tests will run against the network's real endpoint ` +
-        `and may fail if it lacks a Nox deployment.`,
+        `Skipping local stack setup.`,
     );
     await runSuper(args);
     return;

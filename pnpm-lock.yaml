@@ -14,9 +14,6 @@ importers:
 
   packages/example-project:
     dependencies:
-      '@iexec-nox/handle':
-        specifier: 0.1.0-beta.11
-        version: 0.1.0-beta.11(ethers@6.16.0)(graphql@16.14.1)(viem@2.48.1(typescript@5.8.3)(zod@3.25.76))
       '@iexec-nox/nox-confidential-contracts':
         specifier: ^0.2.0
         version: 0.2.0
@@ -51,6 +48,9 @@ importers:
 
   packages/plugin:
     dependencies:
+      '@iexec-nox/handle':
+        specifier: ^0.1.0-beta.11
+        version: 0.1.0-beta.11(ethers@6.16.0)(graphql@16.14.1)(viem@2.48.1(typescript@5.8.3)(zod@3.25.76))
       '@iexec-nox/nox-protocol-contracts':
         specifier: ^0.2.4
         version: 0.2.4
@@ -67,6 +67,9 @@ importers:
       '@eslint/js':
         specifier: ^9.35.0
         version: 9.35.0
+      '@nomicfoundation/hardhat-toolbox-viem':
+        specifier: ^5.0.3
+        version: 5.0.4(df07e4bff46791463bd8ad7a262e05fa)
       '@tsconfig/node22':
         specifier: ^22.0.2
         version: 22.0.2
