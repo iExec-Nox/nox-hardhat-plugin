@@ -1,4 +1,6 @@
-# Hardhat 3 plugin template
+<!-- TODO update readme -->
+
+# Hardhat 3 plugin project for Nox
 
 This repository is a template for creating a Hardhat 3 plugin.
 
