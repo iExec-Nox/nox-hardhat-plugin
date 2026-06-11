@@ -1,0 +1,17 @@
+# Build output
+dist/
+**/dist/
+**/artifacts/
+**/cache/
+
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Lockfiles (managed by package managers)
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+
+# Generated logs
+**/offchain-services.log
