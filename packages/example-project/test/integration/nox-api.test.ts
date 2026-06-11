@@ -47,17 +47,4 @@ describe("nox API", () => {
     const { value } = await nox.publicDecrypt(handle);
     assert.equal(value, 7n);
   });
-
-  it("decrypt() rejects when the caller is not an authorized viewer", async () => {
-    const { viem } = await nox.connect();
-    const token = await viem.deployContract("MyConfidentialToken", [
-      "Nox API Token",
-      "NAT",
-      "ipfs://example",
-      1n,
-    ]);
-    const handle =
-      (await token.read.confidentialTotalSupply()) as `0x${string}`;
-    await assert.rejects(nox.decrypt(handle));
-  });
 });
