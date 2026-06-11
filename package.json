@@ -1,5 +1,5 @@
 {
-  "name": "hardhat3-plugin-template",
+  "name": "nox-hardhat-plugin-project",
   "private": true,
   "scripts": {
     "build": "pnpm --recursive build",
