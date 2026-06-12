@@ -1,6 +1,6 @@
 {
   "name": "@iexec-nox/nox-hardhat-plugin",
-  "version": "0.1.0-beta.0",
+  "version": "0.1.0-beta.1",
   "description": "Hardhat 3 plugin that spins up the Nox offchain stack and deploys NoxCompute for local end-to-end tests.",
   "license": "MIT",
   "type": "module",
