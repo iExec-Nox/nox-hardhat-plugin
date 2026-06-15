@@ -8,6 +8,7 @@
     "noEmitOnError": true,
     "noImplicitOverride": true,
     "noUncheckedSideEffectImports": true,
+    "resolveJsonModule": true,
     "skipDefaultLibCheck": true,
     "sourceMap": true,
     "composite": true,
