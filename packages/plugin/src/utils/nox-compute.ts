@@ -54,9 +54,6 @@ export async function deployNoxCompute(rpcUrl: string): Promise<void> {
   if (deployer === undefined)
     throw new Error("[nox] Could not find a signer on the target node.");
 
-  // Deploy the implementation so its constructor runs and bakes the immutables
-  // (EIP712 name/version) into the runtime, then relocate that runtime to the
-  // canonical implementation address the proxy delegatecalls into.
   const implDeployHash = await walletClient.deployContract({
     abi: impl.abi,
     bytecode: impl.bytecode,
