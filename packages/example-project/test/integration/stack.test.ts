@@ -40,9 +40,6 @@ describe("Nox stack", () => {
       abi: NOX_COMPUTE_ABI,
       functionName: "eip712Domain",
     })) as readonly [Hex, string, string, bigint, Address, Hex, readonly bigint[]];
-    // Etching the runtime without running the constructor leaves these
-    // immutables zeroed (empty strings), which breaks the EIP712 domain
-    // separator and makes every input proof revert with "Invalid signature".
     assert.equal(
       name,
       "NoxCompute",
