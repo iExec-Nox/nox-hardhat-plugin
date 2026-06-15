@@ -93,7 +93,7 @@ async function verifyGateway(): Promise<void> {
     );
   }
   const contentType = res.headers.get("content-type") ?? "";
-  if (!res.ok || !contentType.includes("application/json")) {
+  if (!contentType.includes("application/json")) {
     throw new Error(
       `[nox] Handle gateway at ${HANDLE_GATEWAY_URL} does not appear to be the Nox API ` +
         `(expected application/json, got "${contentType}" with HTTP ${res.status}). ` +
