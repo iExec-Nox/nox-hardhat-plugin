@@ -19,6 +19,7 @@ export interface NoxPluginConfig {
 /** Minimal shape the plugin needs from a Hardhat/Ignition deployment artifact. */
 export interface DeploymentArtifact {
   abi: Abi;
+  bytecode: Hex;
   deployedBytecode: Hex;
 }
 

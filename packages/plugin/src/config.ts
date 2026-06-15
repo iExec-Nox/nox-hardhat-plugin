@@ -44,7 +44,11 @@ export function withInjectedNetworks(
   return {
     ...userConfig,
     networks: {
-      [NOX_HOST_NETWORK]: { type: "edr-simulated", chainType: "op" },
+      [NOX_HOST_NETWORK]: {
+        type: "edr-simulated",
+        chainType: "op",
+        allowUnlimitedContractSize: true,
+      },
       [NOX_LOCAL_NETWORK]: {
         type: "http",
         chainType: "op",

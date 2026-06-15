@@ -2,8 +2,8 @@ import { readFile } from "node:fs/promises";
 import type { DeploymentArtifact } from "../types.js";
 
 /**
- * Loads a Hardhat-compiled artifact (ABI + deployedBytecode) from an absolute
- * path.
+ * Loads a Hardhat-compiled artifact (ABI + creation/deployed bytecode) from an
+ * absolute path.
  */
 export async function loadDeploymentArtifact(
   filePath: string,
