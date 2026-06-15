@@ -67,11 +67,15 @@ const testWrapperAction: TaskOverrideActionFunction = async (
   } finally {
     await stopOffchainServices().catch(() => {});
     await server?.close().catch(() => {});
-    // Force-exit after teardown: dangling keep-alive connections from
-    // fetch() (undici) prevent the event loop from draining naturally.
-    // This is the same pattern Jest uses for --forceExit.
-    process.exit(process.exitCode ?? 0);
   }
+  // Only reached when tests completed without throwing (errors propagate past
+  // this point naturally, so Hardhat can print them and exit with code 1).
+  // Flush stdout/stderr then force-exit: undici keep-alive connections from
+  // fetch() calls to the gateway keep the event loop alive indefinitely.
+  const exitCode = process.exitCode ?? 0;
+  await new Promise<void>((r) => process.stdout.write("", () => r()));
+  await new Promise<void>((r) => process.stderr.write("", () => r()));
+  process.exit(exitCode);
 };
 
 export default testWrapperAction;
