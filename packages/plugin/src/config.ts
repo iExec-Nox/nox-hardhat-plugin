@@ -36,17 +36,28 @@ export async function validatePluginConfig(
  * Returns a copy of `userConfig` with the plugin's internal networks injected:
  *   - `noxHost`: EDR-simulated, backs the JSON-RPC server we spawn.
  *   - `noxLocal`: HTTP, points at the local server (chainId 31337).
- * User-defined entries with the same names win (last spread).
+ *
+ * User-supplied keys for `noxHost` / `noxLocal` are deep-merged so that
+ * properties like custom `accounts` survive while required plugin settings
+ * (e.g. `allowUnlimitedContractSize`) always remain set.
  */
 export function withInjectedNetworks(
   userConfig: HardhatUserConfig,
 ): HardhatUserConfig {
+  const userNetworks = userConfig.networks ?? {};
+  const {
+    [NOX_HOST_NETWORK]: userHost,
+    [NOX_LOCAL_NETWORK]: userLocal,
+    ...otherNetworks
+  } = userNetworks;
   return {
     ...userConfig,
     networks: {
       [NOX_HOST_NETWORK]: {
         type: "edr-simulated",
         chainType: "op",
+        ...(userHost as object),
+        // NoxCompute's bytecode exceeds EIP-170's 24 KB contract-size limit.
         allowUnlimitedContractSize: true,
       },
       [NOX_LOCAL_NETWORK]: {
@@ -54,8 +65,9 @@ export function withInjectedNetworks(
         chainType: "op",
         chainId: NOX_SUPPORTED_CHAIN_ID,
         url: `http://127.0.0.1:${NOX_LOCAL_PORT}`,
+        ...(userLocal as object),
       },
-      ...userConfig.networks,
+      ...otherNetworks,
     },
   };
 }
