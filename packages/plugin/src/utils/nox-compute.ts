@@ -1,10 +1,10 @@
 import {
-  createPublicClient,
   createTestClient,
   createWalletClient,
   encodeFunctionData,
   http,
   pad,
+  publicActions,
 } from "viem";
 import { hardhat } from "viem/chains";
 import {
@@ -47,8 +47,10 @@ export async function deployNoxCompute(rpcUrl: string): Promise<void> {
     chain: hardhat,
     transport,
   });
-  const publicClient = createPublicClient({ chain: hardhat, transport });
-  const walletClient = createWalletClient({ chain: hardhat, transport });
+
+  const walletClient = createWalletClient({ chain: hardhat, transport }).extend(
+    publicActions,
+  );
 
   const [deployer] = await walletClient.getAddresses();
   if (deployer === undefined)
@@ -61,10 +63,10 @@ export async function deployNoxCompute(rpcUrl: string): Promise<void> {
     chain: hardhat,
   });
   const { contractAddress: deployedImplAddress } =
-    await publicClient.waitForTransactionReceipt({ hash: implDeployHash });
+    await walletClient.waitForTransactionReceipt({ hash: implDeployHash });
   if (!deployedImplAddress)
     throw new Error("[nox] NoxCompute implementation deployment failed.");
-  const initializedImplRuntime = await publicClient.getCode({
+  const initializedImplRuntime = await walletClient.getCode({
     address: deployedImplAddress,
   });
   if (!initializedImplRuntime || initializedImplRuntime === "0x")
