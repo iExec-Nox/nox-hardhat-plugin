@@ -42,6 +42,28 @@ describe("Nox plugin config", () => {
           0,
         );
       });
+
+      it("Should accept forceExitAfterTest=true", async () => {
+        assert.equal(
+          (
+            await validatePluginConfig({
+              nox: { forceExitAfterTest: true },
+            })
+          ).length,
+          0,
+        );
+      });
+
+      it("Should accept forceExitAfterTest=false", async () => {
+        assert.equal(
+          (
+            await validatePluginConfig({
+              nox: { forceExitAfterTest: false },
+            })
+          ).length,
+          0,
+        );
+      });
     });
 
     describe("Invalid cases", () => {
@@ -69,13 +91,31 @@ describe("Nox plugin config", () => {
           },
         ]);
       });
+
+      it("Should reject a non-boolean forceExitAfterTest", async () => {
+        const errors = await validatePluginConfig({
+          nox: {
+            // @ts-expect-error intentionally invalid
+            forceExitAfterTest: "yes",
+          },
+        });
+        assert.deepEqual(errors, [
+          {
+            path: ["nox", "forceExitAfterTest"],
+            message: "Expected a boolean.",
+          },
+        ]);
+      });
     });
   });
 
   describe("Config resolution", () => {
     it("Should default skipTestOverride to false when nox is missing", async () => {
       const resolved = await resolvePluginConfig({}, {} as HardhatConfig);
-      assert.deepEqual(resolved.nox, { skipTestOverride: false });
+      assert.deepEqual(resolved.nox, {
+        skipTestOverride: false,
+        forceExitAfterTest: true,
+      });
     });
 
     it("Should default skipTestOverride to false on empty nox", async () => {
@@ -83,7 +123,10 @@ describe("Nox plugin config", () => {
         { nox: {} } satisfies HardhatUserConfig,
         {} as HardhatConfig,
       );
-      assert.deepEqual(resolved.nox, { skipTestOverride: false });
+      assert.deepEqual(resolved.nox, {
+        skipTestOverride: false,
+        forceExitAfterTest: true,
+      });
     });
 
     it("Should pass skipTestOverride=true through", async () => {
@@ -91,7 +134,23 @@ describe("Nox plugin config", () => {
         { nox: { skipTestOverride: true } } satisfies HardhatUserConfig,
         {} as HardhatConfig,
       );
-      assert.deepEqual(resolved.nox, { skipTestOverride: true });
+      assert.deepEqual(resolved.nox, {
+        skipTestOverride: true,
+        forceExitAfterTest: true,
+      });
+    });
+
+    it("Should default forceExitAfterTest to true when nox is missing", async () => {
+      const resolved = await resolvePluginConfig({}, {} as HardhatConfig);
+      assert.equal(resolved.nox.forceExitAfterTest, true);
+    });
+
+    it("Should pass forceExitAfterTest=false through", async () => {
+      const resolved = await resolvePluginConfig(
+        { nox: { forceExitAfterTest: false } } satisfies HardhatUserConfig,
+        {} as HardhatConfig,
+      );
+      assert.equal(resolved.nox.forceExitAfterTest, false);
     });
   });
 });
