@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.0-beta.2](https://github.com/iExec-Nox/nox-hardhat-plugin/compare/v0.1.0-beta.1...v0.1.0-beta.2) (2026-06-15)
+
+
+### ✍️ Changed
+
+* run `NoxCompute` constructor so EIP712 immutables are set ([#19](https://github.com/iExec-Nox/nox-hardhat-plugin/issues/19)) ([15cefd4](https://github.com/iExec-Nox/nox-hardhat-plugin/commit/15cefd4bfe522d43072ffa1c56f66a785ba0ac58))
+
 ## [0.1.0-beta.1](https://github.com/iExec-Nox/nox-hardhat-plugin/compare/v0.1.0-beta.0...v0.1.0-beta.1) (2026-06-12)
 
 
