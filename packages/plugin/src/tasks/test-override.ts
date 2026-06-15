@@ -41,6 +41,21 @@ const testWrapperAction: TaskOverrideActionFunction = async (
   }
 
   let server: JsonRpcServer | undefined;
+  // Watchdog timer reference — set after the stack is up, cleared when
+  // runSuper returns. If the Hardhat node:test runner's pipeline() never
+  // resolves (open undici keep-alive sockets prevent event-loop drain,
+  // see nodejs/node#51062), the watchdog fires and force-exits cleanly.
+  let watchdog: NodeJS.Timeout | undefined;
+  const forceExit = async (): Promise<never> => {
+    clearTimeout(watchdog);
+    await stopOffchainServices().catch(() => {});
+    await server?.close().catch(() => {});
+    const exitCode = process.exitCode ?? 0;
+    await new Promise<void>((r) => process.stdout.write("", () => r()));
+    await new Promise<void>((r) => process.stderr.write("", () => r()));
+    process.exit(exitCode);
+  };
+
   try {
     server = await hre.network.createServer(
       { network: NOX_HOST_NETWORK },
@@ -53,6 +68,12 @@ const testWrapperAction: TaskOverrideActionFunction = async (
     await deployNoxCompute(`http://127.0.0.1:${port}`);
     await startOffchainServices();
 
+    // Schedule the watchdog after the stack is up. 5 minutes gives ample
+    // time for any test suite; the timer is unref'd so it never prevents a
+    // normal exit on its own.
+    watchdog = setTimeout(() => void forceExit(), 5 * 60_000);
+    watchdog.unref();
+
     // node:test resolves without throwing when tests fail, it sets
     // process.exitCode instead. Capture it before/after to detect
     // failures and dump logs for diagnostics.
@@ -62,20 +83,16 @@ const testWrapperAction: TaskOverrideActionFunction = async (
       await dumpOffchainServicesLogs().catch(() => {});
     }
   } catch (err) {
+    clearTimeout(watchdog);
     await dumpOffchainServicesLogs().catch(() => {});
     throw err;
   } finally {
+    clearTimeout(watchdog);
     await stopOffchainServices().catch(() => {});
     await server?.close().catch(() => {});
   }
-  // Only reached when tests completed without throwing (errors propagate past
-  // this point naturally, so Hardhat can print them and exit with code 1).
-  // Flush stdout/stderr then force-exit: undici keep-alive connections from
-  // fetch() calls to the gateway keep the event loop alive indefinitely.
-  const exitCode = process.exitCode ?? 0;
-  await new Promise<void>((r) => process.stdout.write("", () => r()));
-  await new Promise<void>((r) => process.stderr.write("", () => r()));
-  process.exit(exitCode);
+  // runSuper returned normally — flush and force-exit.
+  await forceExit();
 };
 
 export default testWrapperAction;
