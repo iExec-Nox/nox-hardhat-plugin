@@ -21,12 +21,7 @@ import { loadDeploymentArtifact } from "./artifacts.js";
 /**
  * Install NoxCompute on the target Hardhat node (chainId 31337):
  *   1. The implementation is *deployed* (not just etched) so its constructor
- *      runs. NoxCompute extends OpenZeppelin `EIP712`, whose name/version (and
- *      domain separator) are `immutable`s baked at construction. Etching the
- *      raw `deployedBytecode` leaves them zeroed, so the on-chain EIP712 domain
- *      separator never matches the gateway/SDK and every `validateInputProof`
- *      reverts with "Invalid signature". We deploy, then copy the
- *      constructor-initialised runtime to the canonical implementation address.
+ *      runs and immutable variables are set.
  *   2. `setCode` injects the ERC1967Proxy runtime at the canonical address.
  *   3. `setStorageAt` writes the implementation address into the proxy's
  *      ERC-1967 slot (normally done by the proxy's constructor, which we
