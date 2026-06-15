@@ -29,6 +29,18 @@ export async function validatePluginConfig(
     ];
   }
 
+  if (
+    nox.forceExitAfterTest !== undefined &&
+    typeof nox.forceExitAfterTest !== "boolean"
+  ) {
+    return [
+      {
+        path: ["nox", "forceExitAfterTest"],
+        message: "Expected a boolean.",
+      },
+    ];
+  }
+
   return [];
 }
 
@@ -68,6 +80,7 @@ export async function resolvePluginConfig(
     ...partiallyResolvedConfig,
     nox: {
       skipTestOverride: userConfig.nox?.skipTestOverride ?? false,
+      forceExitAfterTest: userConfig.nox?.forceExitAfterTest ?? true,
     },
   };
 }

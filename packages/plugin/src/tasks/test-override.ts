@@ -40,11 +40,13 @@ const testWrapperAction: TaskOverrideActionFunction = async (
     return;
   }
 
+  const { forceExitAfterTest } = hre.config.nox;
+
   let server: JsonRpcServer | undefined;
-  // Watchdog timer reference — set after the stack is up, cleared when
-  // runSuper returns. If the Hardhat node:test runner's pipeline() never
-  // resolves (open undici keep-alive sockets prevent event-loop drain,
-  // see nodejs/node#51062), the watchdog fires and force-exits cleanly.
+  // Watchdog timer reference — only used when forceExitAfterTest is true.
+  // If the Hardhat node:test runner's pipeline() never resolves (open undici
+  // keep-alive sockets prevent event-loop drain, see nodejs/node#51062), the
+  // watchdog fires and force-exits cleanly after 5 minutes.
   let watchdog: NodeJS.Timeout | undefined;
   const forceExit = async (): Promise<never> => {
     clearTimeout(watchdog);
@@ -68,11 +70,13 @@ const testWrapperAction: TaskOverrideActionFunction = async (
     await deployNoxCompute(`http://127.0.0.1:${port}`);
     await startOffchainServices();
 
-    // Schedule the watchdog after the stack is up. 5 minutes gives ample
-    // time for any test suite; the timer is unref'd so it never prevents a
-    // normal exit on its own.
-    watchdog = setTimeout(() => void forceExit(), 5 * 60_000);
-    watchdog.unref();
+    if (forceExitAfterTest) {
+      // Schedule the watchdog after the stack is up. 5 minutes gives ample
+      // time for any test suite; the timer is unref'd so it never prevents a
+      // normal exit on its own.
+      watchdog = setTimeout(() => void forceExit(), 5 * 60_000);
+      watchdog.unref();
+    }
 
     // node:test resolves without throwing when tests fail, it sets
     // process.exitCode instead. Capture it before/after to detect
@@ -91,8 +95,9 @@ const testWrapperAction: TaskOverrideActionFunction = async (
     await stopOffchainServices().catch(() => {});
     await server?.close().catch(() => {});
   }
-  // runSuper returned normally — flush and force-exit.
-  await forceExit();
+  if (forceExitAfterTest) {
+    await forceExit();
+  }
 };
 
 export default testWrapperAction;
