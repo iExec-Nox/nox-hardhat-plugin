@@ -44,8 +44,6 @@ export function withInjectedNetworks(
   return {
     ...userConfig,
     networks: {
-      // `allowUnlimitedContractSize` lets us deploy NoxCompute (>24KB) so its
-      // constructor runs, and lets users deploy large confidential contracts.
       [NOX_HOST_NETWORK]: {
         type: "edr-simulated",
         chainType: "op",
