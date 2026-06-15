@@ -98,7 +98,14 @@ const testWrapperAction: TaskOverrideActionFunction = async (
     // rather than appearing mid-setup after the Hardhat node has already started.
     try {
       execFileSync("docker", ["info"], { stdio: "ignore", timeout: 5_000 });
-    } catch {
+    } catch (err) {
+      const code = (err as NodeJS.ErrnoException | undefined)?.code;
+      if (code === "ENOENT") {
+        throw new Error(
+          "[nox] Docker CLI (docker) was not found in PATH. " +
+            "Install Docker (Docker Desktop, OrbStack, Colima, …) before running tests.",
+        );
+      }
       throw new Error(
         "[nox] Docker is not running or unreachable. " +
           "Start Docker (Docker Desktop, OrbStack, Colima, …) before running tests.",

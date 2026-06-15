@@ -60,6 +60,11 @@ The stack is torn down when the test run finishes (or on failure).
 
 ## Troubleshooting
 
+### `[nox] Docker CLI (docker) was not found in PATH`
+
+Install a Docker runtime — Docker Desktop, OrbStack, or Colima all work — and
+make sure the `docker` binary is on your `PATH`.
+
 ### `[nox] Docker is not running or unreachable`
 
 Start your Docker runtime before running `hardhat test`:
@@ -72,10 +77,10 @@ open -a OrbStack
 colima start
 ```
 
-### `[nox] Port 3000 appears to be occupied by a non-Nox service`
+### `[nox] Handle gateway … does not appear to be the Nox API`
 
-Something else (e.g. a Next.js dev server) is listening on port 3000. Stop it
-before running tests:
+Something else (e.g. a Next.js dev server) is listening on the gateway port.
+Stop it before running tests:
 
 ```bash
 # find and kill whatever is on port 3000

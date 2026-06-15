@@ -2,7 +2,11 @@ import { writeFile } from "node:fs/promises";
 import { execFileSync } from "node:child_process";
 import path from "node:path";
 import { downAll, logs as composeLogs, upAll } from "docker-compose";
-import { ALL_SERVICES, COMPOSE_OPTS, HANDLE_GATEWAY_URL } from "../nox-config.js";
+import {
+  ALL_SERVICES,
+  COMPOSE_OPTS,
+  HANDLE_GATEWAY_URL,
+} from "../nox-config.js";
 
 /**
  * Returns the Docker host URL from the active Docker context so the
@@ -48,9 +52,10 @@ export async function startOffchainServices(): Promise<void> {
   // before bringing the stack up. Without this, the ingestor may resume from
   // a persisted block height and miss events emitted by the fresh Hardhat node,
   // causing handle resolution to silently fail for the whole test run.
-  await downAll({ ...opts, commandOptions: ["--volumes", "--remove-orphans"] }).catch(
-    () => {},
-  );
+  await downAll({
+    ...opts,
+    commandOptions: ["--volumes", "--remove-orphans"],
+  }).catch(() => {});
   await upAll({ ...opts, commandOptions: ["--wait", "--remove-orphans"] });
   // Verify the handle gateway is actually serving the Nox API. On macOS,
   // Docker port bindings (especially under OrbStack) can coexist with a host
@@ -82,16 +87,17 @@ async function verifyGateway(): Promise<void> {
       signal: AbortSignal.timeout(5_000),
     });
   } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
     throw new Error(
-      `[nox] Handle gateway at ${HANDLE_GATEWAY_URL} is unreachable after startup: ${err}`,
+      `[nox] Handle gateway at ${HANDLE_GATEWAY_URL} is unreachable after startup: ${msg}`,
     );
   }
   const contentType = res.headers.get("content-type") ?? "";
   if (!res.ok || !contentType.includes("application/json")) {
     throw new Error(
-      `[nox] Port 3000 appears to be occupied by a non-Nox service ` +
+      `[nox] Handle gateway at ${HANDLE_GATEWAY_URL} does not appear to be the Nox API ` +
         `(expected application/json, got "${contentType}" with HTTP ${res.status}). ` +
-        `Free port 3000 before running tests.`,
+        `Ensure the gateway URL/port is free and try again.`,
     );
   }
 }
