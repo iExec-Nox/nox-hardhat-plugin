@@ -19,6 +19,8 @@ export interface NoxPluginConfig {
 /** Minimal shape the plugin needs from a Hardhat/Ignition deployment artifact. */
 export interface DeploymentArtifact {
   abi: Abi;
+  /** Creation bytecode — deployed so the constructor runs and immutables are set. */
+  bytecode: Hex;
   deployedBytecode: Hex;
 }
 

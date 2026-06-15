@@ -1,4 +1,5 @@
 import {
+  createPublicClient,
   createTestClient,
   createWalletClient,
   encodeFunctionData,
@@ -19,12 +20,18 @@ import { loadDeploymentArtifact } from "./artifacts.js";
 
 /**
  * Install NoxCompute on the target Hardhat node (chainId 31337):
- *   1. `setCode` injects the ERC1967Proxy runtime at the canonical address
- *      and the NoxCompute implementation runtime at a side address.
- *   2. `setStorageAt` writes the implementation address into the proxy's
+ *   1. The implementation is *deployed* (not just etched) so its constructor
+ *      runs. NoxCompute extends OpenZeppelin `EIP712`, whose name/version (and
+ *      domain separator) are `immutable`s baked at construction. Etching the
+ *      raw `deployedBytecode` leaves them zeroed, so the on-chain EIP712 domain
+ *      separator never matches the gateway/SDK and every `validateInputProof`
+ *      reverts with "Invalid signature". We deploy, then copy the
+ *      constructor-initialised runtime to the canonical implementation address.
+ *   2. `setCode` injects the ERC1967Proxy runtime at the canonical address.
+ *   3. `setStorageAt` writes the implementation address into the proxy's
  *      ERC-1967 slot (normally done by the proxy's constructor, which we
  *      bypass when etching bytecode directly).
- *   3. `initialize(admin, upgrader, kmsPublicKey, gateway)` is called on the
+ *   4. `initialize(admin, upgrader, kmsPublicKey, gateway)` is called on the
  *      proxy — it sets all config in the proxy's storage AND emits the
  *      zero-handle seed events that the offchain stack needs.
  */
@@ -40,11 +47,35 @@ export async function deployNoxCompute(rpcUrl: string): Promise<void> {
     chain: hardhat,
     transport,
   });
+  const publicClient = createPublicClient({ chain: hardhat, transport });
   const walletClient = createWalletClient({ chain: hardhat, transport });
+
+  const [deployer] = await walletClient.getAddresses();
+  if (deployer === undefined)
+    throw new Error("[nox] Could not find a signer on the target node.");
+
+  // Deploy the implementation so its constructor runs and bakes the immutables
+  // (EIP712 name/version) into the runtime, then relocate that runtime to the
+  // canonical implementation address the proxy delegatecalls into.
+  const implDeployHash = await walletClient.deployContract({
+    abi: impl.abi,
+    bytecode: impl.bytecode,
+    account: deployer,
+    chain: hardhat,
+  });
+  const { contractAddress: deployedImplAddress } =
+    await publicClient.waitForTransactionReceipt({ hash: implDeployHash });
+  if (!deployedImplAddress)
+    throw new Error("[nox] NoxCompute implementation deployment failed.");
+  const initializedImplRuntime = await publicClient.getCode({
+    address: deployedImplAddress,
+  });
+  if (!initializedImplRuntime)
+    throw new Error("[nox] Could not read deployed NoxCompute runtime code.");
 
   await testClient.setCode({
     address: NOX_COMPUTE_IMPL_ADDRESS,
-    bytecode: impl.deployedBytecode,
+    bytecode: initializedImplRuntime,
   });
   await testClient.setCode({
     address: NOX_COMPUTE_ADDRESS,
@@ -60,10 +91,6 @@ export async function deployNoxCompute(rpcUrl: string): Promise<void> {
     index: ERC1967_IMPLEMENTATION_SLOT,
     value: pad(NOX_COMPUTE_IMPL_ADDRESS, { size: 32 }),
   });
-
-  const [deployer] = await walletClient.getAddresses();
-  if (deployer === undefined)
-    throw new Error("[nox] Could not find a signer on the target node.");
 
   await walletClient.sendTransaction({
     account: deployer,
