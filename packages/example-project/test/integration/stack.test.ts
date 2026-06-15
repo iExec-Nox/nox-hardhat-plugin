@@ -39,7 +39,15 @@ describe("Nox stack", () => {
       address: NOX_COMPUTE_ADDRESS,
       abi: NOX_COMPUTE_ABI,
       functionName: "eip712Domain",
-    })) as readonly [Hex, string, string, bigint, Address, Hex, readonly bigint[]];
+    })) as readonly [
+      Hex,
+      string,
+      string,
+      bigint,
+      Address,
+      Hex,
+      readonly bigint[],
+    ];
     assert.equal(
       name,
       "NoxCompute",
