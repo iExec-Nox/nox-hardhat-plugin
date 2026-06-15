@@ -5,6 +5,15 @@ handle gateway, NATS, S3) with Docker Compose and injects the `NoxCompute`
 contract bytecode on the local node, so tests and scripts can exercise the full
 Nox protocol end-to-end.
 
+## Requirements
+
+- **Docker** must be running before you execute `hardhat test`. The plugin starts
+  six services via Docker Compose (NATS, MinIO/S3, KMS, handle gateway, ingestor,
+  runner) and tears them down after the run. Docker Desktop, OrbStack, and Colima
+  all work.
+
+- **Hardhat 3** — this plugin is not compatible with Hardhat 2.
+
 ## Installation
 
 ```bash
@@ -48,3 +57,46 @@ pnpm hardhat test
 ```
 
 The stack is torn down when the test run finishes (or on failure).
+
+## Troubleshooting
+
+### `[nox] Docker is not running or unreachable`
+
+Start your Docker runtime before running `hardhat test`:
+
+```bash
+# Docker Desktop — start from the application
+# OrbStack
+open -a OrbStack
+# Colima
+colima start
+```
+
+### `[nox] Port 3000 appears to be occupied by a non-Nox service`
+
+Something else (e.g. a Next.js dev server) is listening on port 3000. Stop it
+before running tests:
+
+```bash
+# find and kill whatever is on port 3000
+lsof -ti :3000 | xargs kill
+```
+
+### `solidity: "0.8.35"` raises `HHE903: Solidity version … hasn't been released yet`
+
+Hardhat's bundled version list may lag behind the latest `solc` releases. Switch
+to the explicit `profiles` format to force a direct download from soliditylang.org:
+
+```ts
+solidity: {
+  profiles: {
+    default: { version: "0.8.35" },
+  },
+},
+```
+
+### Process hangs after tests finish
+
+Upgrade to `@iexec-nox/nox-hardhat-plugin` ≥ 0.1.0-beta.2 which includes
+`process.exit()` after teardown. See
+[#21](https://github.com/iExec-Nox/nox-hardhat-plugin/issues/21).

@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import type { JsonRpcServer } from "hardhat/types/network";
 import type { TaskOverrideActionFunction } from "hardhat/types/tasks";
 import { NOX_HOST_NETWORK, NOX_LOCAL_PORT } from "../config.js";
@@ -42,6 +43,17 @@ const testWrapperAction: TaskOverrideActionFunction = async (
 
   let server: JsonRpcServer | undefined;
   try {
+    // Fail fast if Docker is not reachable so the error is clear and immediate
+    // rather than appearing mid-setup after the Hardhat node has already started.
+    try {
+      execFileSync("docker", ["info"], { stdio: "ignore", timeout: 5_000 });
+    } catch {
+      throw new Error(
+        "[nox] Docker is not running or unreachable. " +
+          "Start Docker (Docker Desktop, OrbStack, Colima, …) before running tests.",
+      );
+    }
+
     server = await hre.network.createServer(
       { network: NOX_HOST_NETWORK },
       "0.0.0.0",
