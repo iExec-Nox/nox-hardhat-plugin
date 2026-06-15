@@ -67,6 +67,10 @@ const testWrapperAction: TaskOverrideActionFunction = async (
   } finally {
     await stopOffchainServices().catch(() => {});
     await server?.close().catch(() => {});
+    // Force-exit after teardown: dangling keep-alive connections from
+    // fetch() (undici) prevent the event loop from draining naturally.
+    // This is the same pattern Jest uses for --forceExit.
+    process.exit(process.exitCode ?? 0);
   }
 };
 
