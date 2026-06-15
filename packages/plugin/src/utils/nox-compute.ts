@@ -70,7 +70,7 @@ export async function deployNoxCompute(rpcUrl: string): Promise<void> {
   const initializedImplRuntime = await publicClient.getCode({
     address: deployedImplAddress,
   });
-  if (!initializedImplRuntime)
+  if (!initializedImplRuntime || initializedImplRuntime === "0x")
     throw new Error("[nox] Could not read deployed NoxCompute runtime code.");
 
   await testClient.setCode({
