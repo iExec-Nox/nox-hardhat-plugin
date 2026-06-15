@@ -102,6 +102,17 @@ solidity: {
 
 ### Process hangs after tests finish
 
-Upgrade to `@iexec-nox/nox-hardhat-plugin` ≥ 0.1.0-beta.2 which includes
-`process.exit()` after teardown. See
+The plugin calls `process.exit()` after teardown by default to prevent
+open undici keep-alive sockets (from `fetch()` calls in tests) from keeping
+the event loop alive. See
 [#21](https://github.com/iExec-Nox/nox-hardhat-plugin/issues/21).
+
+If you call `hre.run("test")` **programmatically** and need the process to
+remain alive after the test run, opt out of the forced exit:
+
+```ts
+export default defineConfig({
+  nox: { forceExitAfterTest: false },
+  // …
+});
+```

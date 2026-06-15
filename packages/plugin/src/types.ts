@@ -10,10 +10,20 @@ export interface NoxPluginUserConfig {
    * point tests at an already-running stack. Defaults to `false`.
    */
   skipTestOverride?: boolean;
+
+  /**
+   * When `true` (default), the plugin calls `process.exit()` after teardown
+   * to prevent the process from hanging due to undici keep-alive sockets left
+   * open by `fetch()` calls in tests. Set to `false` if you call
+   * `hre.run("test")` programmatically and need the process to stay alive
+   * after the test run. Defaults to `true`.
+   */
+  forceExitAfterTest?: boolean;
 }
 
 export interface NoxPluginConfig {
   skipTestOverride: boolean;
+  forceExitAfterTest: boolean;
 }
 
 /** Minimal shape the plugin needs from a Hardhat/Ignition deployment artifact. */
