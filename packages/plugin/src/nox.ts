@@ -53,15 +53,14 @@ async function waitForHandlesResolved(handles: HexString[]): Promise<void> {
       if (data.payload.statuses.every((s) => s.resolved)) return;
     }
 
-    if (attempt === RESOLVE_MAX_RETRIES - 1) {
-      const seconds = (RESOLVE_MAX_RETRIES * RESOLVE_DELAY_MS) / 1000;
-      throw new Error(
-        `Handles not resolved after ${RESOLVE_MAX_RETRIES} attempts ` +
-          `(${seconds}s): ${handles.join(", ")}`,
-      );
-    }
     await new Promise((r) => setTimeout(r, RESOLVE_DELAY_MS));
   }
+
+  const seconds = (RESOLVE_MAX_RETRIES * RESOLVE_DELAY_MS) / 1000;
+  throw new Error(
+    `Handles not resolved after ${RESOLVE_MAX_RETRIES} attempts ` +
+      `(${seconds}s): ${handles.join(", ")}`,
+  );
 }
 
 export const nox = {

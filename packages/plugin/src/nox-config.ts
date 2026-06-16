@@ -30,9 +30,9 @@ export const HANDLE_GATEWAY_URL = "http://localhost:3000";
 export const RPC_URL = "http://127.0.0.1:8545";
 
 // How long `decrypt`/`publicDecrypt` poll the gateway for a handle to be
-// resolved before giving up: 60 attempts × 2s = 2 minutes.
+// resolved before giving up: 60 attempts × 0.1s = 6s.
 export const RESOLVE_MAX_RETRIES = 60;
-export const RESOLVE_DELAY_MS = 2000;
+export const RESOLVE_DELAY_MS = 100;
 
 const pluginRequire = createRequire(import.meta.url);
 export const NOX_COMPUTE_ARTIFACT_PATH = pluginRequire.resolve(
