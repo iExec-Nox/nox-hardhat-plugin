@@ -13,6 +13,14 @@ import { NOX_LOCAL_NETWORK } from "./config.js";
 import { HANDLE_GATEWAY_URL, NOX_COMPUTE_ADDRESS } from "./nox-config.js";
 import type { NoxConnection } from "./types.js";
 
+/** Options for {@link nox.waitForHandlesResolved}'s polling loop. */
+export interface WaitForHandlesResolvedOptions {
+  /** Maximum number of status polls before giving up. Defaults to `60`. */
+  maxRetries?: number;
+  /** Delay between polls, in milliseconds. Defaults to `2000`. */
+  delayMs?: number;
+}
+
 async function connect(): Promise<NoxConnection> {
   // `hardhat` is imported lazily — a top-level import deadlocks Hardhat's CLI.
   const { network } = await import("hardhat");
@@ -57,5 +65,45 @@ export const nox = {
   }> {
     const { handleClient } = await connect();
     return handleClient.publicDecrypt(handle);
+  },
+
+  /**
+   * Polls the Handle Gateway until every handle has been resolved (i.e. the
+   * offchain stack has finished ingesting the onchain computation), or throws
+   * once `maxRetries` attempts elapse.
+   *
+   * Provided so application test suites don't have to reimplement the polling
+   * loop against the gateway's `/v0/public/handles/status` endpoint.
+   */
+  async waitForHandlesResolved(
+    handles: HexString[],
+    { maxRetries = 60, delayMs = 2000 }: WaitForHandlesResolvedOptions = {},
+  ): Promise<void> {
+    const url = `${HANDLE_GATEWAY_URL}/v0/public/handles/status`;
+
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ handles }),
+      });
+
+      if (response.ok) {
+        const data = (await response.json()) as {
+          payload: {
+            statuses: Array<{ handle: string; resolved: boolean }>;
+          };
+        };
+        if (data.payload.statuses.every((s) => s.resolved)) return;
+      }
+
+      if (attempt === maxRetries - 1) {
+        throw new Error(
+          `Handles not resolved after ${maxRetries} attempts ` +
+            `(${(maxRetries * delayMs) / 1000}s): ${handles.join(", ")}`,
+        );
+      }
+      await new Promise((r) => setTimeout(r, delayMs));
+    }
   },
 };
