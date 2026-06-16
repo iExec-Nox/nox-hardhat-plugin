@@ -1,7 +1,6 @@
 import { strict as assert } from "node:assert";
 import { describe, it } from "node:test";
 import { nox } from "@iexec-nox/nox-hardhat-plugin";
-import { waitForHandleResolved } from "../utils/handle-gateway.js";
 
 describe("nox API", () => {
   it("connect() returns a viem connection and a pre-configured handleClient", async () => {
@@ -43,7 +42,6 @@ describe("nox API", () => {
     ]);
     const handle =
       (await token.read.confidentialTotalSupply()) as `0x${string}`;
-    await waitForHandleResolved(handle);
     const { value } = await nox.publicDecrypt(handle);
     assert.equal(value, 7n);
   });
