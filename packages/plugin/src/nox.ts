@@ -10,7 +10,12 @@ import type {
   SolidityType,
 } from "@iexec-nox/handle";
 import { NOX_LOCAL_NETWORK } from "./config.js";
-import { HANDLE_GATEWAY_URL, NOX_COMPUTE_ADDRESS } from "./nox-config.js";
+import {
+  HANDLE_GATEWAY_URL,
+  NOX_COMPUTE_ADDRESS,
+  RESOLVE_DELAY_MS,
+  RESOLVE_MAX_RETRIES,
+} from "./nox-config.js";
 import type { NoxConnection } from "./types.js";
 
 async function connect(): Promise<NoxConnection> {
@@ -29,6 +34,42 @@ async function connect(): Promise<NoxConnection> {
   return Object.assign(connection, { handleClient });
 }
 
+async function waitForHandlesResolved(handles: HexString[]): Promise<void> {
+  const url = `${HANDLE_GATEWAY_URL}/v0/public/handles/status`;
+
+  for (let attempt = 0; attempt < RESOLVE_MAX_RETRIES; attempt++) {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ handles }),
+    });
+
+    if (response.ok) {
+      const data = (await response.json()) as {
+        payload: {
+          statuses: Array<{ handle: string; resolved: boolean }>;
+        };
+      };
+
+      const resolvedByHandle = new Map(
+        data.payload.statuses.map((s) => [s.handle.toLowerCase(), s.resolved]),
+      );
+      const allResolved = handles.every(
+        (h) => resolvedByHandle.get(h.toLowerCase()) === true,
+      );
+      if (allResolved) return;
+    }
+
+    await new Promise((r) => setTimeout(r, RESOLVE_DELAY_MS));
+  }
+
+  const seconds = (RESOLVE_MAX_RETRIES * RESOLVE_DELAY_MS) / 1000;
+  throw new Error(
+    `Handles not resolved after ${RESOLVE_MAX_RETRIES} attempts ` +
+      `(${seconds}s): ${handles.join(", ")}`,
+  );
+}
+
 export const nox = {
   connect,
 
@@ -45,6 +86,7 @@ export const nox = {
     handle: Handle<T>,
   ): Promise<{ value: JsValue<T>; solidityType: T }> {
     const { handleClient } = await connect();
+    await waitForHandlesResolved([handle]);
     return handleClient.decrypt(handle);
   },
 
@@ -56,6 +98,7 @@ export const nox = {
     decryptionProof: HexString;
   }> {
     const { handleClient } = await connect();
+    await waitForHandlesResolved([handle]);
     return handleClient.publicDecrypt(handle);
   },
 };

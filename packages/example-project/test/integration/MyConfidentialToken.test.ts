@@ -1,7 +1,6 @@
 import { strict as assert } from "node:assert";
 import { describe, it } from "node:test";
 import { nox } from "@iexec-nox/nox-hardhat-plugin";
-import { waitForHandleResolved } from "../utils/handle-gateway.js";
 
 const INITIAL_SUPPLY = 1000n;
 
@@ -21,7 +20,6 @@ describe("MyConfidentialToken end-to-end", () => {
 
       const totalSupplyHandle =
         (await token.read.confidentialTotalSupply()) as `0x${string}`;
-      await waitForHandleResolved(totalSupplyHandle);
 
       const { value } = await nox.publicDecrypt(totalSupplyHandle);
       assert.equal(value, INITIAL_SUPPLY);
