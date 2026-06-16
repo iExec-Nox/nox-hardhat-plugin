@@ -50,7 +50,14 @@ async function waitForHandlesResolved(handles: HexString[]): Promise<void> {
           statuses: Array<{ handle: string; resolved: boolean }>;
         };
       };
-      if (data.payload.statuses.every((s) => s.resolved)) return;
+
+      const resolvedByHandle = new Map(
+        data.payload.statuses.map((s) => [s.handle.toLowerCase(), s.resolved]),
+      );
+      const allResolved = handles.every(
+        (h) => resolvedByHandle.get(h.toLowerCase()) === true,
+      );
+      if (allResolved) return;
     }
 
     if (attempt === RESOLVE_MAX_RETRIES - 1) {
