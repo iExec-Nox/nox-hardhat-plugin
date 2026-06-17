@@ -17,12 +17,25 @@ import {
  * Background: since `@nomicfoundation/hardhat-node-test-runner@3.0.14`
  * (https://github.com/NomicFoundation/hardhat/pull/8142) the runner executes
  * `node:test` with `isolation: "none"`, i.e. in-process instead of one
- * subprocess per file. With in-process execution `run()` only settles once the
- * event loop has no pending ref'd handles. The RPC node we open on port 8545
- * (plus the keep-alive connections the Docker stack holds against it) are such
- * handles, but the plugin only closes them in the `finally` that runs *after*
- * `runSuper()` resolves, a circular wait that hangs `hardhat test` forever.
+ * subprocess per file.
  *
+ * Why this matters: the plugin opens the RPC node (and the Docker stack opens
+ * keep-alive connections to it) in the *main* Hardhat process. With the old
+ * per-file subprocess isolation, the test run finished when those child
+ * processes exited, a signal completely independent of the main process's own
+ * open handles, so port 8545 never kept the run from completing. With
+ * `isolation: "none"` there are no child processes: the tests and the RPC
+ * server now share a single event loop, and `run()` only settles once that
+ * loop has no pending ref'd handles. The RPC node on port 8545 (plus the
+ * keep-alive connections held against it) are exactly such handles, but the
+ * plugin only closes them in the `finally` that runs *after* `runSuper()`
+ * resolves, a circular wait that hangs `hardhat test` forever.
+ *
+ * The fix: right after `listen()`, `unref()` the server handle and every
+ * incoming socket so they no longer keep the event loop alive. The server
+ * stays fully functional during the run (pending RPC calls and timers keep the
+ * loop alive), `run()` can settle once the tests are done, and the `finally`
+ * still closes everything cleanly. On older runners this is a harmless no-op.
  */
 function unrefRpcServerHandles(port: number): void {
   const getActiveHandles = (
