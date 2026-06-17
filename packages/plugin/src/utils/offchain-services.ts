@@ -1,23 +1,108 @@
 import { writeFile } from "node:fs/promises";
 import path from "node:path";
 import { downAll, logs as composeLogs, upAll } from "docker-compose";
-import { COMPOSE_OPTS, ALL_SERVICES } from "../nox-config.js";
+import {
+  ALL_SERVICES,
+  COMPOSE_OPTS,
+  HANDLE_GATEWAY_DEFAULT_PORT,
+  HANDLE_GATEWAY_HOST_PORT_ENV,
+} from "../nox-config.js";
+import { resolveAvailablePort } from "./net.js";
 
-/** Bring the offchain stack up and wait for every service to be healthy. */
+/**
+ * Translate the (often cryptic) errors thrown by `docker compose` into a clear,
+ * actionable message, or return `undefined` when the error isn't one we
+ * specifically recognize.
+ *
+ * The `docker-compose` library rejects with `{ exitCode, err, out }` (stderr in
+ * `err`) on a non-zero exit, or with a real `Error` (e.g. `ENOENT`) when the
+ * `docker` CLI itself can't be spawned.
+ */
+export function describeDockerError(error: unknown): string | undefined {
+  if (
+    error instanceof Error &&
+    (error as NodeJS.ErrnoException).code === "ENOENT"
+  ) {
+    return "Docker CLI not found. Is Docker installed and on your PATH?";
+  }
+
+  const stderr =
+    typeof error === "object" && error !== null && "err" in error
+      ? String((error as { err: unknown }).err)
+      : "";
+
+  if (
+    /cannot connect to the docker daemon|is the docker daemon running|docker daemon is not running|dial unix .*docker\.sock/i.test(
+      stderr,
+    )
+  ) {
+    return (
+      "Cannot connect to the Docker daemon. Is Docker running? " +
+      "Start Docker Desktop (or the docker service) and try again."
+    );
+  }
+
+  return undefined;
+}
+
+/** Run a docker-compose operation, rethrowing failures with a clean message. */
+async function runCompose<T>(action: string, op: () => Promise<T>): Promise<T> {
+  try {
+    return await op();
+  } catch (error) {
+    const recognized = describeDockerError(error);
+    if (recognized !== undefined) {
+      throw new Error(`[nox] ${recognized}`);
+    }
+    const detail =
+      typeof error === "object" && error !== null && "err" in error
+        ? String((error as { err: unknown }).err).trim()
+        : error instanceof Error
+          ? error.message
+          : String(error);
+    throw new Error(`[nox] Failed to ${action} the offchain stack:\n${detail}`);
+  }
+}
+
+/**
+ * Bring the offchain stack up and wait for every service to be healthy.
+ *
+ * Before starting we tear down any stack left over from a previous run (e.g. a
+ * crash that skipped teardown) so stale containers and ports don't collide, and
+ * we publish the handle gateway on a free host port (falling back from 3000 when
+ * it is taken), exposing the choice through `HANDLE_GATEWAY_HOST_PORT_ENV`.
+ */
 export async function startOffchainServices(): Promise<void> {
+  // Best-effort cleanup of a lingering stack; a real failure (e.g. Docker not
+  // running) surfaces below with a clean message from `runCompose`.
+  await stopOffchainServices().catch(() => {});
+
+  const gatewayPort = await resolveAvailablePort(HANDLE_GATEWAY_DEFAULT_PORT);
+  process.env[HANDLE_GATEWAY_HOST_PORT_ENV] = String(gatewayPort);
+  if (gatewayPort !== HANDLE_GATEWAY_DEFAULT_PORT) {
+    console.warn(
+      `[nox] Host port ${HANDLE_GATEWAY_DEFAULT_PORT} is busy; ` +
+        `publishing the handle gateway on ${gatewayPort} instead.`,
+    );
+  }
+
   console.log("[nox] Starting offchain services...");
-  await upAll({
-    ...COMPOSE_OPTS,
-    commandOptions: ["--wait", "--remove-orphans"],
-  });
+  await runCompose("start", () =>
+    upAll({
+      ...COMPOSE_OPTS,
+      commandOptions: ["--wait", "--remove-orphans"],
+    }),
+  );
 }
 
 /** Tear the offchain stack down. */
 export async function stopOffchainServices(): Promise<void> {
-  await downAll({
-    ...COMPOSE_OPTS,
-    commandOptions: ["--volumes", "--remove-orphans"],
-  });
+  await runCompose("stop", () =>
+    downAll({
+      ...COMPOSE_OPTS,
+      commandOptions: ["--volumes", "--remove-orphans"],
+    }),
+  );
 }
 
 /**

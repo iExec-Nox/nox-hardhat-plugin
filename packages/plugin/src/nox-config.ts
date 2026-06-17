@@ -26,7 +26,30 @@ export const NOX_KMS_PUBLIC_KEY: Hex =
 export const NOX_GATEWAY_ADDRESS: Address =
   "0xE1a6B1De3AbF04e7FA5355373880350Dc3004D0e";
 
-export const HANDLE_GATEWAY_URL = "http://localhost:3000";
+// Host port the handle gateway is published on. Defaults to 3000 but the stack
+// startup falls back to an OS-assigned free port when 3000 is taken, exposing
+// the chosen value through this env var so the in-process (and subprocess) test
+// clients resolve the same URL via `handleGatewayUrl()`.
+export const HANDLE_GATEWAY_DEFAULT_PORT = 3000;
+export const HANDLE_GATEWAY_HOST_PORT_ENV = "NOX_HANDLE_GATEWAY_HOST_PORT";
+
+/** Resolved host port of the handle gateway (env override, else 3000). */
+export function handleGatewayPort(): number {
+  const raw = process.env[HANDLE_GATEWAY_HOST_PORT_ENV];
+  const parsed = raw === undefined ? Number.NaN : Number(raw);
+  return Number.isInteger(parsed) && parsed > 0
+    ? parsed
+    : HANDLE_GATEWAY_DEFAULT_PORT;
+}
+
+/** Base URL of the handle gateway, reflecting the resolved host port. */
+export function handleGatewayUrl(): `http://${string}` {
+  return `http://localhost:${handleGatewayPort()}`;
+}
+
+// Default gateway URL (port 3000). Internal code uses `handleGatewayUrl()` so it
+// honours a remapped port; this constant stays for the public re-export.
+export const HANDLE_GATEWAY_URL = `http://localhost:${HANDLE_GATEWAY_DEFAULT_PORT}`;
 export const RPC_URL = "http://127.0.0.1:8545";
 
 // How long `decrypt`/`publicDecrypt` poll the gateway for a handle to be

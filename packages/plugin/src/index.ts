@@ -4,6 +4,7 @@ import "./type-extensions.js";
 export {
   NOX_COMPUTE_ADDRESS,
   HANDLE_GATEWAY_URL,
+  handleGatewayUrl,
   RPC_URL,
 } from "./nox-config.js";
 export { nox } from "./nox.js";

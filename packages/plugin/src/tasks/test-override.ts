@@ -2,6 +2,7 @@ import type { JsonRpcServer } from "hardhat/types/network";
 import type { TaskOverrideActionFunction } from "hardhat/types/tasks";
 import { NOX_HOST_NETWORK, NOX_LOCAL_PORT } from "../config.js";
 import { NOX_SUPPORTED_CHAIN_ID } from "../nox-config.js";
+import { isPortAvailable } from "../utils/net.js";
 import { deployNoxCompute } from "../utils/nox-compute.js";
 import {
   dumpOffchainServicesLogs,
@@ -38,6 +39,14 @@ const testWrapperAction: TaskOverrideActionFunction = async (
     );
     await runSuper(args);
     return;
+  }
+
+  if (!(await isPortAvailable(NOX_LOCAL_PORT))) {
+    throw new Error(
+      `[nox] Port ${NOX_LOCAL_PORT} is already in use. A Hardhat node ` +
+        `(or another process) is already bound to it. Stop it and re-run ` +
+        `\`hardhat test\`.`,
+    );
   }
 
   let server: JsonRpcServer | undefined;

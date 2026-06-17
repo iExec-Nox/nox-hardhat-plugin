@@ -11,7 +11,7 @@ import type {
 } from "@iexec-nox/handle";
 import { NOX_LOCAL_NETWORK } from "./config.js";
 import {
-  HANDLE_GATEWAY_URL,
+  handleGatewayUrl,
   NOX_COMPUTE_ADDRESS,
   RESOLVE_DELAY_MS,
   RESOLVE_MAX_RETRIES,
@@ -25,7 +25,7 @@ async function connect(): Promise<NoxConnection> {
   const [walletClient] = await connection.viem.getWalletClients();
   const handleClient = await createViemHandleClient(walletClient, {
     smartContractAddress: NOX_COMPUTE_ADDRESS,
-    gatewayUrl: HANDLE_GATEWAY_URL,
+    gatewayUrl: handleGatewayUrl(),
     // The Handle SDK requires a subgraph URL for config validation even when
     // the calling code never queries it (publicDecrypt only hits the gateway
     // + the chain). Placeholder.
@@ -35,7 +35,7 @@ async function connect(): Promise<NoxConnection> {
 }
 
 async function waitForHandlesResolved(handles: HexString[]): Promise<void> {
-  const url = `${HANDLE_GATEWAY_URL}/v0/public/handles/status`;
+  const url = `${handleGatewayUrl()}/v0/public/handles/status`;
 
   for (let attempt = 0; attempt < RESOLVE_MAX_RETRIES; attempt++) {
     const response = await fetch(url, {

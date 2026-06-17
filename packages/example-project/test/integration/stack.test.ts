@@ -3,7 +3,7 @@ import { describe, it } from "node:test";
 import type { Abi, Address, Hex } from "viem";
 import { zeroAddress } from "viem";
 import {
-  HANDLE_GATEWAY_URL,
+  handleGatewayUrl,
   NOX_COMPUTE_ADDRESS,
   nox,
 } from "@iexec-nox/nox-hardhat-plugin";
@@ -13,7 +13,7 @@ const NOX_COMPUTE_ABI = NoxComputeArtifact.abi as Abi;
 
 describe("Nox stack", () => {
   it("handle gateway is up", async () => {
-    const response = await fetch(HANDLE_GATEWAY_URL);
+    const response = await fetch(handleGatewayUrl());
     assert.ok(
       response.ok,
       `Handle gateway health check failed with status ${response.status}`,
