@@ -13,11 +13,15 @@
     "@iexec-nox/nox-protocol-contracts": "^0.2.4",
     "viem": "^2.46.3"
   },
+  "__dependenciesComments": {
+    "@nomicfoundation/hardhat-node-test-runner": "Pinned explicitly only because toolbox-viem@5.0.7 declares the runner as a peerDependency, which pnpm otherwise resolves to 3.0.9; we need >=3.0.14 (in-process runner) to exercise the plugin's hang fix. Can be removed once the peer resolves to >=3.0.14 on its own."
+  },
   "devDependencies": {
-    "@nomicfoundation/hardhat-toolbox-viem": "^5.0.3",
+    "@nomicfoundation/hardhat-node-test-runner": "^3.0.17",
+    "@nomicfoundation/hardhat-toolbox-viem": "^5.0.7",
     "@tsconfig/node22": "^22.0.2",
     "@types/node": "^22.11.0",
-    "hardhat": "^3.4.0",
+    "hardhat": "^3.9.0",
     "@iexec-nox/nox-hardhat-plugin": "workspace:*",
     "typescript": "~5.8.0",
     "forge-std": "github:foundry-rs/forge-std#v1.9.4"
