@@ -1,3 +1,4 @@
+import type { Server } from "node:net";
 import type { JsonRpcServer } from "hardhat/types/network";
 import type { TaskOverrideActionFunction } from "hardhat/types/tasks";
 import { NOX_HOST_NETWORK, NOX_LOCAL_PORT } from "../config.js";
@@ -8,6 +9,43 @@ import {
   startOffchainServices,
   stopOffchainServices,
 } from "../utils/offchain-services.js";
+
+/**
+ * Stop the local JSON-RPC server (and its accepted connections) from keeping
+ * the Node.js event loop alive, without closing it.
+ *
+ * Background: since `@nomicfoundation/hardhat-node-test-runner@3.0.14`
+ * (https://github.com/NomicFoundation/hardhat/pull/8142) the runner executes
+ * `node:test` with `isolation: "none"`, i.e. in-process instead of one
+ * subprocess per file. With in-process execution `run()` only settles once the
+ * event loop has no pending ref'd handles. The RPC node we open on port 8545
+ * (plus the keep-alive connections the Docker stack holds against it) are such
+ * handles, but the plugin only closes them in the `finally` that runs *after*
+ * `runSuper()` resolves, a circular wait that hangs `hardhat test` forever.
+ *
+ */
+function unrefRpcServerHandles(port: number): void {
+  const getActiveHandles = (
+    process as unknown as { _getActiveHandles?: () => unknown[] }
+  )._getActiveHandles;
+  if (typeof getActiveHandles !== "function") {
+    return;
+  }
+
+  for (const handle of getActiveHandles.call(process)) {
+    const server = handle as Partial<Server>;
+    const address = server.address?.();
+    if (
+      typeof address === "object" &&
+      address !== null &&
+      "port" in address &&
+      address.port === port
+    ) {
+      server.unref?.();
+      server.on?.("connection", (socket) => socket.unref());
+    }
+  }
+}
 
 const testWrapperAction: TaskOverrideActionFunction = async (
   args,
@@ -49,6 +87,8 @@ const testWrapperAction: TaskOverrideActionFunction = async (
     );
     const { address, port } = await server.listen();
     console.log(`[nox] Hardhat node listening on ${address}:${port}`);
+
+    unrefRpcServerHandles(port);
 
     await deployNoxCompute(`http://127.0.0.1:${port}`);
     await startOffchainServices();
