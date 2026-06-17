@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.0-beta.3](https://github.com/iExec-Nox/nox-hardhat-plugin/compare/v0.1.0-beta.2...v0.1.0-beta.3) (2026-06-17)
+
+
+### 🚀 Added
+
+* transparent `waitForHandleResolved` ([#25](https://github.com/iExec-Nox/nox-hardhat-plugin/issues/25)) ([896163f](https://github.com/iExec-Nox/nox-hardhat-plugin/commit/896163f34b589812d5d6e24d2df83c10bdeec52b))
+
+
+### ✍️ Changed
+
+* test runner hang ([8c5038e](https://github.com/iExec-Nox/nox-hardhat-plugin/commit/8c5038e0a9c2049c78efcde8fa707310923f4cee))
+
 ## [0.1.0-beta.2](https://github.com/iExec-Nox/nox-hardhat-plugin/compare/v0.1.0-beta.1...v0.1.0-beta.2) (2026-06-15)
 
 
