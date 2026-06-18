@@ -1,11 +1,5 @@
 import net from "node:net";
 
-/**
- * Resolve to `true` if `port` can be bound on `host`, `false` if it is already
- * in use. Best-effort pre-flight check: there is an inherent race between this
- * probe and whoever binds the port next, but it is enough to surface a clear
- * error or pick another port before Docker / Hardhat try (and fail) to bind.
- */
 export function isPortAvailable(
   port: number,
   host = "0.0.0.0",
@@ -21,7 +15,15 @@ export function isPortAvailable(
   });
 }
 
-/** Ask the OS for an unused port by binding to port 0. */
+/**
+ * Ask the kernel for an available port by binding to port 0: the OS then picks
+ * a free ephemeral port for us, which we read back before closing the probe
+ * server to release it.
+ *
+ * This is inherently best-effort: between releasing the port here and
+ * Docker actually binding it, there is a tiny window in which another process
+ * could theoretically grab it. In practice this is negligible.
+ */
 function getRandomFreePort(host: string): Promise<number> {
   return new Promise((resolve, reject) => {
     const tester = net.createServer();
