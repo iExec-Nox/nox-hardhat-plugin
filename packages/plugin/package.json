@@ -49,6 +49,9 @@
     "eslint": "^9.35.0",
     "eslint-import-resolver-typescript": "^4.4.4",
     "eslint-plugin-import": "^2.32.0",
+    "@nomicfoundation/hardhat-ethers": "^4.0.13",
+    "@nomicfoundation/hardhat-toolbox-viem": "^5.0.3",
+    "ethers": "^6.0.0",
     "hardhat": "^3.9.0",
     "prettier": "3.6.2",
     "rimraf": "^5.0.5",
@@ -57,8 +60,17 @@
     "typescript-eslint": "^8.43.0"
   },
   "peerDependencies": {
+    "@nomicfoundation/hardhat-ethers": "^4.0.0",
     "@nomicfoundation/hardhat-toolbox-viem": "^5.0.3",
     "hardhat": "^3.4.0"
+  },
+  "peerDependenciesMeta": {
+    "@nomicfoundation/hardhat-ethers": {
+      "optional": true
+    },
+    "@nomicfoundation/hardhat-toolbox-viem": {
+      "optional": true
+    }
   },
   "homepage": "https://github.com/iExec-Nox/nox-hardhat-plugin#readme",
   "repository": {

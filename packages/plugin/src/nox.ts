@@ -1,7 +1,3 @@
-// Side-effect import: registers the `viem` field augmentation on
-// `NetworkConnection` so `connection.viem.getWalletClients()` below is typed.
-import "@nomicfoundation/hardhat-toolbox-viem";
-import { createViemHandleClient } from "@iexec-nox/handle";
 import type {
   EthereumAddress,
   Handle,
@@ -17,13 +13,14 @@ import {
   RESOLVE_MAX_RETRIES,
 } from "./nox-config.js";
 import type { NoxConnection } from "./types.js";
+import { createHandleClient } from "./utils/handle-client.js";
 
 async function connect(): Promise<NoxConnection> {
   // `hardhat` is imported lazily — a top-level import deadlocks Hardhat's CLI.
   const { network } = await import("hardhat");
   const connection = await network.create<"op">(NOX_LOCAL_NETWORK);
-  const [walletClient] = await connection.viem.getWalletClients();
-  const handleClient = await createViemHandleClient(walletClient, {
+  // Works with either toolbox (viem or ethers), auto-detected from `connection`.
+  const handleClient = await createHandleClient(connection, {
     smartContractAddress: NOX_COMPUTE_ADDRESS,
     gatewayUrl: HANDLE_GATEWAY_URL,
     // The Handle SDK requires a subgraph URL for config validation even when
