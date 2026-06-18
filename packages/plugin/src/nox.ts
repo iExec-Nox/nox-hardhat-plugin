@@ -9,6 +9,7 @@ import type {
   JsValue,
   SolidityType,
 } from "@iexec-nox/handle";
+import type { WalletClient } from "viem";
 import { NOX_LOCAL_NETWORK } from "./config.js";
 import {
   HANDLE_GATEWAY_URL,
@@ -77,7 +78,29 @@ export const nox = {
     value: JsValue<T>,
     solidityType: T,
     applicationContract: EthereumAddress,
+    signer?: WalletClient,
   ): Promise<{ handle: Handle<T>; handleProof: HexString }> {
+    if (signer) {
+      // The handle SDK calls walletClient.getAddresses()[0] to determine the
+      // proof owner. On a Hardhat provider, getAddresses() returns ALL test
+      // accounts, so the SDK always uses account[0] regardless of which wallet
+      // client was passed. Override getAddresses to expose only the intended
+      // signer so the generated proof is bound to the correct address.
+      const address = signer.account?.address;
+      if (!address) throw new Error("[nox] encryptInput: signer has no account");
+      const singleAccountClient = Object.create(signer) as WalletClient;
+      (singleAccountClient as unknown as Record<string, unknown>).getAddresses =
+        async () => [address];
+      const handleClient = await createViemHandleClient(
+        singleAccountClient as Parameters<typeof createViemHandleClient>[0],
+        {
+          smartContractAddress: NOX_COMPUTE_ADDRESS,
+          gatewayUrl: HANDLE_GATEWAY_URL,
+          subgraphUrl: "https://example.com/subgraphs/id/none",
+        },
+      );
+      return handleClient.encryptInput(value, solidityType, applicationContract);
+    }
     const { handleClient } = await connect();
     return handleClient.encryptInput(value, solidityType, applicationContract);
   },
