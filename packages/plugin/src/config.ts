@@ -66,18 +66,20 @@ export function withInjectedNetworks(
     ...userConfig,
     networks: {
       [NOX_HOST_NETWORK]: {
+        ...(userHost as object),
+        // Required fields come after so users cannot accidentally override them.
         type: "edr-simulated",
         chainType: "op",
-        ...(userHost as object),
         // NoxCompute's bytecode exceeds EIP-170's 24 KB contract-size limit.
         allowUnlimitedContractSize: true,
       },
       [NOX_LOCAL_NETWORK]: {
+        ...(userLocal as object),
+        // Required fields come after so users cannot accidentally override them.
         type: "http",
         chainType: "op",
         chainId: NOX_SUPPORTED_CHAIN_ID,
         url: `http://127.0.0.1:${NOX_LOCAL_PORT}`,
-        ...(userLocal as object),
       },
       ...otherNetworks,
     },

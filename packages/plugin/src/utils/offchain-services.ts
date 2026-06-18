@@ -22,10 +22,18 @@ import {
 function resolveDockerHost(): string | undefined {
   if (process.env.DOCKER_HOST) return process.env.DOCKER_HOST;
   try {
+    // Get the active context name first so the subsequent inspect call targets
+    // an explicit context rather than relying on argless `docker context inspect`
+    // which may error or resolve ambiguously when multiple contexts exist.
+    const context = execFileSync("docker", ["context", "show"], {
+      encoding: "utf-8",
+      timeout: 5_000,
+    }).trim();
+    if (!context) return undefined;
     return (
       execFileSync(
         "docker",
-        ["context", "inspect", "--format", "{{.Endpoints.docker.Host}}"],
+        ["context", "inspect", context, "--format", "{{.Endpoints.docker.Host}}"],
         { encoding: "utf-8", timeout: 5_000 },
       ).trim() || undefined
     );
@@ -90,6 +98,12 @@ async function verifyGateway(): Promise<void> {
     const msg = err instanceof Error ? err.message : String(err);
     throw new Error(
       `[nox] Handle gateway at ${HANDLE_GATEWAY_URL} is unreachable after startup: ${msg}`,
+    );
+  }
+  if (!res.ok) {
+    throw new Error(
+      `[nox] Handle gateway at ${HANDLE_GATEWAY_URL} returned HTTP ${res.status} during startup. ` +
+        `Ensure the gateway URL/port is correct and try again.`,
     );
   }
   const contentType = res.headers.get("content-type") ?? "";
