@@ -30,7 +30,10 @@ export function describeDockerError(error: unknown): string | undefined {
   return undefined;
 }
 
-async function runCompose<T>(action: string, op: () => Promise<T>): Promise<T> {
+async function runComposeWithCleanErrors<T>(
+  action: string,
+  op: () => Promise<T>,
+): Promise<T> {
   try {
     return await op();
   } catch (error) {
@@ -61,7 +64,7 @@ export async function startOffchainServices(): Promise<void> {
   }
 
   console.log("[nox] Starting offchain services...");
-  await runCompose("start", () =>
+  await runComposeWithCleanErrors("start", () =>
     upAll({
       ...COMPOSE_OPTS,
       commandOptions: ["--wait", "--remove-orphans"],
@@ -71,7 +74,7 @@ export async function startOffchainServices(): Promise<void> {
 
 /** Tear the offchain stack down. */
 export async function stopOffchainServices(): Promise<void> {
-  await runCompose("stop", () =>
+  await runComposeWithCleanErrors("stop", () =>
     downAll({
       ...COMPOSE_OPTS,
       commandOptions: ["--volumes", "--remove-orphans"],
