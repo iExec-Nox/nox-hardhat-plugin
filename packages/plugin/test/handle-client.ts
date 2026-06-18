@@ -9,8 +9,6 @@ import {
 const viemClient = { kind: "viem" };
 const ethersClient = { kind: "ethers" };
 
-// Fake factories that just record which toolbox path ran. Cast through unknown
-// since the detection logic never touches the real client shape.
 function recordingFactories(calls: string[]): HandleClientFactories {
   return {
     viem: async () => {

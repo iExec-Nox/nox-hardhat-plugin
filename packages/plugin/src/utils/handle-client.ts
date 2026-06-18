@@ -1,6 +1,3 @@
-// Type-only augmentation imports: they register the `viem` / `ethers` fields on
-// `NetworkConnection` for type-checking but emit no runtime `require`, so a
-// project that installs only one toolbox doesn't crash when loading the plugin.
 import type {} from "@nomicfoundation/hardhat-ethers";
 import type {} from "@nomicfoundation/hardhat-toolbox-viem";
 import {
