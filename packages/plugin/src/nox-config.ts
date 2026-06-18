@@ -47,9 +47,6 @@ export function handleGatewayUrl(): `http://${string}` {
   return `http://localhost:${handleGatewayPort()}`;
 }
 
-// Default gateway URL (port 3000). Internal code uses `handleGatewayUrl()` so it
-// honours a remapped port; this constant stays for the public re-export.
-export const HANDLE_GATEWAY_URL = `http://localhost:${HANDLE_GATEWAY_DEFAULT_PORT}`;
 export const RPC_URL = "http://127.0.0.1:8545";
 
 // How long `decrypt`/`publicDecrypt` poll the gateway for a handle to be
