@@ -33,7 +33,13 @@ function resolveDockerHost(): string | undefined {
     return (
       execFileSync(
         "docker",
-        ["context", "inspect", context, "--format", "{{.Endpoints.docker.Host}}"],
+        [
+          "context",
+          "inspect",
+          context,
+          "--format",
+          "{{.Endpoints.docker.Host}}",
+        ],
         { encoding: "utf-8", timeout: 5_000 },
       ).trim() || undefined
     );

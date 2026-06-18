@@ -87,7 +87,8 @@ export const nox = {
       // client was passed. Override getAddresses to expose only the intended
       // signer so the generated proof is bound to the correct address.
       const address = signer.account?.address;
-      if (!address) throw new Error("[nox] encryptInput: signer has no account");
+      if (!address)
+        throw new Error("[nox] encryptInput: signer has no account");
       const singleAccountClient = Object.create(signer) as WalletClient;
       (singleAccountClient as unknown as Record<string, unknown>).getAddresses =
         async () => [address];
@@ -99,7 +100,11 @@ export const nox = {
           subgraphUrl: "https://example.com/subgraphs/id/none",
         },
       );
-      return handleClient.encryptInput(value, solidityType, applicationContract);
+      return handleClient.encryptInput(
+        value,
+        solidityType,
+        applicationContract,
+      );
     }
     const { handleClient } = await connect();
     return handleClient.encryptInput(value, solidityType, applicationContract);
