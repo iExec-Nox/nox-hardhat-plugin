@@ -9,15 +9,6 @@ import {
 } from "../nox-config.js";
 import { resolveAvailablePort } from "./net.js";
 
-/**
- * Translate the (often cryptic) errors thrown by `docker compose` into a clear,
- * actionable message, or return `undefined` when the error isn't one we
- * specifically recognize.
- *
- * The `docker-compose` library rejects with `{ exitCode, err, out }` (stderr in
- * `err`) on a non-zero exit, or with a real `Error` (e.g. `ENOENT`) when the
- * `docker` CLI itself can't be spawned.
- */
 export function describeDockerError(error: unknown): string | undefined {
   if (
     error instanceof Error &&
@@ -45,7 +36,6 @@ export function describeDockerError(error: unknown): string | undefined {
   return undefined;
 }
 
-/** Run a docker-compose operation, rethrowing failures with a clean message. */
 async function runCompose<T>(action: string, op: () => Promise<T>): Promise<T> {
   try {
     return await op();
@@ -64,17 +54,7 @@ async function runCompose<T>(action: string, op: () => Promise<T>): Promise<T> {
   }
 }
 
-/**
- * Bring the offchain stack up and wait for every service to be healthy.
- *
- * Before starting we tear down any stack left over from a previous run (e.g. a
- * crash that skipped teardown) so stale containers and ports don't collide, and
- * we publish the handle gateway on a free host port (falling back from 3000 when
- * it is taken), exposing the choice through `HANDLE_GATEWAY_HOST_PORT_ENV`.
- */
 export async function startOffchainServices(): Promise<void> {
-  // Best-effort cleanup of a lingering stack; a real failure (e.g. Docker not
-  // running) surfaces below with a clean message from `runCompose`.
   await stopOffchainServices().catch(() => {});
 
   const gatewayPort = await resolveAvailablePort(HANDLE_GATEWAY_DEFAULT_PORT);
