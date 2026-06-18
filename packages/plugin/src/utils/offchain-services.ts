@@ -106,12 +106,6 @@ async function verifyGateway(): Promise<void> {
       `[nox] Handle gateway at ${HANDLE_GATEWAY_URL} is unreachable after startup: ${msg}`,
     );
   }
-  if (!res.ok) {
-    throw new Error(
-      `[nox] Handle gateway at ${HANDLE_GATEWAY_URL} returned HTTP ${res.status} during startup. ` +
-        `Ensure the gateway URL/port is correct and try again.`,
-    );
-  }
   const contentType = res.headers.get("content-type") ?? "";
   if (!contentType.includes("application/json")) {
     throw new Error(
