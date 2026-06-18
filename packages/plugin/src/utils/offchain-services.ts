@@ -9,14 +9,8 @@ import {
 } from "../nox-config.js";
 import { resolveAvailablePort } from "./net.js";
 
+/** Return a clear message when the error means the Docker daemon isn't running. */
 export function describeDockerError(error: unknown): string | undefined {
-  if (
-    error instanceof Error &&
-    (error as NodeJS.ErrnoException).code === "ENOENT"
-  ) {
-    return "Docker CLI not found. Is Docker installed and on your PATH?";
-  }
-
   const stderr =
     typeof error === "object" && error !== null && "err" in error
       ? String((error as { err: unknown }).err)
