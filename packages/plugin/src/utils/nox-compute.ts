@@ -75,9 +75,7 @@ export async function deployNoxCompute(rpcUrl: string): Promise<void> {
     address: NOX_COMPUTE_ADDRESS,
     bytecode: proxy.deployedBytecode,
   });
-  console.log(
-    `[nox] Etched NoxCompute impl at ${NOX_COMPUTE_IMPL_ADDRESS} and proxy at ${NOX_COMPUTE_ADDRESS}.`,
-  );
+  console.log(`[nox] NoxCompute deployed at ${NOX_COMPUTE_ADDRESS}`);
 
   // Wire the proxy to its implementation (ERC-1967 slot).
   await testClient.setStorageAt({
@@ -95,7 +93,4 @@ export async function deployNoxCompute(rpcUrl: string): Promise<void> {
       args: [deployer, deployer, NOX_KMS_PUBLIC_KEY, NOX_GATEWAY_ADDRESS],
     }),
   });
-  console.log(
-    `[nox] NoxCompute initialized (admin=${deployer}, gateway=${NOX_GATEWAY_ADDRESS}).`,
-  );
 }

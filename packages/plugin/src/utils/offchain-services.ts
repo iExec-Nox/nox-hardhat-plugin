@@ -63,7 +63,7 @@ export async function startOffchainServices(): Promise<void> {
     );
   }
 
-  console.log("[nox] Starting offchain services...");
+  console.log("[nox] 🚀 Starting Nox offchain stack...");
   await runComposeWithCleanErrors("start", () =>
     upAll({
       ...COMPOSE_OPTS,
