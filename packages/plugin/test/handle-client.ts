@@ -34,7 +34,11 @@ describe("createHandleClient toolbox detection", () => {
     const conn = connectionWith({
       viem: { getWalletClients: async () => ["wallet"] },
     });
-    const client = await createHandleClient(conn, {}, recordingFactories(calls));
+    const client = await createHandleClient(
+      conn,
+      {},
+      recordingFactories(calls),
+    );
     assert.deepEqual(calls, ["viem"]);
     assert.equal(client, viemClient);
   });
@@ -44,7 +48,11 @@ describe("createHandleClient toolbox detection", () => {
     const conn = connectionWith({
       ethers: { getSigners: async () => ["signer"] },
     });
-    const client = await createHandleClient(conn, {}, recordingFactories(calls));
+    const client = await createHandleClient(
+      conn,
+      {},
+      recordingFactories(calls),
+    );
     assert.deepEqual(calls, ["ethers"]);
     assert.equal(client, ethersClient);
   });
