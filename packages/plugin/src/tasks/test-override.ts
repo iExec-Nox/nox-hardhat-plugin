@@ -57,7 +57,7 @@ const testWrapperAction: TaskOverrideActionFunction = async (
       NOX_LOCAL_PORT,
     );
     const { address, port } = await server.listen();
-    console.log(`[nox] Hardhat node listening on ${address}:${port}`);
+    console.log(`[nox] 🔌 Hardhat node listening on ${address}:${port}`);
 
     await deployNoxCompute(`http://127.0.0.1:${port}`);
     await startOffchainServices();

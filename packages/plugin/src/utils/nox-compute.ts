@@ -75,7 +75,7 @@ export async function deployNoxCompute(rpcUrl: string): Promise<void> {
     address: NOX_COMPUTE_ADDRESS,
     bytecode: proxy.deployedBytecode,
   });
-  console.log(`[nox] NoxCompute deployed at ${NOX_COMPUTE_ADDRESS}`);
+  console.log(`[nox] 📦 NoxCompute deployed at ${NOX_COMPUTE_ADDRESS}`);
 
   // Wire the proxy to its implementation (ERC-1967 slot).
   await testClient.setStorageAt({
