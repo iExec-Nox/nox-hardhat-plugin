@@ -26,10 +26,6 @@ export const NOX_KMS_PUBLIC_KEY: Hex =
 export const NOX_GATEWAY_ADDRESS: Address =
   "0xE1a6B1De3AbF04e7FA5355373880350Dc3004D0e";
 
-// Host port the handle gateway is published on. Defaults to 3000 but the stack
-// startup falls back to an OS-assigned free port when 3000 is taken, exposing
-// the chosen value through this env var so the in-process (and subprocess) test
-// clients resolve the same URL via `handleGatewayUrl()`.
 export const HANDLE_GATEWAY_DEFAULT_PORT = 3000;
 export const HANDLE_GATEWAY_HOST_PORT_ENV = "NOX_HANDLE_GATEWAY_HOST_PORT";
 
