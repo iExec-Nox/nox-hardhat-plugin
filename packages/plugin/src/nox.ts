@@ -1,10 +1,12 @@
 import type {
   EthereumAddress,
   Handle,
+  HandleClientConfig,
   HexString,
   JsValue,
   SolidityType,
 } from "@iexec-nox/handle";
+import type { WalletClient } from "viem";
 import { NOX_LOCAL_NETWORK } from "./config.js";
 import {
   HANDLE_GATEWAY_URL,
@@ -15,19 +17,26 @@ import {
 import type { NoxConnection } from "./types.js";
 import { createHandleClient } from "./utils/handle-client.js";
 
-async function connect(): Promise<NoxConnection> {
+const HANDLE_CLIENT_CONFIG: Partial<HandleClientConfig> = {
+  smartContractAddress: NOX_COMPUTE_ADDRESS,
+  gatewayUrl: HANDLE_GATEWAY_URL,
+  // The Handle SDK requires a subgraph URL for config validation even when the
+  // calling code never queries it (publicDecrypt only hits the gateway + the
+  // chain). Placeholder.
+  subgraphUrl: "https://example.com/subgraphs/id/none",
+};
+
+async function connect(signer?: WalletClient): Promise<NoxConnection> {
   // `hardhat` is imported lazily — a top-level import deadlocks Hardhat's CLI.
   const { network } = await import("hardhat");
   const connection = await network.create<"op">(NOX_LOCAL_NETWORK);
-  // Works with either toolbox (viem or ethers), auto-detected from `connection`.
-  const handleClient = await createHandleClient(connection, {
-    smartContractAddress: NOX_COMPUTE_ADDRESS,
-    gatewayUrl: HANDLE_GATEWAY_URL,
-    // The Handle SDK requires a subgraph URL for config validation even when
-    // the calling code never queries it (publicDecrypt only hits the gateway
-    // + the chain). Placeholder.
-    subgraphUrl: "https://example.com/subgraphs/id/none",
-  });
+  const handleClient = await createHandleClient(
+    connection,
+    HANDLE_CLIENT_CONFIG,
+    {
+      signer,
+    },
+  );
   return Object.assign(connection, { handleClient });
 }
 

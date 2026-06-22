@@ -4,6 +4,7 @@ import {
 } from "@iexec-nox/handle";
 import type { HandleClient, HandleClientConfig } from "@iexec-nox/handle";
 import type { NetworkConnection } from "hardhat/types/network";
+import type { WalletClient } from "viem";
 
 export interface HandleClientFactories {
   viem: typeof createViemHandleClient;
@@ -38,26 +39,53 @@ function hasEthers(
   return (connection as Partial<EthersConnection>).ethers != null;
 }
 
+
+export function asSingleAccountWalletClient(
+  signer: WalletClient,
+): WalletClient {
+  const address = signer.account?.address;
+  if (address === undefined) {
+    throw new Error("[nox] signer has no account");
+  }
+  const client = Object.create(signer) as WalletClient;
+  (client as unknown as Record<string, unknown>).getAddresses = async () => [
+    address,
+  ];
+  return client;
+}
+
 /**
- * Build a handle client from whichever Hardhat toolbox the project enables:
- * `@nomicfoundation/hardhat-toolbox-viem` (`connection.viem`) or
- * `@nomicfoundation/hardhat-ethers` (`connection.ethers`). The client is bound
- * to the connection's first signer so user-decryption ACLs line up with the
- * account the tests act as.
+ * Build a handle client.
+ *
+ * With `options.signer`, the client is bound to that viem wallet's account (so
+ * proofs and user decryptions act as that account instead of the default
+ * Hardhat account[0]). Otherwise the toolbox is auto-detected from the
+ * connection — `@nomicfoundation/hardhat-toolbox-viem` (`connection.viem`) or
+ * `@nomicfoundation/hardhat-ethers` (`connection.ethers`) — and the client is
+ * bound to its first signer.
  */
 export async function createHandleClient(
   connection: NetworkConnection<"op">,
   config: Partial<HandleClientConfig>,
-  factories: HandleClientFactories = defaultFactories,
+  options: { signer?: WalletClient; factories?: HandleClientFactories } = {},
 ): Promise<HandleClient> {
+  const { signer, factories = defaultFactories } = options;
+
+  if (signer !== undefined) {
+    return factories.viem(
+      asSingleAccountWalletClient(signer) as ViemWalletClient,
+      config,
+    );
+  }
+
   if (hasViem(connection)) {
     const [walletClient] = await connection.viem.getWalletClients();
     return factories.viem(walletClient, config);
   }
 
   if (hasEthers(connection)) {
-    const [signer] = await connection.ethers.getSigners();
-    return factories.ethers(signer, config);
+    const [ethersSigner] = await connection.ethers.getSigners();
+    return factories.ethers(ethersSigner, config);
   }
 
   throw new Error(
