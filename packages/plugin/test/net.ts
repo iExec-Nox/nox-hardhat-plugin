@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import net from "node:net";
 import { after, before, describe, it } from "node:test";
-import { isPortAvailable, resolveAvailablePort } from "../src/utils/net.js";
+import { isPortAvailable } from "../src/utils/net.js";
 
 describe("net port helpers", () => {
   let occupied: net.Server;
@@ -25,14 +25,8 @@ describe("net port helpers", () => {
     assert.equal(await isPortAvailable(busyPort), false);
   });
 
-  it("resolveAvailablePort falls back to a free port when preferred is taken", async () => {
-    const port = await resolveAvailablePort(busyPort);
-    assert.notEqual(port, busyPort);
-    assert.equal(await isPortAvailable(port), true);
-  });
-
-  it("resolveAvailablePort keeps the preferred port when it is free", async () => {
-    // Discover a currently-free port, then confirm it is kept as-is.
+  it("isPortAvailable returns true for a free port", async () => {
+    // Discover a currently-free port by binding to 0 and releasing it.
     const free = await new Promise<number>((resolve) => {
       const probe = net.createServer();
       probe.listen(0, "0.0.0.0", () => {
@@ -41,6 +35,6 @@ describe("net port helpers", () => {
         probe.close(() => resolve(port));
       });
     });
-    assert.equal(await resolveAvailablePort(free), free);
+    assert.equal(await isPortAvailable(free), true);
   });
 });

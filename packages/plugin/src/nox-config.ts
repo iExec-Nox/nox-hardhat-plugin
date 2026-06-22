@@ -26,21 +26,22 @@ export const NOX_KMS_PUBLIC_KEY: Hex =
 export const NOX_GATEWAY_ADDRESS: Address =
   "0xE1a6B1De3AbF04e7FA5355373880350Dc3004D0e";
 
-export const HANDLE_GATEWAY_DEFAULT_PORT = 3000;
+export const HANDLE_GATEWAY_SERVICE = "nox-handle-gateway";
+export const HANDLE_GATEWAY_CONTAINER_PORT = 3000;
 export const HANDLE_GATEWAY_HOST_PORT_ENV = "NOX_HANDLE_GATEWAY_HOST_PORT";
 
-/** Resolved host port of the handle gateway (env override, else 3000). */
+/** Resolved host port of the handle gateway, populated once the stack is up. */
 export function handleGatewayPort(): number {
   const raw = process.env[HANDLE_GATEWAY_HOST_PORT_ENV];
   const parsed = raw === undefined ? Number.NaN : Number(raw);
   return Number.isInteger(parsed) && parsed > 0
     ? parsed
-    : HANDLE_GATEWAY_DEFAULT_PORT;
+    : HANDLE_GATEWAY_CONTAINER_PORT;
 }
 
 /** Base URL of the handle gateway, reflecting the resolved host port. */
 export function handleGatewayUrl(): `http://${string}` {
-  return `http://localhost:${handleGatewayPort()}`;
+  return `http://127.0.0.1:${handleGatewayPort()}`;
 }
 
 export const RPC_URL = "http://127.0.0.1:8545";

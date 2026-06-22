@@ -1,35 +1,16 @@
 import { writeFile } from "node:fs/promises";
 import path from "node:path";
-import { downAll, logs as composeLogs, upAll } from "docker-compose";
+import { downAll, logs as composeLogs, port, upAll } from "docker-compose";
 import {
   ALL_SERVICES,
   COMPOSE_OPTS,
-  HANDLE_GATEWAY_DEFAULT_PORT,
+  HANDLE_GATEWAY_CONTAINER_PORT,
   HANDLE_GATEWAY_HOST_PORT_ENV,
+  HANDLE_GATEWAY_SERVICE,
 } from "../nox-config.js";
-import { resolveAvailablePort } from "./net.js";
+import { assertDockerDaemonRunning } from "./docker.js";
 
-/** Return a clear message when the error means the Docker daemon isn't running. */
-export function describeDockerError(error: unknown): string | undefined {
-  const stderr =
-    typeof error === "object" && error !== null && "err" in error
-      ? String((error as { err: unknown }).err)
-      : "";
-
-  if (
-    /cannot connect to the docker daemon|is the docker daemon running|docker daemon is not running|dial unix .*docker\.sock/i.test(
-      stderr,
-    )
-  ) {
-    return (
-      "Cannot connect to the Docker daemon. Is Docker running? " +
-      "Start Docker Desktop (or the docker service) and try again."
-    );
-  }
-
-  return undefined;
-}
-
+/** Run a docker-compose operation, rethrowing failures with a clean message. */
 async function runComposeWithCleanErrors<T>(
   action: string,
   op: () => Promise<T>,
@@ -37,10 +18,6 @@ async function runComposeWithCleanErrors<T>(
   try {
     return await op();
   } catch (error) {
-    const recognized = describeDockerError(error);
-    if (recognized !== undefined) {
-      throw new Error(`[nox] ${recognized}`);
-    }
     const detail =
       typeof error === "object" && error !== null && "err" in error
         ? String((error as { err: unknown }).err).trim()
@@ -52,16 +29,9 @@ async function runComposeWithCleanErrors<T>(
 }
 
 export async function startOffchainServices(): Promise<void> {
+  // Fail fast with a clear message if the daemon is down, before any compose call.
+  await assertDockerDaemonRunning();
   await stopOffchainServices().catch(() => {});
-
-  const gatewayPort = await resolveAvailablePort(HANDLE_GATEWAY_DEFAULT_PORT);
-  process.env[HANDLE_GATEWAY_HOST_PORT_ENV] = String(gatewayPort);
-  if (gatewayPort !== HANDLE_GATEWAY_DEFAULT_PORT) {
-    console.warn(
-      `[nox] Host port ${HANDLE_GATEWAY_DEFAULT_PORT} is busy; ` +
-        `publishing the handle gateway on ${gatewayPort} instead.`,
-    );
-  }
 
   console.log("[nox] 🚀 Starting Nox offchain stack...");
   await runComposeWithCleanErrors("start", () =>
@@ -70,6 +40,16 @@ export async function startOffchainServices(): Promise<void> {
       commandOptions: ["--wait", "--remove-orphans"],
     }),
   );
+
+  const { data } = await runComposeWithCleanErrors("start", () =>
+    port(HANDLE_GATEWAY_SERVICE, HANDLE_GATEWAY_CONTAINER_PORT, COMPOSE_OPTS),
+  );
+  if (!data.port) {
+    throw new Error(
+      `[nox] Could not determine the host port for ${HANDLE_GATEWAY_SERVICE}.`,
+    );
+  }
+  process.env[HANDLE_GATEWAY_HOST_PORT_ENV] = String(data.port);
 }
 
 /** Tear the offchain stack down. */
