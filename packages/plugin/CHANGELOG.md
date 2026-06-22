@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.0](https://github.com/iExec-Nox/nox-hardhat-plugin/compare/v0.1.0-beta.3...v0.1.0) (2026-06-22)
+
+
+### 🚀 Added
+
+* add support for Ethers with dynamic selection ([#29](https://github.com/iExec-Nox/nox-hardhat-plugin/issues/29)) ([ebac611](https://github.com/iExec-Nox/nox-hardhat-plugin/commit/ebac611fa401ffffd3ce3d3d196b135ea79e5787))
+* improve handle gateway configuration and error handling ([1beef9c](https://github.com/iExec-Nox/nox-hardhat-plugin/commit/1beef9c01cf48fa9a7e15dd83fd8b6590af7fed8))
+
 ## [0.1.0-beta.3](https://github.com/iExec-Nox/nox-hardhat-plugin/compare/v0.1.0-beta.2...v0.1.0-beta.3) (2026-06-17)
 
 
