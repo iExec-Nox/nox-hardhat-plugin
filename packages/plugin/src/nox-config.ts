@@ -30,6 +30,8 @@ export const HANDLE_GATEWAY_SERVICE = "nox-handle-gateway";
 export const HANDLE_GATEWAY_CONTAINER_PORT = 3000;
 export const HANDLE_GATEWAY_HOST_PORT_ENV = "NOX_HANDLE_GATEWAY_HOST_PORT";
 
+export const DOCKER_PING_TIMEOUT_MS = 2000;
+
 /** Resolved host port of the handle gateway, populated once the stack is up. */
 export function handleGatewayPort(): number {
   const raw = process.env[HANDLE_GATEWAY_HOST_PORT_ENV];

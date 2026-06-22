@@ -1,29 +1,27 @@
 import http from "node:http";
-
-const PING_TIMEOUT_MS = 2000;
-
-function dockerSocketPath(): string | undefined {
-  const dockerHost = process.env.DOCKER_HOST;
-  if (dockerHost !== undefined && dockerHost !== "") {
-    if (dockerHost.startsWith("unix://")) {
-      return dockerHost.slice("unix://".length);
-    }
-    return undefined;
-  }
-  return process.platform === "win32"
-    ? "\\\\.\\pipe\\docker_engine"
-    : "/var/run/docker.sock";
-}
+import { DOCKER_PING_TIMEOUT_MS } from "../nox-config.js";
 
 export async function assertDockerDaemonRunning(): Promise<void> {
-  const socketPath = dockerSocketPath();
-  if (socketPath === undefined) {
-    return;
+  const dockerHost = process.env.DOCKER_HOST;
+  if (dockerHost !== undefined && dockerHost !== "") {
+    if (!dockerHost.startsWith("unix://")) return;
   }
 
+  const socketPath = dockerHost?.startsWith("unix://")
+    ? dockerHost.slice("unix://".length)
+    : process.platform === "win32"
+      ? "\\\\.\\pipe\\docker_engine"
+      : "/var/run/docker.sock";
+
+  // Ping the daemon's `/_ping` health endpoint over the socket (returns 200 OK).
   const reachable = await new Promise<boolean>((resolve) => {
     const request = http.request(
-      { socketPath, path: "/_ping", method: "GET", timeout: PING_TIMEOUT_MS },
+      {
+        socketPath,
+        path: "/_ping",
+        method: "GET",
+        timeout: DOCKER_PING_TIMEOUT_MS,
+      },
       (response) => {
         response.resume();
         resolve(response.statusCode === 200);
