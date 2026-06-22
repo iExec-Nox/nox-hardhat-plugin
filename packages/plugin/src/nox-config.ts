@@ -32,13 +32,22 @@ export const HANDLE_GATEWAY_HOST_PORT_ENV = "NOX_HANDLE_GATEWAY_HOST_PORT";
 
 export const DOCKER_PING_TIMEOUT_MS = 2000;
 
-/** Resolved host port of the handle gateway, populated once the stack is up. */
+/**
+ * Resolved host port of the handle gateway. The host port is Docker-assigned at
+ * startup (see `startOffchainServices`), so there is no usable default: throw if
+ * it hasn't been published yet rather than returning the unreachable container
+ * port.
+ */
 export function handleGatewayPort(): number {
   const raw = process.env[HANDLE_GATEWAY_HOST_PORT_ENV];
   const parsed = raw === undefined ? Number.NaN : Number(raw);
-  return Number.isInteger(parsed) && parsed > 0
-    ? parsed
-    : HANDLE_GATEWAY_CONTAINER_PORT;
+  if (!Number.isInteger(parsed) || parsed <= 0) {
+    throw new Error(
+      `[nox] Handle gateway host port is not set (${HANDLE_GATEWAY_HOST_PORT_ENV}). ` +
+        `Is the Nox stack started?`,
+    );
+  }
+  return parsed;
 }
 
 /** Base URL of the handle gateway, reflecting the resolved host port. */

@@ -18,19 +18,16 @@ async function runComposeWithCleanErrors<T>(
   try {
     return await op();
   } catch (error) {
-    const detail =
-      typeof error === "object" && error !== null && "err" in error
-        ? String((error as { err: unknown }).err).trim()
-        : error instanceof Error
-          ? error.message
-          : String(error);
-    throw new Error(`[nox] Failed to ${action} the offchain stack:\n${detail}`);
+    throw new Error(
+      `[nox] Failed to ${action} the offchain stack:\n${String(error)}`,
+    );
   }
 }
 
 export async function startOffchainServices(): Promise<void> {
   // Fail fast with a clear message if the daemon is down, before any compose call.
   await assertDockerDaemonRunning();
+  // Make sure there is not old service instance still running.
   await stopOffchainServices().catch(() => {});
 
   console.log("[nox] 🚀 Starting Nox offchain stack...");
