@@ -26,7 +26,35 @@ export const NOX_KMS_PUBLIC_KEY: Hex =
 export const NOX_GATEWAY_ADDRESS: Address =
   "0xE1a6B1De3AbF04e7FA5355373880350Dc3004D0e";
 
-export const HANDLE_GATEWAY_URL = "http://localhost:3000";
+export const HANDLE_GATEWAY_SERVICE = "nox-handle-gateway";
+export const HANDLE_GATEWAY_CONTAINER_PORT = 3000;
+export const HANDLE_GATEWAY_HOST_PORT_ENV = "NOX_HANDLE_GATEWAY_HOST_PORT";
+
+export const DOCKER_PING_TIMEOUT_MS = 2000;
+
+/**
+ * Resolved host port of the handle gateway. The host port is Docker-assigned at
+ * startup (see `startOffchainServices`), so there is no usable default: throw if
+ * it hasn't been published yet rather than returning the unreachable container
+ * port.
+ */
+export function handleGatewayPort(): number {
+  const raw = process.env[HANDLE_GATEWAY_HOST_PORT_ENV];
+  const parsed = raw === undefined ? Number.NaN : Number(raw);
+  if (!Number.isInteger(parsed) || parsed <= 0) {
+    throw new Error(
+      `[nox] Handle gateway host port is not set (${HANDLE_GATEWAY_HOST_PORT_ENV}). ` +
+        `Is the Nox stack started?`,
+    );
+  }
+  return parsed;
+}
+
+/** Base URL of the handle gateway, reflecting the resolved host port. */
+export function handleGatewayUrl(): `http://${string}` {
+  return `http://127.0.0.1:${handleGatewayPort()}`;
+}
+
 export const RPC_URL = "http://127.0.0.1:8545";
 
 // How long `decrypt`/`publicDecrypt` poll the gateway for a handle to be

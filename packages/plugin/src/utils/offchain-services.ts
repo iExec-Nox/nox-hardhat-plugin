@@ -1,23 +1,62 @@
 import { writeFile } from "node:fs/promises";
 import path from "node:path";
-import { downAll, logs as composeLogs, upAll } from "docker-compose";
-import { COMPOSE_OPTS, ALL_SERVICES } from "../nox-config.js";
+import { downAll, logs as composeLogs, port, upAll } from "docker-compose";
+import {
+  ALL_SERVICES,
+  COMPOSE_OPTS,
+  HANDLE_GATEWAY_CONTAINER_PORT,
+  HANDLE_GATEWAY_HOST_PORT_ENV,
+  HANDLE_GATEWAY_SERVICE,
+} from "../nox-config.js";
+import { assertDockerDaemonRunning } from "./docker.js";
 
-/** Bring the offchain stack up and wait for every service to be healthy. */
+/** Run a docker-compose operation, rethrowing failures with a clean message. */
+async function runComposeWithCleanErrors<T>(
+  action: string,
+  op: () => Promise<T>,
+): Promise<T> {
+  try {
+    return await op();
+  } catch (error) {
+    throw new Error(
+      `[nox] Failed to ${action} the offchain stack:\n${String(error)}`,
+    );
+  }
+}
+
 export async function startOffchainServices(): Promise<void> {
-  console.log("[nox] Starting offchain services...");
-  await upAll({
-    ...COMPOSE_OPTS,
-    commandOptions: ["--wait", "--remove-orphans"],
-  });
+  // Fail fast with a clear message if the daemon is down, before any compose call.
+  await assertDockerDaemonRunning();
+  // Make sure there is not old service instance still running.
+  await stopOffchainServices().catch(() => {});
+
+  console.log("[nox] 🚀 Starting Nox offchain stack...");
+  await runComposeWithCleanErrors("start", () =>
+    upAll({
+      ...COMPOSE_OPTS,
+      commandOptions: ["--wait", "--remove-orphans"],
+    }),
+  );
+
+  const { data } = await runComposeWithCleanErrors("start", () =>
+    port(HANDLE_GATEWAY_SERVICE, HANDLE_GATEWAY_CONTAINER_PORT, COMPOSE_OPTS),
+  );
+  if (!data.port) {
+    throw new Error(
+      `[nox] Could not determine the host port for ${HANDLE_GATEWAY_SERVICE}.`,
+    );
+  }
+  process.env[HANDLE_GATEWAY_HOST_PORT_ENV] = String(data.port);
 }
 
 /** Tear the offchain stack down. */
 export async function stopOffchainServices(): Promise<void> {
-  await downAll({
-    ...COMPOSE_OPTS,
-    commandOptions: ["--volumes", "--remove-orphans"],
-  });
+  await runComposeWithCleanErrors("stop", () =>
+    downAll({
+      ...COMPOSE_OPTS,
+      commandOptions: ["--volumes", "--remove-orphans"],
+    }),
+  );
 }
 
 /**

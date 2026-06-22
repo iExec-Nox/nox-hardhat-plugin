@@ -92,7 +92,7 @@ services:
       - NOX_HANDLE_GATEWAY_SERVER__PORT=3000
       - RUST_LOG=${NOX_HANDLE_GATEWAY_RUST_LOG:-info}
     ports:
-      - "3000:3000"
+      - "3000"
     networks:
       - frontend
       - backend
