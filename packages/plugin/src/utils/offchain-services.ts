@@ -39,6 +39,7 @@ export async function startOffchainServices(
     upAll({
       ...COMPOSE_OPTS,
       env: {
+        ...COMPOSE_OPTS.env,
         NOX_COMPUTE_CONTRACT: noxComputeAddress,
       },
       commandOptions: ["--wait", "--remove-orphans"],
