@@ -3,8 +3,6 @@ import type { HardhatRuntimeEnvironment } from "hardhat/types/hre";
 import type { JsonRpcServer } from "hardhat/types/network";
 import { NOX_HOST_NETWORK, NOX_LOCAL_PORT } from "../config.js";
 import { isPortAvailable } from "./net.js";
-import { deployNoxCompute } from "./nox-compute.js";
-import { resolveNoxComputeAddressViaShim } from "./nox-shim.js";
 
 /**
  * Stop the local JSON-RPC server (and its accepted connections) from keeping
@@ -58,7 +56,7 @@ function unrefRpcServerHandles(port: number): void {
 
 export async function startChain(
   hre: HardhatRuntimeEnvironment,
-): Promise<JsonRpcServer> {
+): Promise<{ server: JsonRpcServer; rpcUrl: string }> {
   if (!(await isPortAvailable(NOX_LOCAL_PORT))) {
     throw new Error(
       `[nox] Port ${NOX_LOCAL_PORT} is already in use. A Hardhat node ` +
@@ -78,8 +76,5 @@ export async function startChain(
   unrefRpcServerHandles(port);
 
   const rpcUrl = `http://127.0.0.1:${port}`;
-  const noxComputeAddress = await resolveNoxComputeAddressViaShim(hre, rpcUrl);
-  await deployNoxCompute(rpcUrl, noxComputeAddress);
-
-  return server;
+  return { server, rpcUrl };
 }

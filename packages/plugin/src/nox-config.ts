@@ -9,7 +9,7 @@ import type { Address, Hex } from "viem";
 // deployment.
 export const NOX_SUPPORTED_CHAIN_ID = 31337;
 export const NOX_COMPUTE_ADDRESS: Address =
-  "0x75C6AF4430cc474b1bb9b8540b7E46D6f8e1C685";
+  "0x75C6AF4430cc474b1bb9b8540b7E46D6f8e1C685"; // TODO remove hardcoded placeholder
 
 // Arbitrary address at which the plugin etches the NoxCompute implementation
 // runtime.

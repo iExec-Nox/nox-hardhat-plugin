@@ -24,16 +24,23 @@ async function runComposeWithCleanErrors<T>(
   }
 }
 
-export async function startOffchainServices(): Promise<void> {
+export async function startOffchainServices(
+  noxComputeAddress: `0x${string}`,
+): Promise<void> {
   // Fail fast with a clear message if the daemon is down, before any compose call.
   await assertDockerDaemonRunning();
   // Make sure there is not old service instance still running.
   await stopOffchainServices().catch(() => {});
 
-  console.log("[nox] 🚀 Starting Nox offchain stack...");
+  console.log(
+    `[nox] 🚀 Starting Nox offchain stack connected to NoxCompute at ${noxComputeAddress}...`,
+  );
   await runComposeWithCleanErrors("start", () =>
     upAll({
       ...COMPOSE_OPTS,
+      env: {
+        NOX_COMPUTE_CONTRACT: noxComputeAddress,
+      },
       commandOptions: ["--wait", "--remove-orphans"],
     }),
   );
