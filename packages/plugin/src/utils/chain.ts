@@ -4,6 +4,7 @@ import type { JsonRpcServer } from "hardhat/types/network";
 import { NOX_HOST_NETWORK, NOX_LOCAL_PORT } from "../config.js";
 import { isPortAvailable } from "./net.js";
 import { deployNoxCompute } from "./nox-compute.js";
+import { resolveNoxComputeAddressViaShim } from "./nox-shim.js";
 
 /**
  * Stop the local JSON-RPC server (and its accepted connections) from keeping
@@ -76,7 +77,9 @@ export async function startChain(
 
   unrefRpcServerHandles(port);
 
-  await deployNoxCompute(`http://127.0.0.1:${port}`);
+  const rpcUrl = `http://127.0.0.1:${port}`;
+  const noxComputeAddress = await resolveNoxComputeAddressViaShim(hre, rpcUrl);
+  await deployNoxCompute(rpcUrl, noxComputeAddress);
 
   return server;
 }

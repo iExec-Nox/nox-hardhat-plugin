@@ -6,7 +6,8 @@
   "type": "module",
   "types": "dist/src/index.d.ts",
   "exports": {
-    ".": "./dist/src/index.js"
+    ".": "./dist/src/index.js",
+    "./contracts/*": "./contracts/*"
   },
   "keywords": [
     "ethereum",
@@ -30,6 +31,7 @@
   "files": [
     "dist/src/",
     "src/",
+    "contracts/",
     "offchain-services/",
     "CHANGELOG.md",
     "LICENSE",

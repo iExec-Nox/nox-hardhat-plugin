@@ -71,6 +71,14 @@ export const ERC1967_PROXY_ARTIFACT_PATH = pluginRequire.resolve(
   "@openzeppelin/contracts/build/contracts/ERC1967Proxy.json",
 );
 
+// root file path for `hre.solidity.build()` to compile the plugin's
+// shipped shim contract against the consuming project's own Solidity
+// toolchain. Files inside `node_modules` can't be passed as plain absolute
+// paths (Hardhat rejects PROJECT_ROOT_FILE_IN_NODE_MODULES), hence the
+// `npm:<package>/<subpath>` root-path form.
+export const NOX_SHIM_ROOT_PATH =
+  "npm:@iexec-nox/nox-hardhat-plugin/contracts/NoxShim.sol";
+
 export const COMPOSE_OPTS: IDockerComposeOptions = {
   cwd: path.resolve(import.meta.dirname, "..", "..", "offchain-services"),
   log: false,
