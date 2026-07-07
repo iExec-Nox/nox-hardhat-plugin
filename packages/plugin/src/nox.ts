@@ -5,12 +5,14 @@ import type {
   JsValue,
   SolidityType,
 } from "@iexec-nox/handle";
+import type { Address } from "viem";
 import { NOX_LOCAL_NETWORK } from "./config.js";
 import {
   handleGatewayUrl,
-  NOX_COMPUTE_ADDRESS,
+  resolvedNoxComputeAddress,
   RESOLVE_DELAY_MS,
   RESOLVE_MAX_RETRIES,
+  RPC_URL,
 } from "./nox-config.js";
 import type { NoxConnection } from "./types.js";
 import { createHandleClient } from "./utils/handle-client.js";
@@ -21,7 +23,7 @@ async function connect(): Promise<NoxConnection> {
   const connection = await network.create<"op">(NOX_LOCAL_NETWORK);
   // Works with either toolbox (viem or ethers), auto-detected from `connection`.
   const handleClient = await createHandleClient(connection, {
-    smartContractAddress: NOX_COMPUTE_ADDRESS,
+    smartContractAddress: resolvedNoxComputeAddress(),
     gatewayUrl: handleGatewayUrl(),
     // The Handle SDK requires a subgraph URL for config validation even when
     // the calling code never queries it (publicDecrypt only hits the gateway
@@ -69,6 +71,18 @@ async function waitForHandlesResolved(handles: HexString[]): Promise<void> {
 
 export const nox = {
   connect,
+
+  get noxComputeAddress(): Address {
+    return resolvedNoxComputeAddress();
+  },
+
+  get handleGatewayUrl(): string {
+    return handleGatewayUrl();
+  },
+
+  get rpcUrl(): string {
+    return RPC_URL;
+  },
 
   async encryptInput<T extends SolidityType>(
     value: JsValue<T>,

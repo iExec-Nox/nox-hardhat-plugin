@@ -5,8 +5,8 @@ import {
   ALL_SERVICES,
   COMPOSE_OPTS,
   HANDLE_GATEWAY_CONTAINER_PORT,
-  HANDLE_GATEWAY_HOST_PORT_ENV,
   HANDLE_GATEWAY_SERVICE,
+  setHandleGatewayPort,
 } from "../nox-config.js";
 import { assertDockerDaemonRunning } from "./docker.js";
 
@@ -53,7 +53,7 @@ export async function startOffchainServices(
       `[nox] Could not determine the host port for ${HANDLE_GATEWAY_SERVICE}.`,
     );
   }
-  process.env[HANDLE_GATEWAY_HOST_PORT_ENV] = String(data.port);
+  setHandleGatewayPort(data.port);
 }
 
 /** Tear the offchain stack down. */

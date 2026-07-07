@@ -8,8 +8,6 @@ import type { Address, Hex } from "viem";
 // run against the network's real endpoint and may fail if it lacks a Nox
 // deployment.
 export const NOX_SUPPORTED_CHAIN_ID = 31337;
-export const NOX_COMPUTE_ADDRESS: Address =
-  "0x75C6AF4430cc474b1bb9b8540b7E46D6f8e1C685"; // TODO remove hardcoded placeholder
 
 // Arbitrary address at which the plugin etches the NoxCompute implementation
 // runtime.
@@ -28,10 +26,34 @@ export const NOX_GATEWAY_ADDRESS: Address =
 
 export const HANDLE_GATEWAY_SERVICE = "nox-handle-gateway";
 export const HANDLE_GATEWAY_CONTAINER_PORT = 3000;
-export const HANDLE_GATEWAY_HOST_PORT_ENV = "NOX_HANDLE_GATEWAY_HOST_PORT";
 
 export const DOCKER_PING_TIMEOUT_MS = 2000;
 
+const NOX_COMPUTE_ADDRESS_ENV = "NOX_COMPUTE_ADDRESS";
+export function setResolvedNoxComputeAddress(address: Address) {
+  process.env[NOX_COMPUTE_ADDRESS_ENV] = address;
+}
+/**
+ * Resolved `NoxCompute` address. Resolved dynamically at stack startup (see
+ * `resolveNoxComputeAddressViaShim`) and stashed in an env var so later calls
+ * (e.g. from `nox.connect()`) can read it cheaply — there is no static
+ * default, so calling this before the stack is up throws.
+ */
+export function resolvedNoxComputeAddress(): Address {
+  const raw = process.env[NOX_COMPUTE_ADDRESS_ENV];
+  if (raw === undefined) {
+    throw new Error(
+      `[nox] NoxCompute address is not set (${NOX_COMPUTE_ADDRESS_ENV}). ` +
+        `Is the Nox stack started?`,
+    );
+  }
+  return raw as Address;
+}
+
+const HANDLE_GATEWAY_HOST_PORT_ENV = "NOX_HANDLE_GATEWAY_HOST_PORT";
+export function setHandleGatewayPort(port: number) {
+  process.env[HANDLE_GATEWAY_HOST_PORT_ENV] = port.toString();
+}
 /**
  * Resolved host port of the handle gateway. The host port is Docker-assigned at
  * startup (see `startOffchainServices`), so there is no usable default: throw if
