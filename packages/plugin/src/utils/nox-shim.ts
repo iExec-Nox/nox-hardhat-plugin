@@ -3,7 +3,10 @@ import { createPublicClient, createTestClient, http } from "viem";
 import { hardhat } from "viem/chains";
 import type { HardhatRuntimeEnvironment } from "hardhat/types/hre";
 import { FileBuildResultType } from "hardhat/types/solidity";
-import { NOX_SHIM_ROOT_PATH } from "../nox-config.js";
+import {
+  NOX_SHIM_ROOT_PATH,
+  setResolvedNoxComputeAddress,
+} from "../nox-config.js";
 import { loadDeploymentArtifact } from "./artifacts.js";
 
 const NOX_SHIM_SCRATCH_ADDRESS = "0x0000000000000000000000000000000000000000";
@@ -14,7 +17,9 @@ const NOX_SHIM_SCRATCH_ADDRESS = "0x0000000000000000000000000000000000000000";
  * bytecode at a scratch address, and calls its getter to read back the
  * address `Nox.noxComputeContract()` resolves to for the current chain.
  * The scratch address is reset to empty right after, so this leaves no
- * trace on chain (no deployer transaction, no nonce consumed).
+ * trace on chain (no deployer transaction, no nonce consumed). The resolved
+ * address is also stashed via `setResolvedNoxComputeAddress` so later calls
+ * (e.g. from `nox.connect()`) can read it back cheaply.
  */
 export async function resolveNoxComputeAddressViaShim(
   hre: HardhatRuntimeEnvironment,
@@ -69,8 +74,9 @@ export async function resolveNoxComputeAddressViaShim(
     address: NOX_SHIM_SCRATCH_ADDRESS,
     bytecode: shim.deployedBytecode,
   });
+  let noxComputeAddress;
   try {
-    return (await publicClient.readContract({
+    noxComputeAddress = (await publicClient.readContract({
       address: NOX_SHIM_SCRATCH_ADDRESS,
       abi: shim.abi,
       functionName: "noxComputeAddress",
@@ -81,4 +87,6 @@ export async function resolveNoxComputeAddressViaShim(
       bytecode: "0x",
     });
   }
+  setResolvedNoxComputeAddress(noxComputeAddress);
+  return noxComputeAddress;
 }

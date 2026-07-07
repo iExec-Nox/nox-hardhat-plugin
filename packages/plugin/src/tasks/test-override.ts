@@ -1,9 +1,6 @@
 import type { JsonRpcServer } from "hardhat/types/network";
 import type { TaskOverrideActionFunction } from "hardhat/types/tasks";
-import {
-  NOX_SUPPORTED_CHAIN_ID,
-  setResolvedNoxComputeAddress,
-} from "../nox-config.js";
+import { NOX_SUPPORTED_CHAIN_ID } from "../nox-config.js";
 import { startChain } from "../utils/chain.js";
 import {
   dumpOffchainServicesLogs,
@@ -52,7 +49,6 @@ const testWrapperAction: TaskOverrideActionFunction = async (
       hre,
       chain.rpcUrl,
     );
-    setResolvedNoxComputeAddress(noxComputeAddress);
     await deployNoxCompute(chain.rpcUrl, noxComputeAddress);
     await startOffchainServices(noxComputeAddress);
 
