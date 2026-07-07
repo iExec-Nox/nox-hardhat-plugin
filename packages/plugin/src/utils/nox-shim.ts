@@ -1,16 +1,20 @@
 import type { Address } from "viem";
-import { createWalletClient, http, publicActions } from "viem";
+import { createPublicClient, createTestClient, http } from "viem";
 import { hardhat } from "viem/chains";
 import type { HardhatRuntimeEnvironment } from "hardhat/types/hre";
 import { FileBuildResultType } from "hardhat/types/solidity";
 import { NOX_SHIM_ROOT_PATH } from "../nox-config.js";
 import { loadDeploymentArtifact } from "./artifacts.js";
 
+const NOX_SHIM_SCRATCH_ADDRESS = "0x0000000000000000000000000000000000000000";
+
 /**
- * deploys the plugin's shipped `NoxShim.sol` against the consuming
- * project's own Solidity toolchain (via `hre.solidity.build`)
- * and calls its getter to read back the address `Nox.noxComputeContract()`
- * resolves to for the current chain
+ * Builds the plugin's shipped `NoxShim.sol` against the consuming project's
+ * own Solidity toolchain (via `hre.solidity.build`), etches its runtime
+ * bytecode at a scratch address, and calls its getter to read back the
+ * address `Nox.noxComputeContract()` resolves to for the current chain.
+ * The scratch address is reset to empty right after, so this leaves no
+ * trace on chain (no deployer transaction, no nonce consumed).
  */
 export async function resolveNoxComputeAddressViaShim(
   hre: HardhatRuntimeEnvironment,
@@ -54,26 +58,27 @@ export async function resolveNoxComputeAddressViaShim(
   const shim = await loadDeploymentArtifact(artifactPath);
 
   const transport = http(rpcUrl);
-  const walletClient = createWalletClient({ chain: hardhat, transport }).extend(
-    publicActions,
-  );
-  const [deployer] = await walletClient.getAddresses();
-  if (deployer === undefined)
-    throw new Error("[nox] Could not find a signer on the target node.");
-
-  const deployHash = await walletClient.deployContract({
-    abi: shim.abi,
-    bytecode: shim.bytecode,
-    account: deployer,
+  const testClient = createTestClient({
+    mode: "hardhat",
     chain: hardhat,
+    transport,
   });
-  const { contractAddress: shimAddress } =
-    await walletClient.waitForTransactionReceipt({ hash: deployHash });
-  if (!shimAddress) throw new Error("[nox] NoxShim deployment failed.");
+  const publicClient = createPublicClient({ chain: hardhat, transport });
 
-  return walletClient.readContract({
-    address: shimAddress,
-    abi: shim.abi,
-    functionName: "noxComputeAddress",
-  }) as Promise<Address>;
+  await testClient.setCode({
+    address: NOX_SHIM_SCRATCH_ADDRESS,
+    bytecode: shim.deployedBytecode,
+  });
+  try {
+    return (await publicClient.readContract({
+      address: NOX_SHIM_SCRATCH_ADDRESS,
+      abi: shim.abi,
+      functionName: "noxComputeAddress",
+    })) as Address;
+  } finally {
+    await testClient.setCode({
+      address: NOX_SHIM_SCRATCH_ADDRESS,
+      bytecode: "0x",
+    });
+  }
 }
