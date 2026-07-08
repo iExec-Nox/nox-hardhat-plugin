@@ -11,10 +11,10 @@ import { hardhat } from "viem/chains";
 import {
   ERC1967_IMPLEMENTATION_SLOT,
   ERC1967_PROXY_ARTIFACT_PATH,
-  NOX_COMPUTE_ARTIFACT_PATH,
   NOX_COMPUTE_IMPL_ADDRESS,
   NOX_GATEWAY_ADDRESS,
   NOX_KMS_PUBLIC_KEY,
+  resolveNoxComputeArtifactPath,
 } from "../nox-config.js";
 import { loadDeploymentArtifact } from "./artifacts.js";
 
@@ -31,11 +31,12 @@ import { loadDeploymentArtifact } from "./artifacts.js";
  *      zero-handle seed events that the offchain stack needs.
  */
 export async function deployNoxCompute(
+  consumerRoot: string,
   rpcUrl: string,
   noxComputeAddress: Address,
 ): Promise<void> {
   const [impl, proxy] = await Promise.all([
-    loadDeploymentArtifact(NOX_COMPUTE_ARTIFACT_PATH),
+    loadDeploymentArtifact(resolveNoxComputeArtifactPath(consumerRoot)),
     loadDeploymentArtifact(ERC1967_PROXY_ARTIFACT_PATH),
   ]);
 

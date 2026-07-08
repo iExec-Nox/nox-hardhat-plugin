@@ -49,7 +49,11 @@ const testWrapperAction: TaskOverrideActionFunction = async (
       hre,
       chain.rpcUrl,
     );
-    await deployNoxCompute(chain.rpcUrl, noxComputeAddress);
+    await deployNoxCompute(
+      hre.config.paths.root,
+      chain.rpcUrl,
+      noxComputeAddress,
+    );
     await startOffchainServices(noxComputeAddress);
 
     // node:test resolves without throwing when tests fail, it sets

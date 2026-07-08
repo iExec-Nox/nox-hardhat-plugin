@@ -84,14 +84,31 @@ export const RPC_URL = "http://127.0.0.1:8545";
 export const RESOLVE_MAX_RETRIES = 60;
 export const RESOLVE_DELAY_MS = 100;
 
-const pluginRequire = createRequire(import.meta.url);
-export const NOX_COMPUTE_ARTIFACT_PATH = pluginRequire.resolve(
-  "@iexec-nox/nox-protocol-contracts/artifacts/contracts/NoxCompute.sol/NoxCompute.json",
-);
+/**
+ * Resolves the `NoxCompute` deployment artifact from the *consuming*
+ * project's own `@iexec-nox/nox-protocol-contracts` (a peerDependency),
+ * rather than the plugin's own — so the contract etched on the local node
+ * matches the version the consumer actually depends on. Throws a clear
+ * error if the consumer hasn't installed it.
+ */
+export function resolveNoxComputeArtifactPath(consumerRoot: string): string {
+  const consumerRequire = createRequire(
+    path.join(consumerRoot, "package.json"),
+  );
+  try {
+    return consumerRequire.resolve(
+      "@iexec-nox/nox-protocol-contracts/artifacts/contracts/NoxCompute.sol/NoxCompute.json",
+    );
+  } catch (err) {
+    throw new Error(
+      `[nox] Could not resolve "@iexec-nox/nox-protocol-contracts" from your Hardhat project (${consumerRoot}). The plugin deploys the exact version your project depends on; make sure it is installed as a direct dependency. Underlying error: ${String(err)}`,
+    );
+  }
+}
 
-export const ERC1967_PROXY_ARTIFACT_PATH = pluginRequire.resolve(
-  "@openzeppelin/contracts/build/contracts/ERC1967Proxy.json",
-);
+export const ERC1967_PROXY_ARTIFACT_PATH = createRequire(
+  import.meta.url,
+).resolve("@openzeppelin/contracts/build/contracts/ERC1967Proxy.json");
 
 // root file path for `hre.solidity.build()` to compile the plugin's
 // shipped shim contract against the consuming project's own Solidity
