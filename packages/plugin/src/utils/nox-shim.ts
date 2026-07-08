@@ -9,7 +9,7 @@ import {
 } from "../nox-config.js";
 import { loadDeploymentArtifact } from "./artifacts.js";
 
-const NOX_SHIM_SCRATCH_ADDRESS = "0x0000000000000000000000000000000000000000";
+const NOX_SHIM_SCRATCH_ADDRESS = "0x9ae8112849021f70ff7dfd6a227140c4f441ba30";
 
 /**
  * Builds the plugin's shipped `NoxShim.sol` against the consuming project's
