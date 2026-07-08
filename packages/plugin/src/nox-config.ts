@@ -77,8 +77,6 @@ export function handleGatewayUrl(): `http://${string}` {
   return `http://127.0.0.1:${handleGatewayPort()}`;
 }
 
-export const RPC_URL = "http://127.0.0.1:8545";
-
 // How long `decrypt`/`publicDecrypt` poll the gateway for a handle to be
 // resolved before giving up: 60 attempts × 0.1s = 6s.
 export const RESOLVE_MAX_RETRIES = 60;

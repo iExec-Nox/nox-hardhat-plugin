@@ -12,7 +12,6 @@ import {
   resolvedNoxComputeAddress,
   RESOLVE_DELAY_MS,
   RESOLVE_MAX_RETRIES,
-  RPC_URL,
 } from "./nox-config.js";
 import type { NoxConnection } from "./types.js";
 import { createHandleClient } from "./utils/handle-client.js";
@@ -78,10 +77,6 @@ export const nox = {
 
   get handleGatewayUrl(): string {
     return handleGatewayUrl();
-  },
-
-  get rpcUrl(): string {
-    return RPC_URL;
   },
 
   async encryptInput<T extends SolidityType>(
