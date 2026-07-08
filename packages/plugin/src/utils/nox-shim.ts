@@ -1,20 +1,49 @@
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+import path from "node:path";
 import type { Address } from "viem";
 import { createPublicClient, createTestClient, http } from "viem";
 import { hardhat } from "viem/chains";
 import type { HardhatRuntimeEnvironment } from "hardhat/types/hre";
 import { FileBuildResultType } from "hardhat/types/solidity";
-import {
-  NOX_SHIM_ROOT_PATH,
-  setResolvedNoxComputeAddress,
-} from "../nox-config.js";
+import { setResolvedNoxComputeAddress } from "../nox-config.js";
 import { loadDeploymentArtifact } from "./artifacts.js";
 
 const NOX_SHIM_SCRATCH_ADDRESS = "0x9ae8112849021f70ff7dfd6a227140c4f441ba30";
 
+const NOX_SHIM_SOURCE_PATH = path.join(
+  import.meta.dirname,
+  "..",
+  "..",
+  "..",
+  "contracts",
+  "NoxShim.sol",
+);
+
 /**
- * Builds the plugin's shipped `NoxShim.sol` against the consuming project's
- * own Solidity toolchain (via `hre.solidity.build`), etches its runtime
- * bytecode at a scratch address, and calls its getter to read back the
+ * Copies the plugin's shipped NoxShim.sol into the consuming project's own
+ * Hardhat cache dir, so that when it's built, its
+ * `@iexec-nox/nox-protocol-contracts` import resolves through the
+ * consumer's own `node_modules` — the same way any of the consumer's own
+ * contracts would — rather than through the plugin's own (possibly
+ * `file:`-linked) location. Always overwrites, so there's no staleness
+ * question if the plugin's shipped source changes between versions.
+ */
+async function stageNoxShimSource(
+  hre: HardhatRuntimeEnvironment,
+): Promise<string> {
+  const stagedDir = path.join(hre.config.paths.cache, "nox-hardhat-plugin");
+  const stagedPath = path.join(stagedDir, "NoxShim.sol");
+  await mkdir(stagedDir, { recursive: true });
+  const source = await readFile(NOX_SHIM_SOURCE_PATH, "utf-8");
+  await writeFile(stagedPath, source);
+  return stagedPath;
+}
+
+/**
+ * Stages a copy of the plugin's shipped `NoxShim.sol` inside the consuming
+ * project, then builds it against that project's own Solidity toolchain
+ * (via `hre.solidity.build`), etches its runtime bytecode at a scratch
+ * address, and calls its getter to read back the
  * address `Nox.noxComputeContract()` resolves to for the current chain.
  * The scratch address is reset to empty right after, so this leaves no
  * trace on chain (no deployer transaction, no nonce consumed). The resolved
@@ -25,12 +54,14 @@ export async function resolveNoxComputeAddressViaShim(
   hre: HardhatRuntimeEnvironment,
   rpcUrl: string,
 ): Promise<Address> {
+  const stagedPath = await stageNoxShimSource(hre);
+
   // NoxShim.sol must be built ahead of time to find it among generated artifacts
-  await hre.solidity.build([NOX_SHIM_ROOT_PATH], {
+  await hre.solidity.build([stagedPath], {
     quiet: true,
   });
   // this build hits cache
-  const buildResult = await hre.solidity.build([NOX_SHIM_ROOT_PATH], {
+  const buildResult = await hre.solidity.build([stagedPath], {
     quiet: true,
   });
 
@@ -40,10 +71,10 @@ export async function resolveNoxComputeAddressViaShim(
     );
   }
 
-  const fileResult = buildResult.get(NOX_SHIM_ROOT_PATH);
+  const fileResult = buildResult.get(stagedPath);
   if (fileResult === undefined) {
     throw new Error(
-      `[nox] hre.solidity.build() returned no result for ${NOX_SHIM_ROOT_PATH}.`,
+      `[nox] hre.solidity.build() returned no result for ${stagedPath}.`,
     );
   }
   if (fileResult.type === FileBuildResultType.BUILD_FAILURE) {
@@ -52,8 +83,8 @@ export async function resolveNoxComputeAddressViaShim(
     );
   }
 
-  const artifactPath = fileResult.contractArtifactsGenerated.find((path) =>
-    path.endsWith("NoxShim.json"),
+  const artifactPath = fileResult.contractArtifactsGenerated.find(
+    (generatedPath) => generatedPath.endsWith("NoxShim.json"),
   );
   if (artifactPath === undefined) {
     throw new Error(

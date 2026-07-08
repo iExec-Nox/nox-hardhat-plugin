@@ -6,8 +6,7 @@
   "type": "module",
   "types": "dist/src/index.d.ts",
   "exports": {
-    ".": "./dist/src/index.js",
-    "./contracts/*": "./contracts/*"
+    ".": "./dist/src/index.js"
   },
   "keywords": [
     "ethereum",
