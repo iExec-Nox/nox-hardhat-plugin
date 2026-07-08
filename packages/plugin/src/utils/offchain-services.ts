@@ -8,6 +8,7 @@ import {
   HANDLE_GATEWAY_SERVICE,
   setHandleGatewayPort,
 } from "../nox-config.js";
+import { NOX_LOCAL_PORT } from "../config.js";
 import { assertDockerDaemonRunning } from "./docker.js";
 
 /** Run a docker-compose operation, rethrowing failures with a clean message. */
@@ -41,6 +42,7 @@ export async function startOffchainServices(
       env: {
         ...COMPOSE_OPTS.env,
         NOX_COMPUTE_CONTRACT: noxComputeAddress,
+        HOST_RPC_URL: `http://host.docker.internal:${NOX_LOCAL_PORT}`,
       },
       commandOptions: ["--wait", "--remove-orphans"],
     }),
