@@ -11,6 +11,12 @@ Nox protocol end-to-end.
 pnpm add -D @iexec-nox/nox-hardhat-plugin
 ```
 
+`@iexec-nox/nox-protocol-contracts` is a required peer dependency: the plugin
+deploys the exact `NoxCompute` version your project depends on, so it must be
+declared as a direct dependency of your own project (not just pulled in
+transitively). Installing without it fails `hardhat test` with a clear error
+as soon as the local stack tries to start.
+
 In your `hardhat.config.ts`:
 
 ```ts
@@ -36,7 +42,7 @@ export default defineConfig({
 The plugin overrides the `test` task so that, before running your tests, it:
 
 1. Compiles the project (including the `NoxCompute` contract pulled from
-   `@iexec-nox/nox-protocol-contracts`).
+   _your_ project's own `@iexec-nox/nox-protocol-contracts` dependency.
 2. Starts a Hardhat node bound to `0.0.0.0:8545`.
 3. Injects the compiled `NoxCompute` bytecode at its well-known address via
    `hardhat_setCode` and initializes it (owner + KMS public key + gateway).

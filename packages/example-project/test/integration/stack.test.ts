@@ -2,18 +2,14 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import type { Abi, Address, Hex } from "viem";
 import { zeroAddress } from "viem";
-import {
-  handleGatewayUrl,
-  NOX_COMPUTE_ADDRESS,
-  nox,
-} from "@iexec-nox/nox-hardhat-plugin";
+import { nox } from "@iexec-nox/nox-hardhat-plugin";
 import NoxComputeArtifact from "@iexec-nox/nox-protocol-contracts/artifacts/contracts/NoxCompute.sol/NoxCompute.json" with { type: "json" };
 
 const NOX_COMPUTE_ABI = NoxComputeArtifact.abi as Abi;
 
 describe("Nox stack", () => {
   it("handle gateway is up", async () => {
-    const response = await fetch(handleGatewayUrl());
+    const response = await fetch(nox.handleGatewayUrl);
     assert.ok(
       response.ok,
       `Handle gateway health check failed with status ${response.status}`,
@@ -21,22 +17,24 @@ describe("Nox stack", () => {
   });
 
   it("NoxCompute contract is deployed", async () => {
+    const noxComputeAddress = nox.noxComputeAddress;
     const { viem } = await nox.connect();
     const publicClient = await viem.getPublicClient();
     const code = await publicClient.getCode({
-      address: NOX_COMPUTE_ADDRESS,
+      address: noxComputeAddress,
     });
     assert.ok(
       code !== undefined && code !== "0x",
-      `No contract deployed at ${NOX_COMPUTE_ADDRESS}`,
+      `No contract deployed at ${noxComputeAddress}`,
     );
   });
 
   it("NoxCompute constructor ran (EIP712 immutables are set)", async () => {
+    const noxComputeAddress = nox.noxComputeAddress;
     const { viem } = await nox.connect();
     const publicClient = await viem.getPublicClient();
     const [, name, version] = (await publicClient.readContract({
-      address: NOX_COMPUTE_ADDRESS,
+      address: noxComputeAddress,
       abi: NOX_COMPUTE_ABI,
       functionName: "eip712Domain",
     })) as readonly [
@@ -61,16 +59,17 @@ describe("Nox stack", () => {
   });
 
   it("NoxCompute initializer ran (gateway and KMS key are set)", async () => {
+    const noxComputeAddress = nox.noxComputeAddress;
     const { viem } = await nox.connect();
     const publicClient = await viem.getPublicClient();
     const [gateway, kmsPublicKey] = (await Promise.all([
       publicClient.readContract({
-        address: NOX_COMPUTE_ADDRESS,
+        address: noxComputeAddress,
         abi: NOX_COMPUTE_ABI,
         functionName: "gateway",
       }),
       publicClient.readContract({
-        address: NOX_COMPUTE_ADDRESS,
+        address: noxComputeAddress,
         abi: NOX_COMPUTE_ABI,
         functionName: "kmsPublicKey",
       }),

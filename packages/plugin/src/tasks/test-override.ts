@@ -7,6 +7,8 @@ import {
   startOffchainServices,
   stopOffchainServices,
 } from "../utils/offchain-services.js";
+import { resolveNoxComputeAddressViaResolver } from "../utils/nox-compute-address-resolver.js";
+import { deployNoxCompute } from "../utils/nox-compute.js";
 
 const testWrapperAction: TaskOverrideActionFunction = async (
   args,
@@ -41,8 +43,18 @@ const testWrapperAction: TaskOverrideActionFunction = async (
 
   let server: JsonRpcServer | undefined;
   try {
-    server = await startChain(hre);
-    await startOffchainServices();
+    const chain = await startChain(hre);
+    server = chain.server;
+    const noxComputeAddress = await resolveNoxComputeAddressViaResolver(
+      hre,
+      chain.rpcUrl,
+    );
+    await deployNoxCompute(
+      hre.config.paths.root,
+      chain.rpcUrl,
+      noxComputeAddress,
+    );
+    await startOffchainServices(noxComputeAddress);
 
     // node:test resolves without throwing when tests fail, it sets
     // process.exitCode instead. Capture it before/after to detect

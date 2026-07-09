@@ -8,8 +8,6 @@ import type { Address, Hex } from "viem";
 // run against the network's real endpoint and may fail if it lacks a Nox
 // deployment.
 export const NOX_SUPPORTED_CHAIN_ID = 31337;
-export const NOX_COMPUTE_ADDRESS: Address =
-  "0x75C6AF4430cc474b1bb9b8540b7E46D6f8e1C685";
 
 // Arbitrary address at which the plugin etches the NoxCompute implementation
 // runtime.
@@ -28,10 +26,34 @@ export const NOX_GATEWAY_ADDRESS: Address =
 
 export const HANDLE_GATEWAY_SERVICE = "nox-handle-gateway";
 export const HANDLE_GATEWAY_CONTAINER_PORT = 3000;
-export const HANDLE_GATEWAY_HOST_PORT_ENV = "NOX_HANDLE_GATEWAY_HOST_PORT";
 
 export const DOCKER_PING_TIMEOUT_MS = 2000;
 
+const NOX_COMPUTE_ADDRESS_ENV = "NOX_COMPUTE_ADDRESS";
+export function setResolvedNoxComputeAddress(address: Address) {
+  process.env[NOX_COMPUTE_ADDRESS_ENV] = address;
+}
+/**
+ * Resolved `NoxCompute` address. Resolved dynamically at stack startup (see
+ * `resolveNoxComputeAddressViaResolver`) and stashed in an env var so later calls
+ * (e.g. from `nox.connect()`) can read it cheaply — there is no static
+ * default, so calling this before the stack is up throws.
+ */
+export function resolvedNoxComputeAddress(): Address {
+  const raw = process.env[NOX_COMPUTE_ADDRESS_ENV];
+  if (raw === undefined) {
+    throw new Error(
+      `[nox] NoxCompute address is not set (${NOX_COMPUTE_ADDRESS_ENV}). ` +
+        `Is the Nox stack started?`,
+    );
+  }
+  return raw as Address;
+}
+
+const HANDLE_GATEWAY_HOST_PORT_ENV = "NOX_HANDLE_GATEWAY_HOST_PORT";
+export function setHandleGatewayPort(port: number) {
+  process.env[HANDLE_GATEWAY_HOST_PORT_ENV] = port.toString();
+}
 /**
  * Resolved host port of the handle gateway. The host port is Docker-assigned at
  * startup (see `startOffchainServices`), so there is no usable default: throw if
@@ -55,21 +77,36 @@ export function handleGatewayUrl(): `http://${string}` {
   return `http://127.0.0.1:${handleGatewayPort()}`;
 }
 
-export const RPC_URL = "http://127.0.0.1:8545";
-
 // How long `decrypt`/`publicDecrypt` poll the gateway for a handle to be
 // resolved before giving up: 60 attempts × 0.1s = 6s.
 export const RESOLVE_MAX_RETRIES = 60;
 export const RESOLVE_DELAY_MS = 100;
 
-const pluginRequire = createRequire(import.meta.url);
-export const NOX_COMPUTE_ARTIFACT_PATH = pluginRequire.resolve(
-  "@iexec-nox/nox-protocol-contracts/artifacts/contracts/NoxCompute.sol/NoxCompute.json",
-);
+/**
+ * Resolves the `NoxCompute` deployment artifact from the *consuming*
+ * project's own `@iexec-nox/nox-protocol-contracts` (a peerDependency),
+ * rather than the plugin's own — so the contract etched on the local node
+ * matches the version the consumer actually depends on. Throws a clear
+ * error if the consumer hasn't installed it.
+ */
+export function resolveNoxComputeArtifactPath(consumerRoot: string): string {
+  const consumerRequire = createRequire(
+    path.join(consumerRoot, "package.json"),
+  );
+  try {
+    return consumerRequire.resolve(
+      "@iexec-nox/nox-protocol-contracts/artifacts/contracts/NoxCompute.sol/NoxCompute.json",
+    );
+  } catch (err) {
+    throw new Error(
+      `[nox] Could not resolve "@iexec-nox/nox-protocol-contracts" from your Hardhat project (${consumerRoot}). The plugin deploys the exact version your project depends on; make sure it is installed as a direct dependency. Underlying error: ${String(err)}`,
+    );
+  }
+}
 
-export const ERC1967_PROXY_ARTIFACT_PATH = pluginRequire.resolve(
-  "@openzeppelin/contracts/build/contracts/ERC1967Proxy.json",
-);
+export const ERC1967_PROXY_ARTIFACT_PATH = createRequire(
+  import.meta.url,
+).resolve("@openzeppelin/contracts/build/contracts/ERC1967Proxy.json");
 
 export const COMPOSE_OPTS: IDockerComposeOptions = {
   cwd: path.resolve(import.meta.dirname, "..", "..", "offchain-services"),

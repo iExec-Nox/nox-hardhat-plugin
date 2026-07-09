@@ -5,9 +5,10 @@ import {
   ALL_SERVICES,
   COMPOSE_OPTS,
   HANDLE_GATEWAY_CONTAINER_PORT,
-  HANDLE_GATEWAY_HOST_PORT_ENV,
   HANDLE_GATEWAY_SERVICE,
+  setHandleGatewayPort,
 } from "../nox-config.js";
+import { NOX_LOCAL_PORT } from "../config.js";
 import { assertDockerDaemonRunning } from "./docker.js";
 
 /** Run a docker-compose operation, rethrowing failures with a clean message. */
@@ -24,16 +25,25 @@ async function runComposeWithCleanErrors<T>(
   }
 }
 
-export async function startOffchainServices(): Promise<void> {
+export async function startOffchainServices(
+  noxComputeAddress: `0x${string}`,
+): Promise<void> {
   // Fail fast with a clear message if the daemon is down, before any compose call.
   await assertDockerDaemonRunning();
   // Make sure there is not old service instance still running.
   await stopOffchainServices().catch(() => {});
 
-  console.log("[nox] 🚀 Starting Nox offchain stack...");
+  console.log(
+    `[nox] 🚀 Starting Nox offchain stack connected to NoxCompute at ${noxComputeAddress}...`,
+  );
   await runComposeWithCleanErrors("start", () =>
     upAll({
       ...COMPOSE_OPTS,
+      env: {
+        ...COMPOSE_OPTS.env,
+        NOX_COMPUTE_CONTRACT: noxComputeAddress,
+        HOST_RPC_URL: `http://host.docker.internal:${NOX_LOCAL_PORT}`,
+      },
       commandOptions: ["--wait", "--remove-orphans"],
     }),
   );
@@ -46,7 +56,7 @@ export async function startOffchainServices(): Promise<void> {
       `[nox] Could not determine the host port for ${HANDLE_GATEWAY_SERVICE}.`,
     );
   }
-  process.env[HANDLE_GATEWAY_HOST_PORT_ENV] = String(data.port);
+  setHandleGatewayPort(data.port);
 }
 
 /** Tear the offchain stack down. */

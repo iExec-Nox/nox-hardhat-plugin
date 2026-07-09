@@ -6,15 +6,15 @@ import {
   pad,
   publicActions,
 } from "viem";
+import type { Address } from "viem";
 import { hardhat } from "viem/chains";
 import {
   ERC1967_IMPLEMENTATION_SLOT,
   ERC1967_PROXY_ARTIFACT_PATH,
-  NOX_COMPUTE_ADDRESS,
-  NOX_COMPUTE_ARTIFACT_PATH,
   NOX_COMPUTE_IMPL_ADDRESS,
   NOX_GATEWAY_ADDRESS,
   NOX_KMS_PUBLIC_KEY,
+  resolveNoxComputeArtifactPath,
 } from "../nox-config.js";
 import { loadDeploymentArtifact } from "./artifacts.js";
 
@@ -30,9 +30,13 @@ import { loadDeploymentArtifact } from "./artifacts.js";
  *      proxy — it sets all config in the proxy's storage AND emits the
  *      zero-handle seed events that the offchain stack needs.
  */
-export async function deployNoxCompute(rpcUrl: string): Promise<void> {
+export async function deployNoxCompute(
+  consumerRoot: string,
+  rpcUrl: string,
+  noxComputeAddress: Address,
+): Promise<void> {
   const [impl, proxy] = await Promise.all([
-    loadDeploymentArtifact(NOX_COMPUTE_ARTIFACT_PATH),
+    loadDeploymentArtifact(resolveNoxComputeArtifactPath(consumerRoot)),
     loadDeploymentArtifact(ERC1967_PROXY_ARTIFACT_PATH),
   ]);
 
@@ -72,21 +76,21 @@ export async function deployNoxCompute(rpcUrl: string): Promise<void> {
     bytecode: initializedImplRuntime,
   });
   await testClient.setCode({
-    address: NOX_COMPUTE_ADDRESS,
+    address: noxComputeAddress,
     bytecode: proxy.deployedBytecode,
   });
-  console.log(`[nox] 📦 NoxCompute deployed at ${NOX_COMPUTE_ADDRESS}`);
+  console.log(`[nox] 📦 NoxCompute deployed at ${noxComputeAddress}`);
 
   // Wire the proxy to its implementation (ERC-1967 slot).
   await testClient.setStorageAt({
-    address: NOX_COMPUTE_ADDRESS,
+    address: noxComputeAddress,
     index: ERC1967_IMPLEMENTATION_SLOT,
     value: pad(NOX_COMPUTE_IMPL_ADDRESS, { size: 32 }),
   });
 
   await walletClient.sendTransaction({
     account: deployer,
-    to: NOX_COMPUTE_ADDRESS,
+    to: noxComputeAddress,
     data: encodeFunctionData({
       abi: impl.abi,
       functionName: "initialize",
