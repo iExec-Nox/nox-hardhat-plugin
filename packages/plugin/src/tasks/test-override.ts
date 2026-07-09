@@ -1,6 +1,11 @@
 import type { JsonRpcServer } from "hardhat/types/network";
 import type { TaskOverrideActionFunction } from "hardhat/types/tasks";
-import { NOX_SUPPORTED_CHAIN_ID } from "../nox-config.js";
+import { resolveTargetNetworkName } from "../config.js";
+import {
+  NOX_SUPPORTED_CHAIN_ID,
+  setResolvedHandleGatewayUrl,
+  setResolvedNoxComputeAddress,
+} from "../nox-config.js";
 import { startChain } from "../utils/chain.js";
 import {
   dumpOffchainServicesLogs,
@@ -23,19 +28,34 @@ const testWrapperAction: TaskOverrideActionFunction = async (
     return;
   }
 
+  const targetNetworkName = resolveTargetNetworkName(hre.globalOptions.network);
+  const targetNetworkConfig = hre.config.networks[targetNetworkName];
+
+  // A network carrying a `nox` config points at an already-running stack:
+  // use it as-is, independent of chain id and without touching the local
+  // node or Docker Compose stack at all.
+  const existingStackConfig =
+    targetNetworkConfig?.type === "http" ? targetNetworkConfig.nox : undefined;
+  if (existingStackConfig !== undefined) {
+    console.log(
+      `[nox] Using the existing Nox stack configured on network '${targetNetworkName}'.`,
+    );
+    setResolvedNoxComputeAddress(existingStackConfig.noxComputeAddress);
+    setResolvedHandleGatewayUrl(existingStackConfig.handleGatewayUrl);
+    await runSuper(args);
+    return;
+  }
+
   // The plugin's local stack only supports chainId 31337. For any other
   // network, log a warning and skip the setup — the user's tests then run
   // against the real endpoint and may fail if it lacks a Nox deployment.
-  const targetNetworkName =
-    hre.globalOptions.network !== undefined && hre.globalOptions.network !== ""
-      ? hre.globalOptions.network
-      : "default";
-  const targetChainId = hre.config.networks[targetNetworkName]?.chainId;
-  if (targetChainId !== NOX_SUPPORTED_CHAIN_ID) {
+  const targetChainId = targetNetworkConfig?.chainId;
+  if (
+    targetNetworkConfig.type !== "edr-simulated" ||
+    targetChainId !== NOX_SUPPORTED_CHAIN_ID
+  ) {
     console.warn(
-      `[nox] Chain id ${targetChainId} (network='${targetNetworkName}') is not ` +
-        `supported by the plugin's local stack (only ${NOX_SUPPORTED_CHAIN_ID} is). ` +
-        `Skipping local stack setup.`,
+      `[nox] Chain id ${targetChainId} type ${targetNetworkConfig.type} (network='${targetNetworkName}') is not supported by the plugin's local stack (only chain ${NOX_SUPPORTED_CHAIN_ID} "edr-simulated" is). Skipping local stack setup.`,
     );
     await runSuper(args);
     return;

@@ -54,3 +54,28 @@ pnpm hardhat test
 ```
 
 The stack is torn down when the test run finishes (or on failure).
+
+## Connecting to an existing Nox stack
+
+Instead of the plugin's own ephemeral local stack, `hardhat test` can target a Nox stack that's already running elsewhere (a private testnet, a public network, or just a longer-lived local stack you kept up on purpose). Declare it on the network itself:
+
+```ts
+export default defineConfig({
+  plugins: [noxPlugin],
+  networks: {
+    existingStack: {
+      type: "http",
+      url: "https://rpc.example.com",
+      chainType: "op",
+      nox: {
+        noxComputeAddress: "0x...",
+        handleGatewayUrl: "https://gateway.example.com",
+      },
+    },
+  },
+});
+```
+
+Both fields are required together, and this is purely declarative — the plugin never deploys, discovers, or verifies the stack behind these values; it assumes it already exists and is reachable. Run `pnpm hardhat test --network existingStack` and the plugin skips starting its own node and Docker Compose stack entirely, running your tests directly against the configured stack. This is independent of chain id (an existing stack can be on any chain) and orthogonal to `nox.skipTestOverride` (which still means "no Nox handling at all").
+
+Only `http` networks can carry a `nox` config — `edr-simulated` networks can only use ephemeral Nox stack.
