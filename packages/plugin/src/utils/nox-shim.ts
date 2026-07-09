@@ -112,9 +112,6 @@ export async function resolveNoxComputeAddressViaShim(
       abi: shim.abi,
       functionName: "noxComputeAddress",
     })) as Address;
-    if (noxComputeAddress === undefined) {
-      throw new Error("[nox] Failed to resolve NoxCompute address via shim.");
-    }
   } finally {
     await testClient.setCode({
       address: NOX_SHIM_SCRATCH_ADDRESS,
