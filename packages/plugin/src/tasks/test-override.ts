@@ -7,7 +7,7 @@ import {
   startOffchainServices,
   stopOffchainServices,
 } from "../utils/offchain-services.js";
-import { resolveNoxComputeAddressViaShim } from "../utils/nox-shim.js";
+import { resolveNoxComputeAddressViaResolver } from "../utils/nox-compute-address-resolver.js";
 import { deployNoxCompute } from "../utils/nox-compute.js";
 
 const testWrapperAction: TaskOverrideActionFunction = async (
@@ -45,7 +45,7 @@ const testWrapperAction: TaskOverrideActionFunction = async (
   try {
     const chain = await startChain(hre);
     server = chain.server;
-    const noxComputeAddress = await resolveNoxComputeAddressViaShim(
+    const noxComputeAddress = await resolveNoxComputeAddressViaResolver(
       hre,
       chain.rpcUrl,
     );

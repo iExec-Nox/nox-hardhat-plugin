@@ -35,7 +35,7 @@ export function setResolvedNoxComputeAddress(address: Address) {
 }
 /**
  * Resolved `NoxCompute` address. Resolved dynamically at stack startup (see
- * `resolveNoxComputeAddressViaShim`) and stashed in an env var so later calls
+ * `resolveNoxComputeAddressViaResolver`) and stashed in an env var so later calls
  * (e.g. from `nox.connect()`) can read it cheaply — there is no static
  * default, so calling this before the stack is up throws.
  */
