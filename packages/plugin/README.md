@@ -78,4 +78,4 @@ export default defineConfig({
 
 Both fields are required together, and this is purely declarative — the plugin never deploys, discovers, or verifies the stack behind these values; it assumes it already exists and is reachable. Run `pnpm hardhat test --network existingStack` and the plugin skips starting its own node and Docker Compose stack entirely, running your tests directly against the configured stack. This is independent of chain id (an existing stack can be on any chain) and orthogonal to `nox.skipTestOverride` (which still means "no Nox handling at all").
 
-Only `http` networks can carry a `nox` config — `edr-simulated` networks can only use ephemeral Nox stack.
+Only `http` networks can carry a `nox` config — `edr-simulated` networks can only use an ephemeral Nox stack.
