@@ -19,8 +19,21 @@ async function runComposeWithCleanErrors<T>(
   try {
     return await op();
   } catch (error) {
+    // docker-compose rejects with `{ exitCode, err, out }`, which `String()`
+    // renders as "[object Object]" — surface the real stderr/stdout instead.
+    const detail =
+      error instanceof Error
+        ? error.message
+        : typeof error === "object" && error !== null
+          ? [
+              (error as { err?: string }).err,
+              (error as { out?: string }).out,
+            ]
+              .filter(Boolean)
+              .join("\n") || JSON.stringify(error)
+          : String(error);
     throw new Error(
-      `[nox] Failed to ${action} the offchain stack:\n${String(error)}`,
+      `[nox] Failed to ${action} the offchain stack:\n${detail}`,
     );
   }
 }
@@ -40,6 +53,11 @@ export async function startOffchainServices(
     upAll({
       ...COMPOSE_OPTS,
       env: {
+        // `docker-compose` spawns the CLI with `env` REPLACING the parent
+        // environment (not merging). Without PATH/SystemRoot/USERPROFILE/APPDATA
+        // the Docker CLI cannot resolve its context or the named pipe on Windows,
+        // so the stack fails to start. Inherit the parent env explicitly.
+        ...process.env,
         ...COMPOSE_OPTS.env,
         NOX_COMPUTE_CONTRACT: noxComputeAddress,
         HOST_RPC_URL: `http://host.docker.internal:${NOX_LOCAL_PORT}`,
