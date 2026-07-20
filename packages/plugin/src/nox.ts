@@ -6,9 +6,9 @@ import type {
   SolidityType,
 } from "@iexec-nox/handle";
 import type { Address } from "viem";
-import { NOX_LOCAL_NETWORK } from "./config.js";
+import { NOX_LOCAL_NETWORK, resolveTargetNetworkName } from "./config.js";
 import {
-  handleGatewayUrl,
+  resolvedHandleGatewayUrl,
   resolvedNoxComputeAddress,
   RESOLVE_DELAY_MS,
   RESOLVE_MAX_RETRIES,
@@ -18,12 +18,32 @@ import { createHandleClient } from "./utils/handle-client.js";
 
 async function connect(): Promise<NoxConnection> {
   // `hardhat` is imported lazily — a top-level import deadlocks Hardhat's CLI.
-  const { network } = await import("hardhat");
-  const connection = await network.create<"op">(NOX_LOCAL_NETWORK);
+  const { network, config, globalOptions } = await import("hardhat");
+
+  // When the currently active network carries a `nox` config, it points at
+  // an already-running stack: connect to that network directly instead of
+  // the plugin's own local stack. The resolved address/gateway URL below
+  // already reflect that network's config either way — set either by the
+  // local stack startup, or by the `test` task override's existing-stack
+  // branch (see `test-override.ts`) — so they need no branching here.
+  const targetNetworkName = resolveTargetNetworkName(globalOptions.network);
+  const targetNetworkConfig = config.networks[targetNetworkName];
+  const hasExistingStackConfig =
+    targetNetworkConfig?.type === "http" &&
+    targetNetworkConfig.nox !== undefined;
+
+  const connection = await network.create<"op">(
+    hasExistingStackConfig ? targetNetworkName : NOX_LOCAL_NETWORK,
+  );
   // Works with either toolbox (viem or ethers), auto-detected from `connection`.
   const handleClient = await createHandleClient(connection, {
     smartContractAddress: resolvedNoxComputeAddress(),
-    gatewayUrl: handleGatewayUrl(),
+    // Validated as http(s) at config-validation time (or always http:// for
+    // the local stack) — `@iexec-nox/handle` types this as a template
+    // literal rather than a plain `string`.
+    gatewayUrl: resolvedHandleGatewayUrl() as
+      | `http://${string}`
+      | `https://${string}`,
     // The Handle SDK requires a subgraph URL for config validation even when
     // the calling code never queries it (publicDecrypt only hits the gateway
     // + the chain). Placeholder.
@@ -33,7 +53,7 @@ async function connect(): Promise<NoxConnection> {
 }
 
 async function waitForHandlesResolved(handles: HexString[]): Promise<void> {
-  const url = `${handleGatewayUrl()}/v0/public/handles/status`;
+  const url = `${resolvedHandleGatewayUrl()}/v0/public/handles/status`;
 
   for (let attempt = 0; attempt < RESOLVE_MAX_RETRIES; attempt++) {
     const response = await fetch(url, {
@@ -76,7 +96,7 @@ export const nox = {
   },
 
   get handleGatewayUrl(): string {
-    return handleGatewayUrl();
+    return resolvedHandleGatewayUrl();
   },
 
   async encryptInput<T extends SolidityType>(

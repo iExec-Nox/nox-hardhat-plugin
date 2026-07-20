@@ -50,31 +50,26 @@ export function resolvedNoxComputeAddress(): Address {
   return raw as Address;
 }
 
-const HANDLE_GATEWAY_HOST_PORT_ENV = "NOX_HANDLE_GATEWAY_HOST_PORT";
-export function setHandleGatewayPort(port: number) {
-  process.env[HANDLE_GATEWAY_HOST_PORT_ENV] = port.toString();
+const HANDLE_GATEWAY_URL_ENV = "NOX_HANDLE_GATEWAY_URL";
+export function setResolvedHandleGatewayUrl(url: string) {
+  process.env[HANDLE_GATEWAY_URL_ENV] = url;
 }
 /**
- * Resolved host port of the handle gateway. The host port is Docker-assigned at
- * startup (see `startOffchainServices`), so there is no usable default: throw if
- * it hasn't been published yet rather than returning the unreachable container
- * port.
+ * Resolved base URL of the handle gateway. Set either from the plugin's own
+ * local stack (Docker-assigned host port, see `startOffchainServices`) or
+ * from a network's `nox.handleGatewayUrl` config when pointing at an
+ * existing stack (see `test-override.ts`) — there is no static default, so
+ * calling this before either has happened throws.
  */
-export function handleGatewayPort(): number {
-  const raw = process.env[HANDLE_GATEWAY_HOST_PORT_ENV];
-  const parsed = raw === undefined ? Number.NaN : Number(raw);
-  if (!Number.isInteger(parsed) || parsed <= 0) {
+export function resolvedHandleGatewayUrl(): string {
+  const url = process.env[HANDLE_GATEWAY_URL_ENV];
+  if (url === undefined) {
     throw new Error(
-      `[nox] Handle gateway host port is not set (${HANDLE_GATEWAY_HOST_PORT_ENV}). ` +
+      `[nox] Handle gateway URL is not set (${HANDLE_GATEWAY_URL_ENV}). ` +
         `Is the Nox stack started?`,
     );
   }
-  return parsed;
-}
-
-/** Base URL of the handle gateway, reflecting the resolved host port. */
-export function handleGatewayUrl(): `http://${string}` {
-  return `http://127.0.0.1:${handleGatewayPort()}`;
+  return url;
 }
 
 // How long `decrypt`/`publicDecrypt` poll the gateway for a handle to be
