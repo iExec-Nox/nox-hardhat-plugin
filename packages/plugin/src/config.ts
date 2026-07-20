@@ -187,7 +187,7 @@ function resolveNetworksWithNoxConfig(
           ...networkConfig,
           nox: {
             noxComputeAddress: nox.noxComputeAddress,
-            handleGatewayUrl: nox.handleGatewayUrl,
+            handleGatewayUrl: nox.handleGatewayUrl.replace(/\/+$/, ""),
           },
         },
       ];

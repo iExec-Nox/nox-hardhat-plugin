@@ -135,6 +135,40 @@ describe("Nox plugin config", () => {
       });
     });
 
+    it("Should strip a trailing slash from handleGatewayUrl when resolving", async () => {
+      const userConfig = {
+        networks: {
+          existingStack: {
+            type: "http",
+            url: "https://rpc.example.com",
+            nox: {
+              noxComputeAddress: VALID_NOX_COMPUTE_ADDRESS,
+              handleGatewayUrl: "https://gateway.example.com/",
+            },
+          },
+        },
+      } satisfies HardhatUserConfig;
+      const partiallyResolvedConfig = {
+        networks: {
+          existingStack: { type: "http", url: "https://rpc.example.com" },
+        },
+      } as unknown as HardhatConfig;
+
+      const resolved = await resolvePluginConfig(
+        userConfig,
+        partiallyResolvedConfig,
+      );
+
+      assert.deepEqual(resolved.networks.existingStack, {
+        type: "http",
+        url: "https://rpc.example.com",
+        nox: {
+          noxComputeAddress: VALID_NOX_COMPUTE_ADDRESS,
+          handleGatewayUrl: "https://gateway.example.com",
+        },
+      });
+    });
+
     it("Should leave networks without a nox config untouched", async () => {
       const userConfig = {
         networks: { plain: { type: "http", url: "https://rpc.example.com" } },
