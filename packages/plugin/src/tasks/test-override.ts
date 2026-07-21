@@ -1,11 +1,7 @@
 import type { JsonRpcServer } from "hardhat/types/network";
 import type { TaskOverrideActionFunction } from "hardhat/types/tasks";
 import { resolveTargetNetworkName } from "../config.js";
-import {
-  NOX_SUPPORTED_CHAIN_ID,
-  setResolvedHandleGatewayUrl,
-  setResolvedNoxComputeAddress,
-} from "../nox-config.js";
+import { NOX_SUPPORTED_CHAIN_ID } from "../nox-config.js";
 import { startChain } from "../utils/chain.js";
 import {
   dumpOffchainServicesLogs,
@@ -41,8 +37,6 @@ const testWrapperAction: TaskOverrideActionFunction = async (
     console.log(
       `[nox] Using the existing Nox stack configured on network '${targetNetworkName}'.`,
     );
-    setResolvedNoxComputeAddress(existingStackConfig.noxComputeAddress);
-    setResolvedHandleGatewayUrl(existingStackConfig.handleGatewayUrl);
     await runSuper(args);
     return;
   }

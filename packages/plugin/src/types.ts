@@ -1,4 +1,10 @@
-import type { HandleClient } from "@iexec-nox/handle";
+import type {
+  EthereumAddress,
+  Handle,
+  HexString,
+  JsValue,
+  SolidityType,
+} from "@iexec-nox/handle";
 import type { NetworkConnection } from "hardhat/types/network";
 import type { Abi, Address, Hex } from "viem";
 
@@ -38,9 +44,26 @@ export interface DeploymentArtifact {
 }
 
 /**
- * A network connection to the plugin's local Nox stack, augmented with a
- * pre-configured `@iexec-nox/handle` client.
+ * A network connection to the target Nox stack (the plugin's local stack, or
+ * an existing one declared via a network's `nox` config) augmented with encryption
+ * and decryption methods
  */
 export type NoxConnection = NetworkConnection<"op"> & {
-  handleClient: HandleClient;
+  readonly noxComputeAddress: Address;
+  readonly handleGatewayUrl: string;
+  encryptInput<T extends SolidityType>(
+    value: JsValue<T>,
+    solidityType: T,
+    applicationContract: EthereumAddress,
+  ): Promise<{ handle: Handle<T>; handleProof: HexString }>;
+  decrypt<T extends SolidityType>(
+    handle: Handle<T>,
+  ): Promise<{ value: JsValue<T>; solidityType: T }>;
+  publicDecrypt<T extends SolidityType>(
+    handle: Handle<T>,
+  ): Promise<{
+    value: JsValue<T>;
+    solidityType: T;
+    decryptionProof: HexString;
+  }>;
 };

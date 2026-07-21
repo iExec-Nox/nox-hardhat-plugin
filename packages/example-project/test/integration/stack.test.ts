@@ -9,7 +9,8 @@ const NOX_COMPUTE_ABI = NoxComputeArtifact.abi as Abi;
 
 describe("Nox stack", () => {
   it("handle gateway is up", async () => {
-    const response = await fetch(nox.handleGatewayUrl);
+    const { handleGatewayUrl } = await nox.connect();
+    const response = await fetch(handleGatewayUrl);
     assert.ok(
       response.ok,
       `Handle gateway health check failed with status ${response.status}`,
@@ -17,8 +18,7 @@ describe("Nox stack", () => {
   });
 
   it("NoxCompute contract is deployed", async () => {
-    const noxComputeAddress = nox.noxComputeAddress;
-    const { viem } = await nox.connect();
+    const { noxComputeAddress, viem } = await nox.connect();
     const publicClient = await viem.getPublicClient();
     const code = await publicClient.getCode({
       address: noxComputeAddress,
@@ -30,8 +30,7 @@ describe("Nox stack", () => {
   });
 
   it("NoxCompute constructor ran (EIP712 immutables are set)", async () => {
-    const noxComputeAddress = nox.noxComputeAddress;
-    const { viem } = await nox.connect();
+    const { noxComputeAddress, viem } = await nox.connect();
     const publicClient = await viem.getPublicClient();
     const [, name, version] = (await publicClient.readContract({
       address: noxComputeAddress,
@@ -59,8 +58,7 @@ describe("Nox stack", () => {
   });
 
   it("NoxCompute initializer ran (gateway and KMS key are set)", async () => {
-    const noxComputeAddress = nox.noxComputeAddress;
-    const { viem } = await nox.connect();
+    const { noxComputeAddress, viem } = await nox.connect();
     const publicClient = await viem.getPublicClient();
     const [gateway, kmsPublicKey] = (await Promise.all([
       publicClient.readContract({

@@ -79,3 +79,19 @@ export default defineConfig({
 Both fields are required together, and this is purely declarative — the plugin never deploys, discovers, or verifies the stack behind these values; it assumes it already exists and is reachable. Run `pnpm hardhat test --network existingStack` and the plugin skips starting its own node and Docker Compose stack entirely, running your tests directly against the configured stack. This is independent of chain id (an existing stack can be on any chain) and orthogonal to `nox.skipTestOverride` (which still means "no Nox handling at all").
 
 Only `http` networks can carry a `nox` config — `edr-simulated` networks can only use an ephemeral Nox stack.
+
+## The `nox` runtime API
+
+```ts
+import { nox } from "@iexec-nox/nox-hardhat-plugin";
+
+const conn = await nox.connect(); // resolves the active network once
+conn.viem / conn.ethers; // as returned by `network.create()`
+conn.noxComputeAddress; // resolved at connect() time
+conn.handleGatewayUrl; // resolved at connect() time
+await conn.encryptInput(value, solidityType, applicationContract);
+await conn.decrypt(handle);
+await conn.publicDecrypt(handle);
+```
+
+`nox.connect()` targets whichever network is currently active (`--network`, or the default network) — if that network carries a `nox` config (see above), it connects to that existing stack directly; otherwise it falls back to the plugin's own local stack.

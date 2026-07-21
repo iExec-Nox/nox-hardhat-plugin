@@ -9,7 +9,7 @@ describe("MyConfidentialToken end-to-end", () => {
     "mints a confidential totalSupply that the Nox stack resolves and matches the cleartext value",
     { timeout: 120_000 },
     async () => {
-      const { viem } = await nox.connect();
+      const { publicDecrypt, viem } = await nox.connect();
 
       const token = await viem.deployContract("MyConfidentialToken", [
         "My Confidential Token",
@@ -21,7 +21,7 @@ describe("MyConfidentialToken end-to-end", () => {
       const totalSupplyHandle =
         (await token.read.confidentialTotalSupply()) as `0x${string}`;
 
-      const { value } = await nox.publicDecrypt(totalSupplyHandle);
+      const { value } = await publicDecrypt(totalSupplyHandle);
       assert.equal(value, INITIAL_SUPPLY);
     },
   );
