@@ -6,15 +6,16 @@ import type {
   JsValue,
   SolidityType,
 } from "@iexec-nox/handle";
-import { NOX_LOCAL_NETWORK, resolveTargetNetworkName } from "./config.js";
-import {
-  resolvedHandleGatewayUrl,
-  resolvedNoxComputeAddress,
-  RESOLVE_DELAY_MS,
-  RESOLVE_MAX_RETRIES,
-} from "./nox-config.js";
+import type {
+  ChainType,
+  DefaultChainType,
+  NetworkConnection,
+} from "hardhat/types/network";
+import type { Address } from "viem";
+import { RESOLVE_DELAY_MS, RESOLVE_MAX_RETRIES } from "./nox-config.js";
 import type { NoxConnection } from "./types.js";
 import { createHandleClient } from "./utils/handle-client.js";
+import { ensureLocalNoxStack } from "./utils/local-stack.js";
 
 async function waitForHandlesResolved(
   handleGatewayUrl: string,
@@ -92,30 +93,36 @@ function bindHandleOperations(
   };
 }
 
-async function connect(): Promise<NoxConnection> {
-  // `hardhat` is imported lazily — a top-level import deadlocks Hardhat's CLI.
-  const { network, config, globalOptions } = await import("hardhat");
+async function connect<
+  ChainTypeT extends ChainType | string = DefaultChainType,
+>(connection: NetworkConnection<ChainTypeT>): Promise<NoxConnection> {
+  const { networkConfig } = connection;
+  const networkType: string = networkConfig.type;
+  let noxComputeAddress: Address;
+  let handleGatewayUrl: string;
 
-  // When the currently active network carries a `nox` config, it points at
-  // an already-running stack: connect to that network directly, and read
-  // its address/gateway URL straight from the config instead of the
-  // env-var-backed resolvers below, which stay reserved for the plugin's own
-  // local stack (only `hardhat test` can start it, and only it populates
-  // those env vars).
-  const targetNetworkName = resolveTargetNetworkName(globalOptions.network);
-  const targetNetworkConfig = config.networks[targetNetworkName];
-  const existingStackConfig =
-    targetNetworkConfig?.type === "http" ? targetNetworkConfig.nox : undefined;
+  if (networkConfig.type === "http") {
+    const existingStackConfig = networkConfig.nox;
+    if (existingStackConfig === undefined) {
+      throw new Error(
+        `[nox] Network '${connection.networkName}' has no 'nox' config — ` +
+          `nox.connect() needs one to know which existing stack to use.`,
+      );
+    }
+    ({ noxComputeAddress, handleGatewayUrl } = existingStackConfig);
+  } else if (networkConfig.type === "edr-simulated") {
+    // `hardhat` is imported lazily — a top-level import deadlocks Hardhat's CLI.
+    const hre = (await import("hardhat")).default;
+    ({ noxComputeAddress, handleGatewayUrl } = await ensureLocalNoxStack(
+      hre,
+      connection as unknown as NetworkConnection<ChainType | string>,
+    ));
+  } else {
+    throw new Error(
+      `[nox] Unsupported network type '${networkType}' for network '${connection.networkName}'.`,
+    );
+  }
 
-  const noxComputeAddress =
-    existingStackConfig?.noxComputeAddress ?? resolvedNoxComputeAddress();
-  const handleGatewayUrl =
-    existingStackConfig?.handleGatewayUrl ?? resolvedHandleGatewayUrl();
-
-  const connection = await network.create<"op">(
-    existingStackConfig !== undefined ? targetNetworkName : NOX_LOCAL_NETWORK,
-  );
-  // Works with either toolbox (viem or ethers), auto-detected from `connection`.
   const handleClient = await createHandleClient(connection, {
     smartContractAddress: noxComputeAddress,
     // Validated as http(s) at config-validation time (or always http:// for
@@ -128,11 +135,11 @@ async function connect(): Promise<NoxConnection> {
     subgraphUrl: "https://example.com/subgraphs/id/none",
   });
 
-  return Object.assign(connection, {
+  return {
     noxComputeAddress,
     handleGatewayUrl,
     ...bindHandleOperations(handleClient, handleGatewayUrl),
-  });
+  };
 }
 
 export const nox = { connect };

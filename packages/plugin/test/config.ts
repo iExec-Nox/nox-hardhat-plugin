@@ -1,11 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { HardhatConfig, HardhatUserConfig } from "hardhat/types/config";
-import {
-  resolvePluginConfig,
-  resolveTargetNetworkName,
-  validatePluginConfig,
-} from "../src/config.js";
+import { resolvePluginConfig, validatePluginConfig } from "../src/config.js";
 
 const VALID_NOX_COMPUTE_ADDRESS = "0x8D88B61356Fa291505d3E3D3a77e19fad0958fe3";
 const VALID_HANDLE_GATEWAY_URL = "https://gateway.example.com";
@@ -23,84 +19,10 @@ describe("Nox plugin config", () => {
         });
         assert.equal(errors.length, 0);
       });
-
-      it("Should accept an empty nox object", async () => {
-        assert.equal((await validatePluginConfig({ nox: {} })).length, 0);
-      });
-
-      it("Should accept skipTestOverride=true", async () => {
-        assert.equal(
-          (
-            await validatePluginConfig({
-              nox: { skipTestOverride: true },
-            })
-          ).length,
-          0,
-        );
-      });
-
-      it("Should accept skipTestOverride=false", async () => {
-        assert.equal(
-          (
-            await validatePluginConfig({
-              nox: { skipTestOverride: false },
-            })
-          ).length,
-          0,
-        );
-      });
-    });
-
-    describe("Invalid cases", () => {
-      it("Should reject a nox field that isn't an object", async () => {
-        const errors = await validatePluginConfig({
-          // @ts-expect-error intentionally invalid
-          nox: "INVALID",
-        });
-        assert.deepEqual(errors, [
-          { path: ["nox"], message: "Expected an object." },
-        ]);
-      });
-
-      it("Should reject a non-boolean skipTestOverride", async () => {
-        const errors = await validatePluginConfig({
-          nox: {
-            // @ts-expect-error intentionally invalid
-            skipTestOverride: "yes",
-          },
-        });
-        assert.deepEqual(errors, [
-          {
-            path: ["nox", "skipTestOverride"],
-            message: "Expected a boolean.",
-          },
-        ]);
-      });
     });
   });
 
   describe("Config resolution", () => {
-    it("Should default skipTestOverride to false when nox is missing", async () => {
-      const resolved = await resolvePluginConfig({}, {} as HardhatConfig);
-      assert.deepEqual(resolved.nox, { skipTestOverride: false });
-    });
-
-    it("Should default skipTestOverride to false on empty nox", async () => {
-      const resolved = await resolvePluginConfig(
-        { nox: {} } satisfies HardhatUserConfig,
-        {} as HardhatConfig,
-      );
-      assert.deepEqual(resolved.nox, { skipTestOverride: false });
-    });
-
-    it("Should pass skipTestOverride=true through", async () => {
-      const resolved = await resolvePluginConfig(
-        { nox: { skipTestOverride: true } } satisfies HardhatUserConfig,
-        {} as HardhatConfig,
-      );
-      assert.deepEqual(resolved.nox, { skipTestOverride: true });
-    });
-
     it("Should carry a network's nox config through to the resolved network", async () => {
       const userConfig = {
         networks: {
@@ -372,20 +294,6 @@ describe("Nox plugin config", () => {
           },
         ]);
       });
-    });
-  });
-
-  describe("resolveTargetNetworkName", () => {
-    it("Should default to 'default' when undefined", () => {
-      assert.equal(resolveTargetNetworkName(undefined), "default");
-    });
-
-    it("Should default to 'default' when empty", () => {
-      assert.equal(resolveTargetNetworkName(""), "default");
-    });
-
-    it("Should pass a given network name through", () => {
-      assert.equal(resolveTargetNetworkName("sepolia"), "sepolia");
     });
   });
 });
