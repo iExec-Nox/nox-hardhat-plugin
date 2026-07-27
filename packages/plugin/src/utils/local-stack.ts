@@ -74,6 +74,16 @@ async function setupLocalNoxStack(
   // half-started compose stack.
   const originalClose = connection.close.bind(connection);
   connection.close = async () => {
+    // Once closed, this connection's underlying provider is gone for good
+    // so replace the cached result with an explicit rejection instead of
+    // leaving a stale success/failure behind
+    const closedError = new Error(
+      "[nox] This connection has been closed and cannot be reused by local Nox stack. Use a fresh connection.",
+    );
+    const closedPromise = Promise.reject(closedError);
+    closedPromise.catch(() => {});
+    started.set(connection, closedPromise);
+
     await stopOffchainServices().catch(() => {});
     await server.close().catch(() => {});
     await originalClose();
