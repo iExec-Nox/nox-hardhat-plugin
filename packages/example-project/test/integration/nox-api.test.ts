@@ -1,24 +1,24 @@
 import { strict as assert } from "node:assert";
 import { describe, it } from "node:test";
+import { network } from "hardhat";
 import { nox } from "@iexec-nox/nox-hardhat-plugin";
 
 describe("nox API", () => {
-  it("connect() returns a viem connection and a pre-configured handleClient", async () => {
-    const conn = await nox.connect();
-    assert.ok(conn.viem, "viem should be present");
-    assert.ok(conn.handleClient, "handleClient should be present");
-    assert.equal(typeof conn.handleClient.publicDecrypt, "function");
-    assert.equal(typeof conn.handleClient.encryptInput, "function");
-    assert.equal(typeof conn.handleClient.decrypt, "function");
+  it("connect() returns pre-configured handle operations", async () => {
+    const connection = await network.getOrCreate();
+    const conn = await nox.connect(connection);
+    assert.equal(typeof conn.publicDecrypt, "function");
+    assert.equal(typeof conn.encryptInput, "function");
+    assert.equal(typeof conn.decrypt, "function");
   });
 
   it("encryptInput() returns a { handle, handleProof } pair", async () => {
-    const { viem } = await nox.connect();
-    const [walletClient] = await viem.getWalletClients();
-    const result = await nox.encryptInput(
+    const connection = await network.getOrCreate();
+    const { encryptInput } = await nox.connect(connection);
+    const result = await encryptInput(
       42n,
       "uint256",
-      walletClient.account.address,
+      "0x000000000000000000000000000000000000dead",
     );
     assert.match(
       result.handle,
@@ -33,8 +33,9 @@ describe("nox API", () => {
   });
 
   it("publicDecrypt() returns the cleartext of a publicly decryptable handle", async () => {
-    const { viem } = await nox.connect();
-    const token = await viem.deployContract("MyConfidentialToken", [
+    const connection = await network.getOrCreate();
+    const { publicDecrypt } = await nox.connect(connection);
+    const token = await connection.viem.deployContract("MyConfidentialToken", [
       "Nox API Token",
       "NAT",
       "ipfs://example",
@@ -42,7 +43,7 @@ describe("nox API", () => {
     ]);
     const handle =
       (await token.read.confidentialTotalSupply()) as `0x${string}`;
-    const { value } = await nox.publicDecrypt(handle);
+    const { value } = await publicDecrypt(handle);
     assert.equal(value, 7n);
   });
 });

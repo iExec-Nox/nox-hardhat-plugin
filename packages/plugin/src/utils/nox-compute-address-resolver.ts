@@ -5,7 +5,6 @@ import { createPublicClient, createTestClient, http } from "viem";
 import { hardhat } from "viem/chains";
 import type { HardhatRuntimeEnvironment } from "hardhat/types/hre";
 import { FileBuildResultType } from "hardhat/types/solidity";
-import { setResolvedNoxComputeAddress } from "../nox-config.js";
 import { loadDeploymentArtifact } from "./artifacts.js";
 
 const RESOLVER_SCRATCH_ADDRESS = "0x9ae8112849021f70ff7dfd6a227140c4f441ba30";
@@ -46,9 +45,7 @@ async function stageResolverSource(
  * bytecode at a scratch address, and calls its getter to read back the
  * address `Nox.noxComputeContract()` resolves to for the current chain.
  * The scratch address is reset to empty right after, so this leaves no
- * trace on chain (no deployer transaction, no nonce consumed). The resolved
- * address is also stashed via `setResolvedNoxComputeAddress` so later calls
- * (e.g. from `nox.connect()`) can read it back cheaply.
+ * trace on chain (no deployer transaction, no nonce consumed).
  */
 export async function resolveNoxComputeAddressViaResolver(
   hre: HardhatRuntimeEnvironment,
@@ -118,6 +115,5 @@ export async function resolveNoxComputeAddressViaResolver(
       bytecode: "0x",
     });
   }
-  setResolvedNoxComputeAddress(noxComputeAddress);
   return noxComputeAddress;
 }

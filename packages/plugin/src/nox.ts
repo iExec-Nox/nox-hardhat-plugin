@@ -1,59 +1,27 @@
 import type {
   EthereumAddress,
   Handle,
+  HandleClient,
   HexString,
   JsValue,
   SolidityType,
 } from "@iexec-nox/handle";
+import type {
+  ChainType,
+  DefaultChainType,
+  NetworkConnection,
+} from "hardhat/types/network";
 import type { Address } from "viem";
-import { NOX_LOCAL_NETWORK, resolveTargetNetworkName } from "./config.js";
-import {
-  resolvedHandleGatewayUrl,
-  resolvedNoxComputeAddress,
-  RESOLVE_DELAY_MS,
-  RESOLVE_MAX_RETRIES,
-} from "./nox-config.js";
+import { RESOLVE_DELAY_MS, RESOLVE_MAX_RETRIES } from "./nox-config.js";
 import type { NoxConnection } from "./types.js";
 import { createHandleClient } from "./utils/handle-client.js";
+import { ensureLocalNoxStack } from "./utils/local-stack.js";
 
-async function connect(): Promise<NoxConnection> {
-  // `hardhat` is imported lazily — a top-level import deadlocks Hardhat's CLI.
-  const { network, config, globalOptions } = await import("hardhat");
-
-  // When the currently active network carries a `nox` config, it points at
-  // an already-running stack: connect to that network directly instead of
-  // the plugin's own local stack. The resolved address/gateway URL below
-  // already reflect that network's config either way — set either by the
-  // local stack startup, or by the `test` task override's existing-stack
-  // branch (see `test-override.ts`) — so they need no branching here.
-  const targetNetworkName = resolveTargetNetworkName(globalOptions.network);
-  const targetNetworkConfig = config.networks[targetNetworkName];
-  const hasExistingStackConfig =
-    targetNetworkConfig?.type === "http" &&
-    targetNetworkConfig.nox !== undefined;
-
-  const connection = await network.create<"op">(
-    hasExistingStackConfig ? targetNetworkName : NOX_LOCAL_NETWORK,
-  );
-  // Works with either toolbox (viem or ethers), auto-detected from `connection`.
-  const handleClient = await createHandleClient(connection, {
-    smartContractAddress: resolvedNoxComputeAddress(),
-    // Validated as http(s) at config-validation time (or always http:// for
-    // the local stack) — `@iexec-nox/handle` types this as a template
-    // literal rather than a plain `string`.
-    gatewayUrl: resolvedHandleGatewayUrl() as
-      | `http://${string}`
-      | `https://${string}`,
-    // The Handle SDK requires a subgraph URL for config validation even when
-    // the calling code never queries it (publicDecrypt only hits the gateway
-    // + the chain). Placeholder.
-    subgraphUrl: "https://example.com/subgraphs/id/none",
-  });
-  return Object.assign(connection, { handleClient });
-}
-
-async function waitForHandlesResolved(handles: HexString[]): Promise<void> {
-  const url = `${resolvedHandleGatewayUrl()}/v0/public/handles/status`;
+async function waitForHandlesResolved(
+  handleGatewayUrl: string,
+  handles: HexString[],
+): Promise<void> {
+  const url = `${handleGatewayUrl}/v0/public/handles/status`;
 
   for (let attempt = 0; attempt < RESOLVE_MAX_RETRIES; attempt++) {
     const response = await fetch(url, {
@@ -88,43 +56,90 @@ async function waitForHandlesResolved(handles: HexString[]): Promise<void> {
   );
 }
 
-export const nox = {
-  connect,
+function bindHandleOperations(
+  handleClient: HandleClient,
+  handleGatewayUrl: string,
+) {
+  return {
+    async encryptInput<T extends SolidityType>(
+      value: JsValue<T>,
+      solidityType: T,
+      applicationContract: EthereumAddress,
+    ): Promise<{ handle: Handle<T>; handleProof: HexString }> {
+      return handleClient.encryptInput(
+        value,
+        solidityType,
+        applicationContract,
+      );
+    },
 
-  get noxComputeAddress(): Address {
-    return resolvedNoxComputeAddress();
-  },
+    async decrypt<T extends SolidityType>(
+      handle: Handle<T>,
+    ): Promise<{ value: JsValue<T>; solidityType: T }> {
+      await waitForHandlesResolved(handleGatewayUrl, [handle]);
+      return handleClient.decrypt(handle);
+    },
 
-  get handleGatewayUrl(): string {
-    return resolvedHandleGatewayUrl();
-  },
+    async publicDecrypt<T extends SolidityType>(
+      handle: Handle<T>,
+    ): Promise<{
+      value: JsValue<T>;
+      solidityType: T;
+      decryptionProof: HexString;
+    }> {
+      await waitForHandlesResolved(handleGatewayUrl, [handle]);
+      return handleClient.publicDecrypt(handle);
+    },
+  };
+}
 
-  async encryptInput<T extends SolidityType>(
-    value: JsValue<T>,
-    solidityType: T,
-    applicationContract: EthereumAddress,
-  ): Promise<{ handle: Handle<T>; handleProof: HexString }> {
-    const { handleClient } = await connect();
-    return handleClient.encryptInput(value, solidityType, applicationContract);
-  },
+async function connect<
+  ChainTypeT extends ChainType | string = DefaultChainType,
+>(connection: NetworkConnection<ChainTypeT>): Promise<NoxConnection> {
+  const { networkConfig } = connection;
+  const networkType: string = networkConfig.type;
+  let noxComputeAddress: Address;
+  let handleGatewayUrl: string;
 
-  async decrypt<T extends SolidityType>(
-    handle: Handle<T>,
-  ): Promise<{ value: JsValue<T>; solidityType: T }> {
-    const { handleClient } = await connect();
-    await waitForHandlesResolved([handle]);
-    return handleClient.decrypt(handle);
-  },
+  if (networkConfig.type === "http") {
+    const existingStackConfig = networkConfig.nox;
+    if (existingStackConfig === undefined) {
+      throw new Error(
+        `[nox] Network '${connection.networkName}' has no 'nox' config — ` +
+          `nox.connect() needs one to know which existing stack to use.`,
+      );
+    }
+    ({ noxComputeAddress, handleGatewayUrl } = existingStackConfig);
+  } else if (networkConfig.type === "edr-simulated") {
+    // `hardhat` is imported lazily — a top-level import deadlocks Hardhat's CLI.
+    const hre = (await import("hardhat")).default;
+    ({ noxComputeAddress, handleGatewayUrl } = await ensureLocalNoxStack(
+      hre,
+      connection as unknown as NetworkConnection<ChainType | string>,
+    ));
+  } else {
+    throw new Error(
+      `[nox] Unsupported network type '${networkType}' for network '${connection.networkName}'.`,
+    );
+  }
 
-  async publicDecrypt<T extends SolidityType>(
-    handle: Handle<T>,
-  ): Promise<{
-    value: JsValue<T>;
-    solidityType: T;
-    decryptionProof: HexString;
-  }> {
-    const { handleClient } = await connect();
-    await waitForHandlesResolved([handle]);
-    return handleClient.publicDecrypt(handle);
-  },
-};
+  const handleClient = await createHandleClient(connection, {
+    smartContractAddress: noxComputeAddress,
+    // Validated as http(s) at config-validation time (or always http:// for
+    // the local stack) — `@iexec-nox/handle` types this as a template
+    // literal rather than a plain `string`.
+    gatewayUrl: handleGatewayUrl as `http://${string}` | `https://${string}`,
+    // The Handle SDK requires a subgraph URL for config validation even when
+    // the calling code never queries it (publicDecrypt only hits the gateway
+    // + the chain). Placeholder.
+    subgraphUrl: "https://example.com/subgraphs/id/none",
+  });
+
+  return {
+    noxComputeAddress,
+    handleGatewayUrl,
+    ...bindHandleOperations(handleClient, handleGatewayUrl),
+  };
+}
+
+export const nox = { connect };

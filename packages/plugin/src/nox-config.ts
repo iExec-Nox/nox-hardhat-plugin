@@ -29,49 +29,6 @@ export const HANDLE_GATEWAY_CONTAINER_PORT = 3000;
 
 export const DOCKER_PING_TIMEOUT_MS = 2000;
 
-const NOX_COMPUTE_ADDRESS_ENV = "NOX_COMPUTE_ADDRESS";
-export function setResolvedNoxComputeAddress(address: Address) {
-  process.env[NOX_COMPUTE_ADDRESS_ENV] = address;
-}
-/**
- * Resolved `NoxCompute` address. Resolved dynamically at stack startup (see
- * `resolveNoxComputeAddressViaResolver`) and stashed in an env var so later calls
- * (e.g. from `nox.connect()`) can read it cheaply — there is no static
- * default, so calling this before the stack is up throws.
- */
-export function resolvedNoxComputeAddress(): Address {
-  const raw = process.env[NOX_COMPUTE_ADDRESS_ENV];
-  if (raw === undefined) {
-    throw new Error(
-      `[nox] NoxCompute address is not set (${NOX_COMPUTE_ADDRESS_ENV}). ` +
-        `Is the Nox stack started?`,
-    );
-  }
-  return raw as Address;
-}
-
-const HANDLE_GATEWAY_URL_ENV = "NOX_HANDLE_GATEWAY_URL";
-export function setResolvedHandleGatewayUrl(url: string) {
-  process.env[HANDLE_GATEWAY_URL_ENV] = url;
-}
-/**
- * Resolved base URL of the handle gateway. Set either from the plugin's own
- * local stack (Docker-assigned host port, see `startOffchainServices`) or
- * from a network's `nox.handleGatewayUrl` config when pointing at an
- * existing stack (see `test-override.ts`) — there is no static default, so
- * calling this before either has happened throws.
- */
-export function resolvedHandleGatewayUrl(): string {
-  const url = process.env[HANDLE_GATEWAY_URL_ENV];
-  if (url === undefined) {
-    throw new Error(
-      `[nox] Handle gateway URL is not set (${HANDLE_GATEWAY_URL_ENV}). ` +
-        `Is the Nox stack started?`,
-    );
-  }
-  return url;
-}
-
 // How long `decrypt`/`publicDecrypt` poll the gateway for a handle to be
 // resolved before giving up: 60 attempts × 0.1s = 6s.
 export const RESOLVE_MAX_RETRIES = 60;

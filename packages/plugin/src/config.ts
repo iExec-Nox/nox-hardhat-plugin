@@ -4,29 +4,13 @@ import type { HardhatUserConfigValidationError } from "hardhat/types/hooks";
 import { isAddress } from "viem";
 import { NOX_SUPPORTED_CHAIN_ID } from "./nox-config.js";
 
-export const NOX_HOST_NETWORK = "noxHost";
 export const NOX_LOCAL_NETWORK = "noxLocal";
 export const NOX_LOCAL_PORT = 8545;
-
-/**
- * Resolves the network hardhat is actually targeting:
- * the `--network` flag if set, otherwise Hardhat's `"default"`.
- */
-export function resolveTargetNetworkName(
-  networkOption: string | undefined,
-): string {
-  return networkOption !== undefined && networkOption !== ""
-    ? networkOption
-    : "default";
-}
 
 export async function validatePluginConfig(
   userConfig: HardhatUserConfig,
 ): Promise<HardhatUserConfigValidationError[]> {
-  return [
-    ...validateTopLevelNoxConfig(userConfig),
-    ...validateNetworkNoxConfigs(userConfig),
-  ];
+  return validateNetworkNoxConfigs(userConfig);
 }
 
 function isValidUrl(value: unknown): value is string {
@@ -110,36 +94,10 @@ function validateNetworkNoxConfigs(
   return errors;
 }
 
-function validateTopLevelNoxConfig(
-  userConfig: HardhatUserConfig,
-): HardhatUserConfigValidationError[] {
-  const nox = userConfig.nox;
-  if (nox === undefined) return [];
-
-  if (typeof nox !== "object") {
-    return [{ path: ["nox"], message: "Expected an object." }];
-  }
-
-  if (
-    nox.skipTestOverride !== undefined &&
-    typeof nox.skipTestOverride !== "boolean"
-  ) {
-    return [
-      {
-        path: ["nox", "skipTestOverride"],
-        message: "Expected a boolean.",
-      },
-    ];
-  }
-
-  return [];
-}
-
 /**
- * Returns a copy of `userConfig` with the plugin's internal networks injected:
- *   - `noxHost`: EDR-simulated, backs the JSON-RPC server we spawn.
+ * Returns a copy of `userConfig` with the plugin's internal network injected:
  *   - `noxLocal`: HTTP, points at the local server (chainId 31337).
- * User-defined entries with the same names win (last spread).
+ * A user-defined entry with the same name wins (last spread).
  */
 export function withInjectedNetworks(
   userConfig: HardhatUserConfig,
@@ -147,11 +105,6 @@ export function withInjectedNetworks(
   return {
     ...userConfig,
     networks: {
-      [NOX_HOST_NETWORK]: {
-        type: "edr-simulated",
-        chainType: "op",
-        allowUnlimitedContractSize: true,
-      },
       [NOX_LOCAL_NETWORK]: {
         type: "http",
         chainType: "op",
@@ -205,8 +158,5 @@ export async function resolvePluginConfig(
       userConfig,
       partiallyResolvedConfig.networks,
     ),
-    nox: {
-      skipTestOverride: userConfig.nox?.skipTestOverride ?? false,
-    },
   };
 }

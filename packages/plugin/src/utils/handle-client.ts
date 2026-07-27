@@ -3,7 +3,7 @@ import {
   createViemHandleClient,
 } from "@iexec-nox/handle";
 import type { HandleClient, HandleClientConfig } from "@iexec-nox/handle";
-import type { NetworkConnection } from "hardhat/types/network";
+import type { ChainType, NetworkConnection } from "hardhat/types/network";
 
 export interface HandleClientFactories {
   viem: typeof createViemHandleClient;
@@ -26,15 +26,15 @@ interface EthersConnection {
   ethers: { getSigners(): Promise<EthersSigner[]> };
 }
 
-function hasViem(
-  connection: NetworkConnection<"op">,
-): connection is NetworkConnection<"op"> & ViemConnection {
+function hasViem<ChainTypeT extends ChainType | string>(
+  connection: NetworkConnection<ChainTypeT>,
+): connection is NetworkConnection<ChainTypeT> & ViemConnection {
   return (connection as Partial<ViemConnection>).viem != null;
 }
 
-function hasEthers(
-  connection: NetworkConnection<"op">,
-): connection is NetworkConnection<"op"> & EthersConnection {
+function hasEthers<ChainTypeT extends ChainType | string>(
+  connection: NetworkConnection<ChainTypeT>,
+): connection is NetworkConnection<ChainTypeT> & EthersConnection {
   return (connection as Partial<EthersConnection>).ethers != null;
 }
 
@@ -45,8 +45,8 @@ function hasEthers(
  * to the connection's first signer so user-decryption ACLs line up with the
  * account the tests act as.
  */
-export async function createHandleClient(
-  connection: NetworkConnection<"op">,
+export async function createHandleClient<ChainTypeT extends ChainType | string>(
+  connection: NetworkConnection<ChainTypeT>,
   config: Partial<HandleClientConfig>,
   factories: HandleClientFactories = defaultFactories,
 ): Promise<HandleClient> {

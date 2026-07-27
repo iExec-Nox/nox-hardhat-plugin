@@ -6,7 +6,6 @@ import {
   COMPOSE_OPTS,
   HANDLE_GATEWAY_CONTAINER_PORT,
   HANDLE_GATEWAY_SERVICE,
-  setResolvedHandleGatewayUrl,
 } from "../nox-config.js";
 import { NOX_LOCAL_PORT } from "../config.js";
 import { assertDockerDaemonRunning } from "./docker.js";
@@ -27,7 +26,7 @@ async function runComposeWithCleanErrors<T>(
 
 export async function startOffchainServices(
   noxComputeAddress: `0x${string}`,
-): Promise<void> {
+): Promise<string> {
   // Fail fast with a clear message if the daemon is down, before any compose call.
   await assertDockerDaemonRunning();
   // Make sure there is not old service instance still running.
@@ -56,7 +55,7 @@ export async function startOffchainServices(
       `[nox] Could not determine the host port for ${HANDLE_GATEWAY_SERVICE}.`,
     );
   }
-  setResolvedHandleGatewayUrl(`http://127.0.0.1:${data.port}`);
+  return `http://127.0.0.1:${data.port}`;
 }
 
 /** Tear the offchain stack down. */

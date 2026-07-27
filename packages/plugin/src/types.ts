@@ -1,20 +1,11 @@
-import type { HandleClient } from "@iexec-nox/handle";
-import type { NetworkConnection } from "hardhat/types/network";
+import type {
+  EthereumAddress,
+  Handle,
+  HexString,
+  JsValue,
+  SolidityType,
+} from "@iexec-nox/handle";
 import type { Abi, Address, Hex } from "viem";
-
-export interface NoxPluginUserConfig {
-  /**
-   * When `true`, the plugin's `test` task override becomes a no-op: it runs
-   * the original Hardhat `test` action without booting the offchain Nox stack
-   * or etching NoxCompute, and without honoring any per-network `nox` config
-   * either. Useful to iterate on pure-TypeScript tests. Defaults to `false`.
-   */
-  skipTestOverride?: boolean;
-}
-
-export interface NoxPluginConfig {
-  skipTestOverride: boolean;
-}
 
 /**
  * Declarative pointer to an already-running Nox stack, carried by an
@@ -38,9 +29,27 @@ export interface DeploymentArtifact {
 }
 
 /**
- * A network connection to the plugin's local Nox stack, augmented with a
- * pre-configured `@iexec-nox/handle` client.
+ * Nox-specific extras returned by `nox.connect()`: the resolved
+ * `noxComputeAddress`/`handleGatewayUrl` for the target stack (the plugin's
+ * local stack, or an existing one declared via a network's `nox` config)
+ * plus the encryption/decryption methods bound to it.
  */
-export type NoxConnection = NetworkConnection<"op"> & {
-  handleClient: HandleClient;
+export type NoxConnection = {
+  readonly noxComputeAddress: Address;
+  readonly handleGatewayUrl: string;
+  encryptInput<T extends SolidityType>(
+    value: JsValue<T>,
+    solidityType: T,
+    applicationContract: EthereumAddress,
+  ): Promise<{ handle: Handle<T>; handleProof: HexString }>;
+  decrypt<T extends SolidityType>(
+    handle: Handle<T>,
+  ): Promise<{ value: JsValue<T>; solidityType: T }>;
+  publicDecrypt<T extends SolidityType>(
+    handle: Handle<T>,
+  ): Promise<{
+    value: JsValue<T>;
+    solidityType: T;
+    decryptionProof: HexString;
+  }>;
 };
