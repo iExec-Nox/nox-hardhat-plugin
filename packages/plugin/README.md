@@ -70,7 +70,7 @@ The first call to `nox.connect` with the hardhat default network brings up a loc
 2. a RPC relayer is attached to the connection
 3. Nox offchain stack is started via Docker Compose against the RPC relayer
 
-> ℹ️ The stack is started once per independant `NetworkConnection`; use `network.getOrCreate()` to reuse the existing connection across test suits.
+> ℹ️ The stack is started once per independant `NetworkConnection`; use `network.getOrCreate()` to reuse the existing connection across test suites.
 >
 > **Known limitation**: using multiple instances of `edr-simulated` network in parallel is currently not supported.
 
