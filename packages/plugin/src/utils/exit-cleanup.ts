@@ -48,7 +48,12 @@ export function installCleanupOnExit(
   });
 
   const onStopSignal = (stopSignal: StopSignal) => {
+    let handled = false;
     const listener = () => {
+      if (handled) {
+        return;
+      }
+      handled = true;
       void runOnce().finally(() => {
         // unregister and raise again the signal after the cleanup is done
         source.off(stopSignal, listener);
