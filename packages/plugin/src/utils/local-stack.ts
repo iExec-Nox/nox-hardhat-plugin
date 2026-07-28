@@ -1,9 +1,14 @@
 import type { Server } from "node:net";
 import type { HardhatRuntimeEnvironment } from "hardhat/types/hre";
-import type { ChainType, NetworkConnection } from "hardhat/types/network";
+import type {
+  ChainType,
+  JsonRpcServer,
+  NetworkConnection,
+} from "hardhat/types/network";
 import type { Address } from "viem";
 import { NOX_LOCAL_PORT } from "../config.js";
 import { NOX_SUPPORTED_CHAIN_ID } from "../nox-config.js";
+import { installCleanupOnExit } from "./exit-cleanup.js";
 import { createJsonRpcRelay } from "./json-rpc-relay.js";
 import { isPortAvailable } from "./net.js";
 import { resolveNoxComputeAddressViaResolver } from "./nox-compute-address-resolver.js";
@@ -17,6 +22,11 @@ interface LocalNoxStackResult {
   noxComputeAddress: Address;
   handleGatewayUrl: string;
 }
+
+const relayers = new WeakMap<
+  NetworkConnection<ChainType | string>,
+  JsonRpcServer
+>();
 
 const started = new WeakMap<
   NetworkConnection<ChainType | string>,
@@ -63,31 +73,14 @@ async function setupLocalNoxStack(
     "0.0.0.0",
     NOX_LOCAL_PORT,
   );
+  relayers.set(connection, server);
+
+  const cleanup = () => cleanupLocalNoxStack(connection);
+  installCleanupOnExit(cleanup);
+
   const { address, port } = await server.listen();
   console.log(`[nox] 🔌 Hardhat RPC relay listening on ${address}:${port}`);
   unrefRpcServerHandles(port);
-
-  // Wrap close() immediately after the relay is up — before the
-  // resolver/deploy/compose steps — so a failure partway through still gets
-  // cleaned up whenever the caller eventually calls connection.close()
-  // (standalone-script usage), instead of leaking a listening relay or a
-  // half-started compose stack.
-  const originalClose = connection.close.bind(connection);
-  connection.close = async () => {
-    // Once closed, this connection's underlying provider is gone for good
-    // so replace the cached result with an explicit rejection instead of
-    // leaving a stale success/failure behind
-    const closedError = new Error(
-      "[nox] This connection has been closed and cannot be reused by local Nox stack. Use a fresh connection.",
-    );
-    const closedPromise = Promise.reject(closedError);
-    closedPromise.catch(() => {});
-    started.set(connection, closedPromise);
-
-    await stopOffchainServices().catch(() => {});
-    await server.close().catch(() => {});
-    await originalClose();
-  };
 
   const rpcUrl = `http://127.0.0.1:${port}`;
   const noxComputeAddress = await resolveNoxComputeAddressViaResolver(
@@ -95,8 +88,19 @@ async function setupLocalNoxStack(
     rpcUrl,
   );
   await deployNoxCompute(hre, connection, noxComputeAddress);
-  const handleGatewayUrl = await startOffchainServices(noxComputeAddress);
+  const handleGatewayUrl = await startOffchainServices(noxComputeAddress, port);
   return { noxComputeAddress, handleGatewayUrl };
+}
+
+async function cleanupLocalNoxStack(
+  connection: NetworkConnection<ChainType | string>,
+): Promise<void> {
+  await stopOffchainServices().catch(() => {});
+  await relayers
+    .get(connection)
+    ?.close()
+    .catch(() => {});
+  console.log("[nox] 🧹 Offchain stack cleaned");
 }
 
 /**
@@ -117,15 +121,16 @@ async function setupLocalNoxStack(
  * relay now share a single event loop, and `run()` only settles once that
  * loop has no pending ref'd handles. The RPC relay on port 8545 (plus the
  * keep-alive connections held against it) are exactly such handles, but the
- * plugin only closes them when `connection.close()` is called — a circular
- * wait that would hang `hardhat test` forever without this fix.
+ * plugin only closes them from `installCleanupOnExit`'s own `beforeExit`
+ * listener — which itself only fires once the loop is otherwise empty. Left
+ * ref'd, that's a circular wait that would hang `hardhat test` forever.
  *
  * The fix: right after `listen()`, `unref()` the server handle and every
  * incoming socket so they no longer keep the event loop alive. The server
  * stays fully functional during the run (pending RPC calls and timers keep the
- * loop alive), `run()` can settle once the tests are done, and teardown via
- * `connection.close()` still closes everything cleanly. On older runners this
- * is a harmless no-op.
+ * loop alive), `run()` can settle once the tests are done, and the
+ * `beforeExit`-triggered teardown still closes everything cleanly. On older
+ * runners this is a harmless no-op.
  */
 function unrefRpcServerHandles(port: number): void {
   const getActiveHandles = (
