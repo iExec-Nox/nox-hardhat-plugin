@@ -32,7 +32,13 @@ export function installCleanupOnExit(
   let cleanupPromise: Promise<void> | undefined;
   const runOnce = (): Promise<void> => {
     if (cleanupPromise === undefined) {
-      cleanupPromise = cleanup();
+      try {
+        cleanupPromise = cleanup();
+      } catch (err) {
+        cleanupPromise = Promise.reject(
+          err instanceof Error ? err : new Error(String(err)),
+        );
+      }
     }
     return cleanupPromise;
   };
