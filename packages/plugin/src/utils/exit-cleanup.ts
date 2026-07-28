@@ -12,8 +12,7 @@ export interface ExitSignalSource {
 /**
  * Installs a single idempotent cleanup, triggered by whichever comes first:
  * Node's `beforeExit` (normal end of a `hardhat test`/`hardhat run` process),
- * a `SIGINT`/`SIGTERM` signal (Ctrl+C / termination), or the returned
- * function being called manually.
+ * a `SIGINT`/`SIGTERM` signal (Ctrl+C / termination).
  *
  * This is a plugin, not the owner of the host process: it must not decide on
  * the host's behalf that the process should exit. So on a signal, once
