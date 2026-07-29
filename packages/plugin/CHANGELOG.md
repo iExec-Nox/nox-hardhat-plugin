@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.2.0](https://github.com/iExec-Nox/nox-hardhat-plugin/compare/v0.1.0...v0.2.0) (2026-07-29)
+
+
+### ⚠ BREAKING CHANGES
+
+* **nox:** `nox.connect()` now requires a `NetworkConnection` argument instead of taking none, and returns a standalone object (`noxComputeAddress`/`handleGatewayUrl`/`encryptInput`/`decrypt`/`publicDecrypt`) rather than merging those onto the connection — use `.viem`/`.ethers`/`.provider`/`.close()` directly off the connection you passed in. `nox` no longer exposes `encryptInput`, `decrypt`, `publicDecrypt`, `noxComputeAddress`, or `handleGatewayUrl` as top-level members. The plugin no longer overrides Hardhat's `test` task, so `nox.skipTestOverride` config and hardhat test auto-starting the local stack are gone; call `nox.connect()` (e.g. in a fixture/setup) to start it instead.
+* `NOX_COMPUTE_ADDRESS`, `handleGatewayUrl`, and `RPC_URL` are no longer exported from the package. `@iexec-nox/nox-protocol-contracts` is no longer bundled as a direct dependency of the plugin — it's now a peerDependency, so consuming projects must install it themselves.
+
+### 🚀 Added
+
+* **nox:** add per-network config for connecting to an existing stack ([#37](https://github.com/iExec-Nox/nox-hardhat-plugin/issues/37)) ([1adcb32](https://github.com/iExec-Nox/nox-hardhat-plugin/commit/1adcb3268fdcc7136e33e03e163a4b11d1b5c431))
+* **nox:** make nox.connect() the entry point for connecting to a Nox stack in any hardhat script ([#40](https://github.com/iExec-Nox/nox-hardhat-plugin/issues/40)) ([f9588fa](https://github.com/iExec-Nox/nox-hardhat-plugin/commit/f9588faa376e8dcfea52d2f008162b5b1f08c56c))
+* resolve NoxCompute address using Nox.sol lib from consumer's @iexec-nox/nox-protocol-contracts ([#35](https://github.com/iExec-Nox/nox-hardhat-plugin/issues/35)) ([d9049cc](https://github.com/iExec-Nox/nox-hardhat-plugin/commit/d9049cc2af76c552dd1f14df2ebbeeb08494ea0f))
+
+
+### ✍️ Changed
+
+* **nox:** tear down local stack via exit/signal hooks  ([#41](https://github.com/iExec-Nox/nox-hardhat-plugin/issues/41)) ([9a92461](https://github.com/iExec-Nox/nox-hardhat-plugin/commit/9a92461b481291fbcc1a6900b8e87cbc19f2ad12)), closes [#31](https://github.com/iExec-Nox/nox-hardhat-plugin/issues/31)
+
 ## [0.1.0](https://github.com/iExec-Nox/nox-hardhat-plugin/compare/v0.1.0-beta.3...v0.1.0) (2026-06-22)
 
 
