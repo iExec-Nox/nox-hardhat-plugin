@@ -7,7 +7,6 @@ import {
   HANDLE_GATEWAY_CONTAINER_PORT,
   HANDLE_GATEWAY_SERVICE,
 } from "../nox-config.js";
-import { NOX_LOCAL_PORT } from "../config.js";
 import { assertDockerDaemonRunning } from "./docker.js";
 
 /** Run a docker-compose operation, rethrowing failures with a clean message. */
@@ -26,6 +25,7 @@ async function runComposeWithCleanErrors<T>(
 
 export async function startOffchainServices(
   noxComputeAddress: `0x${string}`,
+  rpcPort: number,
 ): Promise<string> {
   // Fail fast with a clear message if the daemon is down, before any compose call.
   await assertDockerDaemonRunning();
@@ -35,27 +35,32 @@ export async function startOffchainServices(
   console.log(
     `[nox] 🚀 Starting Nox offchain stack connected to NoxCompute at ${noxComputeAddress}...`,
   );
-  await runComposeWithCleanErrors("start", () =>
-    upAll({
-      ...COMPOSE_OPTS,
-      env: {
-        ...COMPOSE_OPTS.env,
-        NOX_COMPUTE_CONTRACT: noxComputeAddress,
-        HOST_RPC_URL: `http://host.docker.internal:${NOX_LOCAL_PORT}`,
-      },
-      commandOptions: ["--wait", "--remove-orphans"],
-    }),
-  );
-
-  const { data } = await runComposeWithCleanErrors("start", () =>
-    port(HANDLE_GATEWAY_SERVICE, HANDLE_GATEWAY_CONTAINER_PORT, COMPOSE_OPTS),
-  );
-  if (!data.port) {
-    throw new Error(
-      `[nox] Could not determine the host port for ${HANDLE_GATEWAY_SERVICE}.`,
+  try {
+    await runComposeWithCleanErrors("start", () =>
+      upAll({
+        ...COMPOSE_OPTS,
+        env: {
+          ...COMPOSE_OPTS.env,
+          NOX_COMPUTE_CONTRACT: noxComputeAddress,
+          HOST_RPC_URL: `http://host.docker.internal:${rpcPort}`,
+        },
+        commandOptions: ["--wait", "--remove-orphans"],
+      }),
     );
+
+    const { data } = await runComposeWithCleanErrors("start", () =>
+      port(HANDLE_GATEWAY_SERVICE, HANDLE_GATEWAY_CONTAINER_PORT, COMPOSE_OPTS),
+    );
+    if (!data.port) {
+      throw new Error(
+        `[nox] Could not determine the host port for ${HANDLE_GATEWAY_SERVICE}.`,
+      );
+    }
+    return `http://127.0.0.1:${data.port}`;
+  } catch (error) {
+    await dumpOffchainServicesLogs().catch(() => {});
+    throw error;
   }
-  return `http://127.0.0.1:${data.port}`;
 }
 
 /** Tear the offchain stack down. */
