@@ -110,6 +110,40 @@ re-created fresh on every `network.create()` call, so there's nothing
 "already running" for them to point at; they can only use the plugin's own
 local stack.
 
+### Choosing an account
+
+By default, `nox.connect()` binds `encryptInput`/`decrypt` to the first
+account of the connection (`connection.viem.getWalletClients()[0]` /
+`connection.ethers.getSigners()[0]`). Pass that account's address as a second
+argument to bind the returned connection to a different one instead — useful
+for multi-account scenarios (owner vs depositor, access-control tests, etc.):
+
+```ts
+import { network } from "hardhat";
+import { nox } from "@iexec-nox/nox-hardhat-plugin";
+
+const connection = await network.getOrCreate();
+const [owner, depositor] = await connection.viem.getWalletClients();
+
+const ownerConn = await nox.connect(connection, owner.account.address);
+const depositorConn = await nox.connect(connection, depositor.account.address);
+```
+
+With `@nomicfoundation/hardhat-ethers`, addresses are resolved asynchronously:
+
+```ts
+const [owner, depositor] = await connection.ethers.getSigners();
+
+const ownerConn = await nox.connect(connection, await owner.getAddress());
+const depositorConn = await nox.connect(
+  connection,
+  await depositor.getAddress(),
+);
+```
+
+`nox.connect()` throws immediately if `account` doesn't match any account of
+the connection.
+
 ## The `nox` runtime API
 
 ```ts
