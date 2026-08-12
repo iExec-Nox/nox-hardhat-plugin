@@ -95,7 +95,10 @@ function bindHandleOperations(
 
 async function connect<
   ChainTypeT extends ChainType | string = DefaultChainType,
->(connection: NetworkConnection<ChainTypeT>): Promise<NoxConnection> {
+>(
+  connection: NetworkConnection<ChainTypeT>,
+  account?: EthereumAddress,
+): Promise<NoxConnection> {
   const { networkConfig } = connection;
   const networkType: string = networkConfig.type;
   let noxComputeAddress: Address;
@@ -123,17 +126,21 @@ async function connect<
     );
   }
 
-  const handleClient = await createHandleClient(connection, {
-    smartContractAddress: noxComputeAddress,
-    // Validated as http(s) at config-validation time (or always http:// for
-    // the local stack) — `@iexec-nox/handle` types this as a template
-    // literal rather than a plain `string`.
-    gatewayUrl: handleGatewayUrl as `http://${string}` | `https://${string}`,
-    // The Handle SDK requires a subgraph URL for config validation even when
-    // the calling code never queries it (publicDecrypt only hits the gateway
-    // + the chain). Placeholder.
-    subgraphUrl: "https://example.com/subgraphs/id/none",
-  });
+  const handleClient = await createHandleClient(
+    connection,
+    {
+      smartContractAddress: noxComputeAddress,
+      // Validated as http(s) at config-validation time (or always http:// for
+      // the local stack) — `@iexec-nox/handle` types this as a template
+      // literal rather than a plain `string`.
+      gatewayUrl: handleGatewayUrl as `http://${string}` | `https://${string}`,
+      // The Handle SDK requires a subgraph URL for config validation even when
+      // the calling code never queries it (publicDecrypt only hits the gateway
+      // + the chain). Placeholder.
+      subgraphUrl: "https://example.com/subgraphs/id/none",
+    },
+    account,
+  );
 
   return {
     noxComputeAddress,
