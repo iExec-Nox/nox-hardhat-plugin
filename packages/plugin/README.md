@@ -112,11 +112,10 @@ local stack.
 
 ### Choosing an account
 
-By default, `nox.connect()` binds `encryptInput`/`decrypt` to the first
-account of the connection (`connection.viem.getWalletClients()[0]` /
-`connection.ethers.getSigners()[0]`). Pass that account's address as a second
-argument to bind the returned connection to a different one instead — useful
-for multi-account scenarios (owner vs depositor, access-control tests, etc.):
+By default, `nox.connect()` binds `encryptInput`/`decrypt` to the
+connection's first account. To bind them to a different account instead,
+pass that account's address as a second argument — useful for multi-account
+scenarios:
 
 ```ts
 import { network } from "hardhat";
