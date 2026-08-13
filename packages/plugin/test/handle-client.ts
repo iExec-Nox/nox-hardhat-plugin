@@ -1,6 +1,5 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import type { EthereumAddress } from "@iexec-nox/handle";
 import type { NetworkConnection } from "hardhat/types/network";
 import {
   createHandleClient,
@@ -123,7 +122,7 @@ describe("createHandleClient account selection", () => {
     await createHandleClient(
       conn,
       {},
-      walletB.account.address.toLowerCase() as EthereumAddress,
+      walletB.account.address.toLowerCase(),
       factories,
     );
     assert.equal(factories.viemCalls[0], walletB);
@@ -139,7 +138,7 @@ describe("createHandleClient account selection", () => {
     await createHandleClient(
       conn,
       {},
-      "0xddd0000000000000000000000000000000ddd0" as EthereumAddress,
+      "0xddd0000000000000000000000000000000ddd0",
       factories,
     );
     assert.equal(factories.ethersCalls[0], signerB);
@@ -154,7 +153,7 @@ describe("createHandleClient account selection", () => {
         createHandleClient(
           conn,
           {},
-          "0xdeaddeaddeaddeaddeaddeaddeaddeaddeaddead" as EthereumAddress,
+          "0xdeaddeaddeaddeaddeaddeaddeaddeaddeaddead",
           capturingFactories(),
         ),
       /\[nox\] account "0xdeaddeaddeaddeaddeaddeaddeaddeaddeaddead" not found among connection accounts\. Available: 0xAAA0000000000000000000000000000000AAA0, 0xBBB0000000000000000000000000000000BBB0/,
@@ -172,7 +171,7 @@ describe("createHandleClient account selection", () => {
         createHandleClient(
           conn,
           {},
-          "0xdeaddeaddeaddeaddeaddeaddeaddeaddeaddead" as EthereumAddress,
+          "0xdeaddeaddeaddeaddeaddeaddeaddeaddeaddead",
           capturingFactories(),
         ),
       /\[nox\] account "0xdeaddeaddeaddeaddeaddeaddeaddeaddeaddead" not found among connection accounts\. Available: 0xCCC0000000000000000000000000000000CCC0, 0xDDD0000000000000000000000000000000DDD0/,

@@ -97,7 +97,7 @@ async function connect<
   ChainTypeT extends ChainType | string = DefaultChainType,
 >(
   connection: NetworkConnection<ChainTypeT>,
-  account?: EthereumAddress,
+  account?: string,
 ): Promise<NoxConnection> {
   const { networkConfig } = connection;
   const networkType: string = networkConfig.type;

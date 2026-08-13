@@ -2,11 +2,7 @@ import {
   createEthersHandleClient,
   createViemHandleClient,
 } from "@iexec-nox/handle";
-import type {
-  EthereumAddress,
-  HandleClient,
-  HandleClientConfig,
-} from "@iexec-nox/handle";
+import type { HandleClient, HandleClientConfig } from "@iexec-nox/handle";
 import type { ChainType, NetworkConnection } from "hardhat/types/network";
 
 export interface HandleClientFactories {
@@ -46,10 +42,7 @@ function isSameAddress(a: string, b: string): boolean {
   return a.toLowerCase() === b.toLowerCase();
 }
 
-function accountNotFoundError(
-  account: EthereumAddress,
-  available: string[],
-): Error {
+function accountNotFoundError(account: string, available: string[]): Error {
   return new Error(
     `[nox] account "${account}" not found among connection accounts. ` +
       `Available: ${available.join(", ")}`,
@@ -58,7 +51,7 @@ function accountNotFoundError(
 
 function selectViemWalletClient(
   walletClients: ViemWalletClient[],
-  account: EthereumAddress,
+  account: string,
 ): ViemWalletClient {
   const match = walletClients.find(
     (client) =>
@@ -85,7 +78,7 @@ function hasGetAddress(
 
 async function selectEthersSigner(
   signers: EthersSigner[],
-  account: EthereumAddress,
+  account: string,
 ): Promise<EthersSigner> {
   const addressableSigners = signers.filter(hasGetAddress);
   const addresses = await Promise.all(
@@ -111,7 +104,7 @@ async function selectEthersSigner(
 export async function createHandleClient<ChainTypeT extends ChainType | string>(
   connection: NetworkConnection<ChainTypeT>,
   config: Partial<HandleClientConfig>,
-  account?: EthereumAddress,
+  account?: string,
   factories: HandleClientFactories = defaultFactories,
 ): Promise<HandleClient> {
   if (hasViem(connection)) {
