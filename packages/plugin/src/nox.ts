@@ -19,7 +19,7 @@ import { ensureLocalNoxStack } from "./utils/local-stack.js";
 
 async function waitForHandlesResolved(
   handleGatewayUrl: string,
-  handles: HexString[],
+  handles: string[],
 ): Promise<void> {
   const url = `${handleGatewayUrl}/v0/public/handles/status`;
 
@@ -65,12 +65,12 @@ function bindHandleOperations(
       value: JsValue<T>,
       solidityType: T,
       applicationContract: EthereumAddress,
-    ): Promise<{ handle: Handle<T>; handleProof: HexString }> {
+    ): Promise<{ handle: Handle<T> & HexString; handleProof: HexString }> {
       return handleClient.encryptInput(
         value,
         solidityType,
         applicationContract,
-      );
+      ) as Promise<{ handle: Handle<T> & HexString; handleProof: HexString }>;
     },
 
     async decrypt<T extends SolidityType>(
