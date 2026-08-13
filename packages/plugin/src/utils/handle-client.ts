@@ -18,12 +18,14 @@ const defaultFactories: HandleClientFactories = {
 type ViemWalletClient = Parameters<typeof createViemHandleClient>[0];
 type EthersSigner = Parameters<typeof createEthersHandleClient>[0];
 
+type HardhatEthersSigner = EthersSigner & { address: string };
+
 interface ViemConnection {
   viem: { getWalletClients(): Promise<ViemWalletClient[]> };
 }
 
 interface EthersConnection {
-  ethers: { getSigners(): Promise<EthersSigner[]> };
+  ethers: { getSigners(): Promise<HardhatEthersSigner[]> };
 }
 
 function hasViem<ChainTypeT extends ChainType | string>(
@@ -67,30 +69,18 @@ function selectViemWalletClient(
   return match;
 }
 
-// `EthersSigner` covers every client `createEthersHandleClient` accepts
-// (`AbstractSigner | BrowserProvider`), but only signers expose `getAddress`
-// — a `BrowserProvider` can't be matched against a requested account.
-function hasGetAddress(
-  client: EthersSigner,
-): client is EthersSigner & { getAddress(): Promise<string> } {
-  return typeof (client as { getAddress?: unknown }).getAddress === "function";
-}
-
-async function selectEthersSigner(
-  signers: EthersSigner[],
+function selectEthersSigner(
+  signers: HardhatEthersSigner[],
   account: string,
-): Promise<EthersSigner> {
-  const addressableSigners = signers.filter(hasGetAddress);
-  const addresses = await Promise.all(
-    addressableSigners.map((signer) => signer.getAddress()),
+): HardhatEthersSigner {
+  const match = signers.find((signer) =>
+    isSameAddress(signer.address, account),
   );
-  const index = addresses.findIndex((address) =>
-    isSameAddress(address, account),
-  );
-  if (index === -1) {
-    throw accountNotFoundError(account, addresses);
+  if (match === undefined) {
+    const available = signers.map((signer) => signer.address);
+    throw accountNotFoundError(account, available);
   }
-  return addressableSigners[index];
+  return match;
 }
 
 /**
@@ -119,9 +109,7 @@ export async function createHandleClient<ChainTypeT extends ChainType | string>(
   if (hasEthers(connection)) {
     const signers = await connection.ethers.getSigners();
     const signer =
-      account === undefined
-        ? signers[0]
-        : await selectEthersSigner(signers, account);
+      account === undefined ? signers[0] : selectEthersSigner(signers, account);
     return factories.ethers(signer, config);
   }
 

@@ -44,7 +44,7 @@ const walletB = {
 };
 
 function ethersSigner(address: string) {
-  return { getAddress: async () => address };
+  return { address };
 }
 
 describe("createHandleClient toolbox detection", () => {
