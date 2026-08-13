@@ -52,8 +52,8 @@ importers:
   packages/plugin:
     dependencies:
       '@iexec-nox/handle':
-        specifier: ^0.1.0-beta.14
-        version: 0.1.0-beta.14(ethers@6.16.0)(graphql@16.14.1)(viem@2.48.1(typescript@5.8.3)(zod@3.25.76))
+        specifier: ^0.1.0-beta.15
+        version: 0.1.0-beta.15(ethers@6.16.0)(graphql@16.14.1)(viem@2.48.1(typescript@5.8.3)(zod@3.25.76))
       '@iexec-nox/nox-protocol-contracts':
         specifier: ^0.2.4
         version: 0.2.4
@@ -418,8 +418,8 @@ packages:
     resolution: {integrity: sha512-bV0Tgo9K4hfPCek+aMAn81RppFKv2ySDQeMoSZuvTASywNTnVJCArCZE2FWqpvIatKu7VMRLWlR1EazvVhDyhQ==}
     engines: {node: '>=18.18'}
 
-  '@iexec-nox/handle@0.1.0-beta.14':
-    resolution: {integrity: sha512-ZIe3PzbtEz1WzwyaaVDEnaAbtorS0HoAzPVR0OV1G0Dqg8Qap0GLl2CfXLRiaUINeWoEjdyoIjGwpdvioM02jQ==}
+  '@iexec-nox/handle@0.1.0-beta.15':
+    resolution: {integrity: sha512-P4j0wrxjNGd8hkPfAD3k9v+hdmnfjF5O5xnqlSzIivInln38IwXJ9unmtZnMD7OFNbhBq4FVH7aQjVX16AGbvw==}
     peerDependencies:
       ethers: ^6.0.0
       viem: ^2.0.0
@@ -2475,7 +2475,7 @@ snapshots:
 
   '@humanwhocodes/retry@0.4.3': {}
 
-  '@iexec-nox/handle@0.1.0-beta.14(ethers@6.16.0)(graphql@16.14.1)(viem@2.48.1(typescript@5.8.3)(zod@3.25.76))':
+  '@iexec-nox/handle@0.1.0-beta.15(ethers@6.16.0)(graphql@16.14.1)(viem@2.48.1(typescript@5.8.3)(zod@3.25.76))':
     dependencies:
       graphql-request: 7.4.0(graphql@16.14.1)
     optionalDependencies:

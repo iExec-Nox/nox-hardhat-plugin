@@ -8,4 +8,4 @@ allowBuilds:
   unrs-resolver: true
 
 minimumReleaseAgeExclude:
-  - '@iexec-nox/handle@0.1.0-beta.14'
+  - "@iexec-nox/handle@0.1.0-beta.15"
