@@ -41,7 +41,7 @@ export type NoxConnection = {
     value: JsValue<T>,
     solidityType: T,
     applicationContract: EthereumAddress,
-  ): Promise<{ handle: Handle<T>; handleProof: HexString }>;
+  ): Promise<{ handle: Handle<T> & HexString; handleProof: HexString }>;
   decrypt<T extends SolidityType>(
     handle: Handle<T>,
   ): Promise<{ value: JsValue<T>; solidityType: T }>;

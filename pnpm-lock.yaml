@@ -52,8 +52,8 @@ importers:
   packages/plugin:
     dependencies:
       '@iexec-nox/handle':
-        specifier: ^0.1.0-beta.11
-        version: 0.1.0-beta.11(ethers@6.16.0)(graphql@16.14.1)(viem@2.48.1(typescript@5.8.3)(zod@3.25.76))
+        specifier: ^0.1.0-beta.15
+        version: 0.1.0-beta.15(ethers@6.16.0)(graphql@16.14.1)(viem@2.48.1(typescript@5.8.3)(zod@3.25.76))
       '@iexec-nox/nox-protocol-contracts':
         specifier: ^0.2.4
         version: 0.2.4
@@ -418,8 +418,8 @@ packages:
     resolution: {integrity: sha512-bV0Tgo9K4hfPCek+aMAn81RppFKv2ySDQeMoSZuvTASywNTnVJCArCZE2FWqpvIatKu7VMRLWlR1EazvVhDyhQ==}
     engines: {node: '>=18.18'}
 
-  '@iexec-nox/handle@0.1.0-beta.11':
-    resolution: {integrity: sha512-aEdKuJvO3G6fnBOtyHR/xry2Gqjlv7a4nZrAU3ESref2dR5TJM3B6/TYhPPXlC57a+SVKtT2MbfzauAajNfIXA==}
+  '@iexec-nox/handle@0.1.0-beta.15':
+    resolution: {integrity: sha512-P4j0wrxjNGd8hkPfAD3k9v+hdmnfjF5O5xnqlSzIivInln38IwXJ9unmtZnMD7OFNbhBq4FVH7aQjVX16AGbvw==}
     peerDependencies:
       ethers: ^6.0.0
       viem: ^2.0.0
@@ -431,6 +431,7 @@ packages:
 
   '@iexec-nox/nox-confidential-contracts@0.2.0':
     resolution: {integrity: sha512-ymLX5gyxZH6Nr2HBiyXtZZwhm/5dYgshPJhlrbdkCZfHcOXa4CyzinJqba7kGJbNemo6MynoBJvDgU/G0sqCBQ==}
+    deprecated: Version no longer supported. Upgrade to latest
 
   '@iexec-nox/nox-protocol-contracts@0.2.4':
     resolution: {integrity: sha512-jXunAVPc0W6Zcv5QiHx699BYd8U+Tw9U5O+3Xcbcq4y5gry2Z6FyWwGvYL0VjV9MJQL0zcVIcdkBL3ZyM5FfSg==}
@@ -2474,7 +2475,7 @@ snapshots:
 
   '@humanwhocodes/retry@0.4.3': {}
 
-  '@iexec-nox/handle@0.1.0-beta.11(ethers@6.16.0)(graphql@16.14.1)(viem@2.48.1(typescript@5.8.3)(zod@3.25.76))':
+  '@iexec-nox/handle@0.1.0-beta.15(ethers@6.16.0)(graphql@16.14.1)(viem@2.48.1(typescript@5.8.3)(zod@3.25.76))':
     dependencies:
       graphql-request: 7.4.0(graphql@16.14.1)
     optionalDependencies:

@@ -18,12 +18,14 @@ const defaultFactories: HandleClientFactories = {
 type ViemWalletClient = Parameters<typeof createViemHandleClient>[0];
 type EthersSigner = Parameters<typeof createEthersHandleClient>[0];
 
+type HardhatEthersSigner = EthersSigner & { address: string };
+
 interface ViemConnection {
   viem: { getWalletClients(): Promise<ViemWalletClient[]> };
 }
 
 interface EthersConnection {
-  ethers: { getSigners(): Promise<EthersSigner[]> };
+  ethers: { getSigners(): Promise<HardhatEthersSigner[]> };
 }
 
 function hasViem<ChainTypeT extends ChainType | string>(
@@ -38,25 +40,76 @@ function hasEthers<ChainTypeT extends ChainType | string>(
   return (connection as Partial<EthersConnection>).ethers != null;
 }
 
+function isSameAddress(a: string, b: string): boolean {
+  return a.toLowerCase() === b.toLowerCase();
+}
+
+function accountNotFoundError(account: string, available: string[]): Error {
+  return new Error(
+    `[nox] account "${account}" not found among connection accounts. ` +
+      `Available: ${available.join(", ")}`,
+  );
+}
+
+function selectViemWalletClient(
+  walletClients: ViemWalletClient[],
+  account: string,
+): ViemWalletClient {
+  const match = walletClients.find(
+    (client) =>
+      client.account !== undefined &&
+      isSameAddress(client.account.address, account),
+  );
+  if (match === undefined) {
+    const available = walletClients
+      .map((client) => client.account?.address)
+      .filter((address): address is `0x${string}` => address !== undefined);
+    throw accountNotFoundError(account, available);
+  }
+  return match;
+}
+
+function selectEthersSigner(
+  signers: HardhatEthersSigner[],
+  account: string,
+): HardhatEthersSigner {
+  const match = signers.find((signer) =>
+    isSameAddress(signer.address, account),
+  );
+  if (match === undefined) {
+    const available = signers.map((signer) => signer.address);
+    throw accountNotFoundError(account, available);
+  }
+  return match;
+}
+
 /**
  * Build a handle client from whichever Hardhat toolbox the project enables:
  * `@nomicfoundation/hardhat-toolbox-viem` (`connection.viem`) or
  * `@nomicfoundation/hardhat-ethers` (`connection.ethers`). The client is bound
- * to the connection's first signer so user-decryption ACLs line up with the
- * account the tests act as.
+ * to `account` when given (throwing if it matches none of the connection's
+ * accounts), or to the connection's first signer otherwise, so
+ * user-decryption ACLs line up with the account the caller acts as.
  */
 export async function createHandleClient<ChainTypeT extends ChainType | string>(
   connection: NetworkConnection<ChainTypeT>,
   config: Partial<HandleClientConfig>,
+  account?: string,
   factories: HandleClientFactories = defaultFactories,
 ): Promise<HandleClient> {
   if (hasViem(connection)) {
-    const [walletClient] = await connection.viem.getWalletClients();
+    const walletClients = await connection.viem.getWalletClients();
+    const walletClient =
+      account === undefined
+        ? walletClients[0]
+        : selectViemWalletClient(walletClients, account);
     return factories.viem(walletClient, config);
   }
 
   if (hasEthers(connection)) {
-    const [signer] = await connection.ethers.getSigners();
+    const signers = await connection.ethers.getSigners();
+    const signer =
+      account === undefined ? signers[0] : selectEthersSigner(signers, account);
     return factories.ethers(signer, config);
   }
 

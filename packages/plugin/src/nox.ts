@@ -19,7 +19,7 @@ import { ensureLocalNoxStack } from "./utils/local-stack.js";
 
 async function waitForHandlesResolved(
   handleGatewayUrl: string,
-  handles: HexString[],
+  handles: string[],
 ): Promise<void> {
   const url = `${handleGatewayUrl}/v0/public/handles/status`;
 
@@ -65,12 +65,12 @@ function bindHandleOperations(
       value: JsValue<T>,
       solidityType: T,
       applicationContract: EthereumAddress,
-    ): Promise<{ handle: Handle<T>; handleProof: HexString }> {
+    ): Promise<{ handle: Handle<T> & HexString; handleProof: HexString }> {
       return handleClient.encryptInput(
         value,
         solidityType,
         applicationContract,
-      );
+      ) as Promise<{ handle: Handle<T> & HexString; handleProof: HexString }>;
     },
 
     async decrypt<T extends SolidityType>(
@@ -95,7 +95,10 @@ function bindHandleOperations(
 
 async function connect<
   ChainTypeT extends ChainType | string = DefaultChainType,
->(connection: NetworkConnection<ChainTypeT>): Promise<NoxConnection> {
+>(
+  connection: NetworkConnection<ChainTypeT>,
+  account?: string,
+): Promise<NoxConnection> {
   const { networkConfig } = connection;
   const networkType: string = networkConfig.type;
   let noxComputeAddress: Address;
@@ -123,17 +126,21 @@ async function connect<
     );
   }
 
-  const handleClient = await createHandleClient(connection, {
-    smartContractAddress: noxComputeAddress,
-    // Validated as http(s) at config-validation time (or always http:// for
-    // the local stack) — `@iexec-nox/handle` types this as a template
-    // literal rather than a plain `string`.
-    gatewayUrl: handleGatewayUrl as `http://${string}` | `https://${string}`,
-    // The Handle SDK requires a subgraph URL for config validation even when
-    // the calling code never queries it (publicDecrypt only hits the gateway
-    // + the chain). Placeholder.
-    subgraphUrl: "https://example.com/subgraphs/id/none",
-  });
+  const handleClient = await createHandleClient(
+    connection,
+    {
+      smartContractAddress: noxComputeAddress,
+      // Validated as http(s) at config-validation time (or always http:// for
+      // the local stack) — `@iexec-nox/handle` types this as a template
+      // literal rather than a plain `string`.
+      gatewayUrl: handleGatewayUrl as `http://${string}` | `https://${string}`,
+      // The Handle SDK requires a subgraph URL for config validation even when
+      // the calling code never queries it (publicDecrypt only hits the gateway
+      // + the chain). Placeholder.
+      subgraphUrl: "https://example.com/subgraphs/id/none",
+    },
+    account,
+  );
 
   return {
     noxComputeAddress,
