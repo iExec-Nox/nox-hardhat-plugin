@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/iExec-Nox/nox-hardhat-plugin/compare/v0.2.0...v0.3.0) (2026-08-24)
+
+
+### 🚀 Added
+
+* **nox:** add optional account parameter to nox.connect() ([#42](https://github.com/iExec-Nox/nox-hardhat-plugin/issues/42)) ([1eaa9bd](https://github.com/iExec-Nox/nox-hardhat-plugin/commit/1eaa9bd139d22587477338599a1e9ff13b574e54))
+
 ## [0.2.0](https://github.com/iExec-Nox/nox-hardhat-plugin/compare/v0.1.0...v0.2.0) (2026-07-29)
 
 
