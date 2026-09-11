@@ -37,7 +37,7 @@ jobs:
       id-token: write # Required for OIDC
       packages: write
       contents: read
-    uses: iExecBlockchainComputing/github-actions-workflows/.github/workflows/publish-npm.yml@bd34b9afe01c23a6e3a8ac4f2cc232deda9b68a5 # publish-npm-v1.6.0
+    uses: iExecBlockchainComputing/github-actions-workflows/.github/workflows/publish-npm.yml@1f9f07ab7380426fd6b59c32baa352a89e8a479b # publish-npm-v1.7.1
     with:
       working-directory: packages/plugin
       node-version: ${{ needs.publish-setup.outputs.NODE_VERSION }}
